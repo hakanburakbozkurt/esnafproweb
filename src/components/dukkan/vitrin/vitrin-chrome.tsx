@@ -52,7 +52,7 @@ export function VitrinChrome({
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,_#ecfdf5_0%,_#f8fafc_38%,_#ffffff_100%)] text-slate-900">
+    <div className="relative min-h-screen bg-[radial-gradient(circle_at_top,_#ecfdf5_0%,_#f8fafc_38%,_#ffffff_100%)] text-slate-900">
       <motion.header
         ref={headerRef}
         style={reduceMotion ? undefined : { boxShadow: headerShadow }}
@@ -111,6 +111,7 @@ export function VitrinChrome({
                 blogHref={blogHref}
                 isOwner={Boolean(isOwner)}
                 isBlogPage={isBlogPage}
+                headerRef={headerRef}
               />
             </div>
           </div>
@@ -158,7 +159,7 @@ export function VitrinChrome({
 
       <VitrinMobileContactDrawer dukkan={dukkan} />
 
-      <main className="flex flex-col pb-10 lg:pb-20">{children}</main>
+      <main className="flex min-w-0 flex-col overflow-x-clip pb-10 lg:pb-20">{children}</main>
 
       <footer className="mt-auto border-t border-slate-200/70 bg-white/80 py-10 backdrop-blur-sm lg:py-12">
         <div className={`${desktopContainerClass} text-center`}>
