@@ -1,4 +1,5 @@
-import { LandingFooter, LandingNavbar } from "@/components/landing/home-page";
+import { LandingFooter } from "@/components/landing/landing-footer";
+import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { getActiveFaqs, toFaqItems } from "@/lib/faqs/get-faqs";
