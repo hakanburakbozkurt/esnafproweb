@@ -50,7 +50,7 @@ export function SubPageShell({
   ) : null;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,_#ecfdf5_0%,_#f8fafc_38%,_#ffffff_100%)] text-slate-900">
+    <div className="relative min-h-screen bg-[radial-gradient(circle_at_top,_#ecfdf5_0%,_#f8fafc_38%,_#ffffff_100%)] text-slate-900">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
@@ -60,7 +60,7 @@ export function SubPageShell({
       </div>
       <SubPageHeader />
 
-      <main className="min-w-0 py-10 lg:py-16">
+      <main className="min-w-0 overflow-x-clip py-10 lg:py-16">
         <div className={cn(desktopContainerClass, "min-w-0")}>
           {centeredContentClass ? (
             <div className={centeredContentClass}>

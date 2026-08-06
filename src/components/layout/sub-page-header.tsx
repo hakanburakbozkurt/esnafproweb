@@ -183,8 +183,14 @@ export function SubPageHeader() {
       }
     }
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("resize", handleResize);
+    };
   }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
@@ -197,54 +203,64 @@ export function SubPageHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
-      <nav
-        className={cn(
-          desktopContainerClass,
-          "flex min-h-16 w-full min-w-0 items-center justify-between gap-3 py-2 lg:h-[4.5rem] lg:py-0"
-        )}
-      >
-        <Link href="/" className="shrink-0 text-lg font-semibold tracking-tight">
-          <span className="text-slate-900">Esnaf</span>
-          <span className="text-emerald-600">PRO</span>
-        </Link>
-
-        <div className="hidden min-w-0 flex-wrap items-center justify-end gap-2 md:flex md:gap-3">
-          <HeaderNavLinks variant="desktop" {...navLinkProps} />
-          <Link href="/" className={headerActionClass}>
-            Ana Sayfa
+    <>
+      <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
+        <nav
+          className={cn(
+            desktopContainerClass,
+            "flex min-h-16 w-full min-w-0 items-center justify-between gap-3 py-2 lg:h-[4.5rem] lg:py-0"
+          )}
+        >
+          <Link href="/" className="shrink-0 text-lg font-semibold tracking-tight">
+            <span className="text-slate-900">Esnaf</span>
+            <span className="text-emerald-600">PRO</span>
           </Link>
-          {isAuthenticated && <SignOutButton />}
-        </div>
 
-        <button
-          type="button"
-          className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-600 md:hidden"
-          aria-expanded={menuOpen}
-          aria-controls="mobile-nav-panel"
-          aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          <MenuIcon open={menuOpen} />
-        </button>
-      </nav>
-
-      {menuOpen && (
-        <div
-          id="mobile-nav-panel"
-          className="border-t border-slate-100 bg-white/95 px-4 pb-4 pt-3 md:hidden"
-        >
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-2">
-            <HeaderNavLinks variant="mobile" {...navLinkProps} onNavigate={closeMenu} />
-            <Link href="/" className={mobileNavLinkClass} onClick={closeMenu}>
+          <div className="hidden min-w-0 flex-wrap items-center justify-end gap-2 md:flex md:gap-3">
+            <HeaderNavLinks variant="desktop" {...navLinkProps} />
+            <Link href="/" className={headerActionClass}>
               Ana Sayfa
             </Link>
-            {isAuthenticated && (
-              <SignOutButton className="w-full justify-center rounded-xl border-slate-200/80 px-4 py-2.5 text-sm font-semibold" />
-            )}
+            {isAuthenticated && <SignOutButton />}
           </div>
-        </div>
+
+          <button
+            type="button"
+            className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-600 md:hidden"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav-panel"
+            aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <MenuIcon open={menuOpen} />
+          </button>
+        </nav>
+      </header>
+
+      {menuOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Menüyü kapat"
+            className="fixed inset-0 top-16 z-40 bg-slate-900/25 md:hidden"
+            onClick={closeMenu}
+          />
+          <div
+            id="mobile-nav-panel"
+            className="fixed inset-x-0 top-16 z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-slate-200 bg-white shadow-lg md:hidden"
+          >
+            <div className={cn(desktopContainerClass, "flex flex-col gap-2 py-4")}>
+              <HeaderNavLinks variant="mobile" {...navLinkProps} onNavigate={closeMenu} />
+              <Link href="/" className={mobileNavLinkClass} onClick={closeMenu}>
+                Ana Sayfa
+              </Link>
+              {isAuthenticated && (
+                <SignOutButton className="w-full justify-center rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm" />
+              )}
+            </div>
+          </div>
+        </>
       )}
-    </header>
+    </>
   );
 }
