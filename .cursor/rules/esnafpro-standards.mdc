@@ -1,0 +1,74 @@
+---
+description: EsnafPRO mimari, veritabanı, UI/UX ve hata yönetimi standartları
+alwaysApply: true
+---
+
+# EsnafPRO — Geliştirme Standartları
+
+## Mimari
+
+- Stack: Next.js App Router, TypeScript, Tailwind CSS, Supabase.
+- Tüm veritabanı mutasyonları **Server Actions** (`src/lib/**/actions.ts`) üzerinden yapılır; client'tan doğrudan INSERT/UPDATE yapma.
+- Landing (`src/app/page.tsx`) ve root layout'a dokunma — kullanıcı açıkça istemedikçe.
+
+## Veritabanı — sütun adları (KRİTİK)
+
+Form `name`, parse fonksiyonu, TypeScript tipi ve Supabase payload **birebir aynı** olmalı. Alias (`ad` → `dukkan_adi`) kullanma; doğrudan DB sütun adını kullan.
+
+### `dukkanlar`
+
+| Sütun | Form `name` |
+|-------|-------------|
+| `dukkan_adi` | `dukkan_adi` |
+| `slug` | `slug` |
+| `telefon` | `telefon` |
+| `whatsapp` | `whatsapp` |
+| `adres` | `adres` |
+| `aciklama` | `aciklama` |
+| `calisma_saatleri` | `calisma_saatleri` |
+| `instagram_url` | `instagram_url` |
+| `tiktok_url` | `tiktok_url` |
+| `facebook_url` | `facebook_url` |
+| `iletisim_sss_goster` | `iletisim_sss_goster` (hidden: `"true"` / `"false"`) |
+| `logo_url` | `logo_url` |
+| `banner_url` | `banner_url` |
+| `dukkan_fotograflari` | `dukkan_fotografi_{i}` (dizi) |
+
+Kaynak tipler: `src/types/database.types.ts`. Payload map: `toDukkanDbPayload()` in `src/lib/dukkan/actions.ts`.
+
+### `dukkan_urunleri`
+
+| Sütun | Form `name` |
+|-------|-------------|
+| `urun_adi` | `urun_adi_{i}` |
+| `urun_aciklama` | `urun_aciklama_{i}` |
+| `fotograf_url` | `fotograf_url_{i}` |
+
+❌ `foto_url`, `ad`, `urun_ad` kullanma.
+
+## UI/UX
+
+- **Mobile-first**; vitrin Shopier / Linktree tarzı, minimalist, premium kartlar.
+- Ürün başlıkları: `line-clamp-2` (kart dikey patlamasın).
+- Galeri / yatay kaydırma: **`embla-carousel-react`** (`src/components/dukkan/vitrin/gallery-carousel.tsx`).
+- Görseller kutuda: `object-cover`, taşma yok.
+- Sabit WhatsApp butonu yalnızca mobil; masaüstünde sidebar CTA.
+
+## Hata yönetimi
+
+```typescript
+// ❌ Sessiz catch
+try { await update() } catch (e) {}
+
+// ✅ Log + kullanıcı mesajı
+try {
+  ...
+} catch (err) {
+  logDukkanAction("updateDukkan", "unexpected error", { err });
+  return { error: err instanceof Error ? err.message : "..." };
+}
+```
+
+- Supabase hatalarını `logDukkanAction` ile konsola yaz (`src/lib/dukkan/logger.ts`).
+- Kısmi başarı (dukkan kaydedildi, ürün sync fail): `warning` döndür; iletişim kaydının kaybolduğu izlenimi verme.
+- Kullanıcıya Türkçe, anlaşılır hata/uyarı metni göster.
