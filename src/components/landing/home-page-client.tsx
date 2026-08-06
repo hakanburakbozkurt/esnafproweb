@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
+import { ESNAF_ROLE, getSignupHref } from "@/lib/auth/roles";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import type { FaqItem } from "@/types/database.types";
 
@@ -327,7 +328,7 @@ function HeroSection() {
       <div className="mx-auto grid w-full min-w-0 max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="min-w-0 max-w-xl">
           <h1 className="text-3xl font-bold leading-[1.12] tracking-tight text-slate-900 sm:text-4xl lg:text-[2.75rem] xl:text-5xl">
-            Dükkanını Dijitale Taşı,{" "}
+            Mağazanı Dijitale Taşı,{" "}
             <span className="text-emerald-600">Kendi Slug Adresinle Anında Satışa Başla</span>
           </h1>
           <p className="mt-6 text-base leading-relaxed text-slate-500 sm:text-lg">
@@ -337,7 +338,7 @@ function HeroSection() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <a
-              href="/dukkan-ac"
+              href={getSignupHref(ESNAF_ROLE, "/dukkan-ac")}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 px-7 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl hover:shadow-emerald-500/40 sm:w-auto md:hover:scale-[1.02] sm:text-base"
             >
               Hemen Mağazanını Oluştur

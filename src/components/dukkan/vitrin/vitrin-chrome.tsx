@@ -118,7 +118,7 @@ export function VitrinChrome({
 
           <nav
             aria-label="Vitrin menüsü — mobil"
-            className="flex gap-2 overflow-x-auto pb-3 md:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-2 overflow-x-auto py-2.5 md:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {isOwner && (
               <NavRoutePill
@@ -218,10 +218,10 @@ function NavRoutePill({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
+      className={`inline-flex shrink-0 items-center rounded-full border px-4 py-2.5 text-xs font-semibold leading-none transition sm:text-sm ${
         active
-          ? "bg-emerald-600 text-white shadow-sm"
-          : "bg-white text-slate-600 ring-1 ring-slate-200/80 hover:text-emerald-600"
+          ? "border-emerald-600 bg-emerald-600 text-white shadow-sm"
+          : "border-slate-200/80 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600"
       }`}
     >
       {label}
