@@ -71,18 +71,11 @@ export function VitrinChrome({
               aria-label="Vitrin menüsü"
               className="hidden items-center gap-1 rounded-full border border-slate-200/70 bg-slate-50/80 p-1 md:flex"
             >
-              {isOwner && (
+              {showPazaryeriNav && (
                 <NavRouteLink
-                  label="Mağazam"
-                  href={magazamHref}
-                  active={isMagazamPage}
-                />
-              )}
-              {showContactNav && (
-                <NavRouteLink
-                  label="İletişim"
-                  href={iletisimHref}
-                  active={isIletisimPage}
+                  label="Pazaryeri"
+                  href={pazaryeriHref}
+                  active={isPazaryeriPage}
                 />
               )}
               {showTeknikServisNav && (
@@ -92,11 +85,11 @@ export function VitrinChrome({
                   active={isTeknikServisPage}
                 />
               )}
-              {showPazaryeriNav && (
+              {showContactNav && (
                 <NavRouteLink
-                  label="Pazaryeri"
-                  href={pazaryeriHref}
-                  active={isPazaryeriPage}
+                  label="İletişim"
+                  href={iletisimHref}
+                  active={isIletisimPage}
                 />
               )}
               <NavRouteLink
@@ -104,6 +97,13 @@ export function VitrinChrome({
                 href={hakkimizdaHref}
                 active={isHakkimizdaPage}
               />
+              {isOwner && (
+                <NavRouteLink
+                  label="Mağazam"
+                  href={magazamHref}
+                  active={isMagazamPage}
+                />
+              )}
             </nav>
 
             <div className="flex shrink-0 items-center">
@@ -120,18 +120,11 @@ export function VitrinChrome({
             aria-label="Vitrin menüsü — mobil"
             className="flex gap-2 overflow-x-auto py-2.5 md:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {isOwner && (
+            {showPazaryeriNav && (
               <NavRoutePill
-                label="Mağazam"
-                href={magazamHref}
-                active={isMagazamPage}
-              />
-            )}
-            {showContactNav && (
-              <NavRoutePill
-                label="İletişim"
-                href={iletisimHref}
-                active={isIletisimPage}
+                label="Pazaryeri"
+                href={pazaryeriHref}
+                active={isPazaryeriPage}
               />
             )}
             {showTeknikServisNav && (
@@ -141,11 +134,11 @@ export function VitrinChrome({
                 active={isTeknikServisPage}
               />
             )}
-            {showPazaryeriNav && (
+            {showContactNav && (
               <NavRoutePill
-                label="Pazaryeri"
-                href={pazaryeriHref}
-                active={isPazaryeriPage}
+                label="İletişim"
+                href={iletisimHref}
+                active={isIletisimPage}
               />
             )}
             <NavRoutePill
@@ -153,6 +146,13 @@ export function VitrinChrome({
               href={hakkimizdaHref}
               active={isHakkimizdaPage}
             />
+            {isOwner && (
+              <NavRoutePill
+                label="Mağazam"
+                href={magazamHref}
+                active={isMagazamPage}
+              />
+            )}
           </nav>
         </div>
       </motion.header>
