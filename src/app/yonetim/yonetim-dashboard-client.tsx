@@ -26,13 +26,13 @@ export function YonetimDashboardClient({
   seoInput: SeoGeoScoreInput;
 }) {
   return (
-    <div className="relative mx-auto w-full max-w-5xl space-y-8">
+    <div className="relative mx-auto w-full min-w-0 max-w-5xl space-y-8 px-1 sm:px-0">
       <VitrinDotGrid />
 
       <EsnafKocuCoach healthInput={healthInput} seoInput={seoInput} />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,18rem)_1fr] lg:items-start">
-        <div className="space-y-4 lg:sticky lg:top-24">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,18rem)_1fr] lg:items-start">
+        <div className="min-w-0 space-y-4 lg:sticky lg:top-24">
           <ProfileHealthScore input={healthInput} />
           <SeoGeoScoreCard input={seoInput} />
         </div>

@@ -65,7 +65,7 @@ function PlanEditorForm({ plan }: { plan: PricingPlan }) {
           <p className="text-sm font-semibold text-zinc-100">
             {PRICING_SEGMENT_LABELS[plan.segment]} · {plan.plan_key}
           </p>
-          <div className="flex gap-4 text-xs text-zinc-400">
+          <div className="flex flex-wrap gap-3 text-xs text-zinc-400 sm:gap-4">
             <label className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"

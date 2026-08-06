@@ -13,7 +13,7 @@ export function YonetimDarkShell({
   backLabel?: string;
 }) {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen overflow-x-hidden bg-zinc-950 text-zinc-100">
       <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md">
         <nav
           className={`${desktopContainerClass} flex h-16 items-center justify-between lg:h-[4.5rem]`}

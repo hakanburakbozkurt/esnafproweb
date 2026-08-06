@@ -35,10 +35,10 @@ function PricingCard({
 
   if (plan.is_popular) {
     return (
-      <div className="relative">
+      <div className="relative overflow-hidden rounded-[1.75rem]">
         <div
           aria-hidden
-          className="absolute -inset-1 rounded-[1.75rem] bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-80 blur-md"
+          className="pointer-events-none absolute -inset-1 rounded-[1.75rem] bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-80 blur-md"
         />
         <article className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-300/60 bg-gradient-to-b from-emerald-50 via-white to-white p-6 shadow-[0_0_48px_rgba(16,185,129,0.28)] sm:p-7">
           <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_16px_rgba(16,185,129,0.5)]">
@@ -71,7 +71,7 @@ function PricingCard({
 
           <Link
             href={planCtaHref(plan)}
-            className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 px-6 text-sm font-bold text-white shadow-[0_0_24px_rgba(16,185,129,0.45)] transition hover:scale-[1.02] hover:shadow-[0_0_32px_rgba(16,185,129,0.6)]"
+            className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 px-6 text-sm font-bold text-white shadow-[0_0_24px_rgba(16,185,129,0.45)] transition hover:shadow-[0_0_32px_rgba(16,185,129,0.6)] sm:w-auto md:hover:scale-[1.02]"
           >
             {plan.cta_label ?? "Hemen Başla"}
           </Link>
@@ -129,8 +129,8 @@ export function PricingSection({ plans }: { plans: PricingPlan[] }) {
   );
 
   return (
-    <section id="fiyatlandirma" className="px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="fiyatlandirma" className="overflow-x-hidden px-4 py-20 sm:px-6 md:py-28">
+      <div className="mx-auto w-full min-w-0 max-w-6xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Şeffaf{" "}

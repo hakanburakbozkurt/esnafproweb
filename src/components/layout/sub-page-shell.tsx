@@ -60,8 +60,8 @@ export function SubPageShell({
       </div>
       <SubPageHeader />
 
-      <main className="py-10 lg:py-16">
-        <div className={desktopContainerClass}>
+      <main className="min-w-0 py-10 lg:py-16">
+        <div className={cn(desktopContainerClass, "min-w-0")}>
           {centeredContentClass ? (
             <div className={centeredContentClass}>
               {header}

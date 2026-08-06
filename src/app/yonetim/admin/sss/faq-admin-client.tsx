@@ -244,7 +244,7 @@ function FaqContextSection({
         </p>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <NewFaqForm context={context} nextSortOrder={nextSortOrder} />
         <div className="space-y-4">
           {contextFaqs.map((faq, index) => (

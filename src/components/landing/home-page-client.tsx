@@ -338,7 +338,7 @@ function HeroSection() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <a
               href="/dukkan-ac"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 px-7 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/40 sm:text-base"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 px-7 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl hover:shadow-emerald-500/40 sm:w-auto md:hover:scale-[1.02] sm:text-base"
             >
               Hemen Mağazanını Oluştur
             </a>
@@ -387,8 +387,8 @@ function FeatureCard({
 
 function FeatureMapSection() {
   return (
-    <section id="ozellikler" className="px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="ozellikler" className="overflow-x-hidden px-4 py-20 sm:px-6 md:py-28">
+      <div className="mx-auto w-full min-w-0 max-w-6xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             İşletmeniz için{" "}
@@ -934,12 +934,12 @@ function ModuleGallerySection() {
 
 export function HomePageClient({ faqItems = [] }: { faqItems?: FaqItem[] }) {
   return (
-    <>
+    <div className="min-w-0 max-w-full overflow-x-hidden">
       <HeroSection />
       <FeatureMapSection />
       <DigitalSupplySection />
       <ModuleGallerySection />
       <LandingFaqSection items={faqItems} />
-    </>
+    </div>
   );
 }

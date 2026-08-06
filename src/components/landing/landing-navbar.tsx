@@ -6,13 +6,13 @@ const NAV_LINK_CLASS =
 export function LandingNavbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <nav className="mx-auto flex h-16 w-full min-w-0 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" className="text-lg font-semibold tracking-tight">
           <span className="text-slate-900">Esnaf</span>
           <span className="text-emerald-600">PRO</span>
         </Link>
 
-        <ul className="flex items-center gap-8">
+        <ul className="flex shrink-0 items-center gap-3 sm:gap-8">
           <li>
             <a href="#ozellikler" className={NAV_LINK_CLASS}>
               Özellikler

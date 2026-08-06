@@ -23,8 +23,10 @@ function SignOutSubmit({ className }: { className?: string }) {
 }
 
 export function SignOutButton({ className }: { className?: string }) {
+  const fullWidth = className?.includes("w-full");
+
   return (
-    <form action={signOut}>
+    <form action={signOut} className={fullWidth ? "w-full" : undefined}>
       <SignOutSubmit className={className} />
     </form>
   );

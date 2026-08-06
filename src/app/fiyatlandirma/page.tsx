@@ -19,7 +19,7 @@ export default async function FiyatlandirmaPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen overflow-x-hidden bg-white text-slate-900">
       <LandingNavbar />
       <main className="pt-8">
         <PricingSection plans={pricingPlans} />

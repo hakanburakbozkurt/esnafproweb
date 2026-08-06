@@ -17,7 +17,7 @@ export const yonetimPanelBodyClass = "text-sm leading-relaxed text-slate-600 sm:
 export const yonetimPanelScoreClass = "text-3xl font-bold tabular-nums text-emerald-700";
 
 export const yonetimPanelCtaClass =
-  "inline-flex shrink-0 items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98]";
+  "inline-flex w-full shrink-0 items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98] sm:w-auto";
 
 /** Esnaf Koçu — hafif mint vurgulu, bağırmayan kart */
 export const yonetimCoachPanelClass =
