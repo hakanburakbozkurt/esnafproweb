@@ -8,9 +8,21 @@ const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
 });
 
+const siteDescription =
+  "Toptancı, esnaf ve son kullanıcılar için dijital yönetim platformu";
+
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   title: "EsnafPRO",
-  description: "Toptancı, esnaf ve son kullanıcılar için dijital yönetim platformu",
+  description: siteDescription,
+  ...(googleSiteVerification
+    ? {
+        verification: {
+          google: googleSiteVerification,
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({
