@@ -1,9 +1,16 @@
 import type { MetadataRoute } from "next";
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { getSecondHandDeviceHref } from "@/lib/dukkan/second-hand-devices";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
+
+function safeDate(value: string | null | undefined, fallback: Date): Date {
+  if (!value) return fallback;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed;
+}
 
 function sitemapEntry(
   baseUrl: string,
@@ -16,11 +23,8 @@ function sitemapEntry(
   };
 }
 
-export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getPublicSiteUrl();
-  const now = new Date();
-
-  const staticPages: MetadataRoute.Sitemap = [
+function staticSitemapEntries(baseUrl: string, now: Date): MetadataRoute.Sitemap {
+  return [
     sitemapEntry(baseUrl, "", {
       lastModified: now,
       changeFrequency: "weekly",
@@ -37,8 +41,21 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.4,
     }),
   ];
+}
 
-  const supabase = await createClient();
+export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = getPublicSiteUrl();
+  const now = new Date();
+  const staticPages = staticSitemapEntries(baseUrl, now);
+
+  let supabase;
+
+  try {
+    supabase = createPublicClient();
+  } catch (error) {
+    console.error("[sitemap] Supabase client error:", error);
+    return staticPages;
+  }
 
   const [{ data: dukkanlar, error: dukkanError }, { data: blogPosts }, { data: devices }] =
     await Promise.all([
@@ -66,10 +83,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   const stores = dukkanlar ?? [];
   const slugByDukkanId = new Map(stores.map((dukkan) => [dukkan.id, dukkan.slug]));
 
-  const devicesByUserId = new Map<
-    string,
-    NonNullable<typeof devices>
-  >();
+  const devicesByUserId = new Map<string, NonNullable<typeof devices>>();
 
   for (const device of devices ?? []) {
     if (!device.user_id) continue;
@@ -82,8 +96,10 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamicPages: MetadataRoute.Sitemap = [];
 
   for (const dukkan of stores) {
-    const shopBase = `/${dukkan.slug}`;
-    const lastModified = dukkan.updated_at ? new Date(dukkan.updated_at) : now;
+    if (!dukkan.slug?.trim()) continue;
+
+    const shopBase = `/${dukkan.slug.trim()}`;
+    const lastModified = safeDate(dukkan.updated_at, now);
 
     dynamicPages.push(
       sitemapEntry(baseUrl, shopBase, {
@@ -141,11 +157,13 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
           id: device.id,
           web_slug: device.web_slug,
         });
-        const deviceUpdatedAt = device.web_published_at ?? device.created_at;
 
         dynamicPages.push(
           sitemapEntry(baseUrl, devicePath, {
-            lastModified: deviceUpdatedAt ? new Date(deviceUpdatedAt) : lastModified,
+            lastModified: safeDate(
+              device.web_published_at ?? device.created_at,
+              lastModified
+            ),
             changeFrequency: "weekly",
             priority: 0.5,
           })
@@ -156,11 +174,11 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const post of blogPosts ?? []) {
     const shopSlug = slugByDukkanId.get(post.dukkan_id);
-    if (!shopSlug) continue;
+    if (!shopSlug || !post.slug?.trim()) continue;
 
     dynamicPages.push(
-      sitemapEntry(baseUrl, `/${shopSlug}/blog/${post.slug}`, {
-        lastModified: post.updated_at ? new Date(post.updated_at) : now,
+      sitemapEntry(baseUrl, `/${shopSlug}/blog/${post.slug.trim()}`, {
+        lastModified: safeDate(post.updated_at, now),
         changeFrequency: "monthly",
         priority: 0.5,
       })
