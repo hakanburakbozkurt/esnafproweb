@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logDukkanAction } from "@/lib/dukkan/logger";
 import { isWholesalerAccount, wholesalerStoreAccessError } from "@/lib/auth/wholesaler";
+import { revalidateSitemap } from "@/lib/seo/sitemap-cache";
 import {
   mergeWarnings,
   safeInsertDukkan,
@@ -27,13 +28,18 @@ function revalidateDukkanPaths(slug: string, previousSlug?: string) {
   revalidatePath(`/${slug}/iletisim`);
   revalidatePath(`/${slug}/teknik-servis`);
   revalidatePath(`/${slug}/hakkimizda`);
+  revalidatePath(`/${slug}/blog`);
+  revalidatePath(`/${slug}/pazaryeri`);
   revalidatePath("/dukkan-ayarlari");
+  revalidateSitemap();
 
   if (previousSlug && previousSlug !== slug) {
     revalidatePath(`/${previousSlug}`);
     revalidatePath(`/${previousSlug}/iletisim`);
     revalidatePath(`/${previousSlug}/teknik-servis`);
     revalidatePath(`/${previousSlug}/hakkimizda`);
+    revalidatePath(`/${previousSlug}/blog`);
+    revalidatePath(`/${previousSlug}/pazaryeri`);
   }
 }
 

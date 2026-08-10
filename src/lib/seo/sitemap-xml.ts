@@ -27,7 +27,20 @@ function escapeXml(value: string): string {
 
 function formatLastMod(value: Date | string): string {
   const date = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+
+  if (Number.isNaN(date.getTime())) {
+    return formatLastMod(new Date());
+  }
+
+  // ISO 8601 — UTC: YYYY-MM-DDThh:mm:ss+00:00 (Supabase timestamptz ile uyumlu)
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+00:00`;
 }
 
 function sanitizeUrl(url: string): string {
@@ -61,11 +74,11 @@ function assertPureSitemapXml(xml: string): string {
 }
 
 function buildUrlNode(entry: MetadataRoute.Sitemap[number]): string {
-  const parts = [`<loc>${escapeXml(sanitizeUrl(entry.url))}</loc>`];
-
-  if (entry.lastModified) {
-    parts.push(`<lastmod>${escapeXml(formatLastMod(entry.lastModified))}</lastmod>`);
-  }
+  const lastModified = entry.lastModified ?? new Date();
+  const parts = [
+    `<loc>${escapeXml(sanitizeUrl(entry.url))}</loc>`,
+    `<lastmod>${escapeXml(formatLastMod(lastModified))}</lastmod>`,
+  ];
 
   if (
     entry.changeFrequency &&

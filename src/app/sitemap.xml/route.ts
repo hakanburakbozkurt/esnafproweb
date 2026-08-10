@@ -2,8 +2,8 @@ import { buildSitemap } from "@/lib/seo/build-sitemap";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { buildSitemapXml } from "@/lib/seo/sitemap-xml";
 
-export const revalidate = 3600;
-export const dynamic = "force-dynamic";
+/** ISR: en fazla 10 dk önbellek; süre dolunca bir sonraki istekte yenilenir */
+export const revalidate = 600;
 
 function fallbackSitemapXml(): string {
   const now = new Date();
@@ -32,7 +32,7 @@ export async function GET() {
     return new Response(xml, {
       headers: {
         "Content-Type": "application/xml; charset=utf-8",
-        "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=86400",
       },
     });
   } catch (error) {
@@ -41,7 +41,7 @@ export async function GET() {
     return new Response(fallbackSitemapXml(), {
       headers: {
         "Content-Type": "application/xml; charset=utf-8",
-        "Cache-Control": "public, max-age=0, s-maxage=300",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       },
     });
   }

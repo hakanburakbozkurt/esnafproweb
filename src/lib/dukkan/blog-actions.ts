@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isWholesalerAccount, wholesalerStoreAccessError } from "@/lib/auth/wholesaler";
+import { revalidateSitemap } from "@/lib/seo/sitemap-cache";
 import { slugify } from "@/lib/utils/slug";
 
 export type BlogFormState = {
@@ -68,5 +69,7 @@ export async function createBlogPost(
 
   revalidatePath("/yonetim");
   revalidatePath(`/${dukkan.slug}/blog`);
+  revalidatePath(`/${dukkan.slug}/blog/${slug}`);
+  revalidateSitemap();
   redirect(`/${dukkan.slug}/blog`);
 }
