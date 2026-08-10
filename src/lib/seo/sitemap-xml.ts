@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>';
+export const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>';
 const SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
 const ALLOWED_CHANGE_FREQUENCIES = new Set([
@@ -13,8 +13,23 @@ const ALLOWED_CHANGE_FREQUENCIES = new Set([
   "never",
 ]);
 
-/** XML dışı etiket enjeksiyonunu engellemek için yasak desenler */
-const FORBIDDEN_XML_PATTERNS = [/<\/?script\b/i, /<\/?html\b/i, /<\/?body\b/i];
+/** HTML/JS enjeksiyonu — self-closing ve çift etiket dahil */
+const SCRIPT_TAG_PATTERN =
+  /<\s*script\b[^>]*\/>|<\s*script\b[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi;
+
+const FORBIDDEN_MARKUP_PATTERNS = [
+  SCRIPT_TAG_PATTERN,
+  /<\/?html\b[^>]*>/gi,
+  /<\/?body\b[^>]*>/gi,
+  /<\/?head\b[^>]*>/gi,
+];
+
+const FORBIDDEN_CONTENT_CHECKS = [
+  /<\s*script\b/i,
+  /<\/?html\b/i,
+  /<\/?body\b/i,
+  /<\/?head\b/i,
+];
 
 function escapeXml(value: string): string {
   return value
@@ -32,7 +47,6 @@ function formatLastMod(value: Date | string): string {
     return formatLastMod(new Date());
   }
 
-  // ISO 8601 — UTC: YYYY-MM-DDThh:mm:ss+00:00 (Supabase timestamptz ile uyumlu)
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
@@ -50,7 +64,7 @@ function sanitizeUrl(url: string): string {
     throw new Error(`[sitemap-xml] Geçersiz URL protokolü: ${trimmed}`);
   }
 
-  for (const pattern of FORBIDDEN_XML_PATTERNS) {
+  for (const pattern of FORBIDDEN_CONTENT_CHECKS) {
     if (pattern.test(trimmed)) {
       throw new Error("[sitemap-xml] URL içinde yasak HTML/XML deseni bulundu.");
     }
@@ -59,18 +73,43 @@ function sanitizeUrl(url: string): string {
   return trimmed;
 }
 
+/** Olası script/html kalıntılarını ve bildirim öncesi gürültüyü temizler */
+export function stripForbiddenMarkup(xml: string): string {
+  let cleaned = xml;
+
+  for (const pattern of FORBIDDEN_MARKUP_PATTERNS) {
+    cleaned = cleaned.replace(pattern, "");
+  }
+
+  return cleaned.trim();
+}
+
+/** Çıktının her zaman XML bildirimi ile başlamasını garanti eder */
+export function ensureXmlDeclaration(xml: string): string {
+  const cleaned = stripForbiddenMarkup(xml).replace(/^\uFEFF/, "");
+  const body = cleaned.replace(/^\s*<\?xml[^?]*\?>\s*/i, "").trimStart();
+
+  return body ? `${XML_DECLARATION}\n${body}` : `${XML_DECLARATION}\n`;
+}
+
 function assertPureSitemapXml(xml: string): string {
-  if (!xml.startsWith(XML_DECLARATION)) {
+  const normalized = ensureXmlDeclaration(xml);
+
+  if (!normalized.startsWith(XML_DECLARATION)) {
     throw new Error("[sitemap-xml] XML çıktısı geçerli bildirim ile başlamıyor.");
   }
 
-  for (const pattern of FORBIDDEN_XML_PATTERNS) {
-    if (pattern.test(xml)) {
+  for (const pattern of FORBIDDEN_CONTENT_CHECKS) {
+    if (pattern.test(normalized)) {
       throw new Error("[sitemap-xml] Çıktıda yasak etiket tespit edildi.");
     }
   }
 
-  return xml;
+  if (!normalized.includes("<urlset")) {
+    throw new Error("[sitemap-xml] Geçersiz sitemap yapısı.");
+  }
+
+  return normalized.endsWith("\n") ? normalized : `${normalized}\n`;
 }
 
 function buildUrlNode(entry: MetadataRoute.Sitemap[number]): string {
@@ -104,7 +143,6 @@ export function buildSitemapXml(entries: MetadataRoute.Sitemap): string {
     `<urlset xmlns="${SITEMAP_NS}">`,
     body,
     "</urlset>",
-    "",
   ].join("\n");
 
   return assertPureSitemapXml(xml);
