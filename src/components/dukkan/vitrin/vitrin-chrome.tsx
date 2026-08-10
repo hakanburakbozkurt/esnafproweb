@@ -26,7 +26,7 @@ export function VitrinChrome({
   dukkan: Dukkan;
   children: ReactNode;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const iletisimHref = `/${dukkan.slug}/iletisim`;
   const teknikServisHref = `/${dukkan.slug}/teknik-servis`;
   const pazaryeriHref = `/${dukkan.slug}/pazaryeri`;
