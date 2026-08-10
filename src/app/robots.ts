@@ -1,15 +1,13 @@
 import type { MetadataRoute } from "next";
-import { getPublicSiteUrl } from "@/lib/auth/site-url";
+import { SITEMAP_CANONICAL_ORIGIN } from "@/lib/seo/sitemap-url";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = getPublicSiteUrl();
-
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: ["/yonetim", "/yonetim/"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${SITEMAP_CANONICAL_ORIGIN}/sitemap.xml`,
   };
 }

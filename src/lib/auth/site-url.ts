@@ -13,11 +13,16 @@ export function getSiteUrl(): string {
 
 /** Sitemap, robots ve kanonik SEO URL'leri için üretim tabanı */
 export function getPublicSiteUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+  if (raw) {
+    return raw
+      .replace(/\/$/, "")
+      .replace(/^http:\/\//i, "https://")
+      .replace(/^https:\/\/esnafpro\.app/i, "https://www.esnafpro.app");
   }
 
-  return "https://esnafpro.app";
+  return "https://www.esnafpro.app";
 }
 
 export function getPasswordResetRedirectUrl(): string {

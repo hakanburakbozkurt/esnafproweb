@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { getSecondHandDeviceHref } from "@/lib/dukkan/second-hand-devices";
+import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { createPublicClient } from "@/lib/supabase/public";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
@@ -13,29 +13,28 @@ function safeDate(value: string | null | undefined, fallback: Date): Date {
 }
 
 function sitemapEntry(
-  baseUrl: string,
   path: string,
   options?: Partial<Pick<SitemapEntry, "lastModified" | "changeFrequency" | "priority">>
 ): SitemapEntry {
   return {
-    url: path ? `${baseUrl}${path}` : baseUrl,
+    url: buildSitemapUrl(path),
     ...options,
   };
 }
 
-function staticSitemapEntries(baseUrl: string, now: Date): MetadataRoute.Sitemap {
+function staticSitemapEntries(now: Date): MetadataRoute.Sitemap {
   return [
-    sitemapEntry(baseUrl, "", {
+    sitemapEntry("", {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
     }),
-    sitemapEntry(baseUrl, "/fiyatlandirma", {
+    sitemapEntry("/fiyatlandirma", {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
     }),
-    sitemapEntry(baseUrl, "/giris", {
+    sitemapEntry("/giris", {
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.4,
@@ -44,9 +43,8 @@ function staticSitemapEntries(baseUrl: string, now: Date): MetadataRoute.Sitemap
 }
 
 export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getPublicSiteUrl();
   const now = new Date();
-  const staticPages = staticSitemapEntries(baseUrl, now);
+  const staticPages = staticSitemapEntries(now);
 
   let supabase;
 
@@ -102,17 +100,17 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     const lastModified = safeDate(dukkan.updated_at, now);
 
     dynamicPages.push(
-      sitemapEntry(baseUrl, shopBase, {
+      sitemapEntry(shopBase, {
         lastModified,
         changeFrequency: "weekly",
         priority: 0.9,
       }),
-      sitemapEntry(baseUrl, `${shopBase}/hakkimizda`, {
+      sitemapEntry(`${shopBase}/hakkimizda`, {
         lastModified,
         changeFrequency: "monthly",
         priority: 0.6,
       }),
-      sitemapEntry(baseUrl, `${shopBase}/blog`, {
+      sitemapEntry(`${shopBase}/blog`, {
         lastModified,
         changeFrequency: "weekly",
         priority: 0.6,
@@ -121,7 +119,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
     if (dukkan.iletisim_sss_goster ?? true) {
       dynamicPages.push(
-        sitemapEntry(baseUrl, `${shopBase}/iletisim`, {
+        sitemapEntry(`${shopBase}/iletisim`, {
           lastModified,
           changeFrequency: "monthly",
           priority: 0.7,
@@ -131,7 +129,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
     if (dukkan.teknik_servis_aktif) {
       dynamicPages.push(
-        sitemapEntry(baseUrl, `${shopBase}/teknik-servis`, {
+        sitemapEntry(`${shopBase}/teknik-servis`, {
           lastModified,
           changeFrequency: "monthly",
           priority: 0.6,
@@ -143,7 +141,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
     if (userDevices.length > 0) {
       dynamicPages.push(
-        sitemapEntry(baseUrl, `${shopBase}/pazaryeri`, {
+        sitemapEntry(`${shopBase}/pazaryeri`, {
           lastModified,
           changeFrequency: "daily",
           priority: 0.7,
@@ -159,7 +157,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         });
 
         dynamicPages.push(
-          sitemapEntry(baseUrl, devicePath, {
+          sitemapEntry(devicePath, {
             lastModified: safeDate(
               device.web_published_at ?? device.created_at,
               lastModified
@@ -177,7 +175,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     if (!shopSlug || !post.slug?.trim()) continue;
 
     dynamicPages.push(
-      sitemapEntry(baseUrl, `/${shopSlug}/blog/${post.slug.trim()}`, {
+      sitemapEntry(`/${shopSlug}/blog/${post.slug.trim()}`, {
         lastModified: safeDate(post.updated_at, now),
         changeFrequency: "monthly",
         priority: 0.5,
