@@ -7,12 +7,14 @@ import {
   type FaqPlaceholderSource,
 } from "@/lib/dukkan/faq-placeholders";
 import { getPackagesForPage } from "@/lib/dukkan/faq-packages";
+import { createPoolSampleKey, FAQ_POOL_SAMPLE_SIZE } from "@/lib/dukkan/faq-pool-sampling";
 import {
   FAQ_PRESET_CATEGORY_LABELS,
-  getPresetsByCategory,
-  getPresetsByIds,
+  samplePackagePresets,
+  samplePresetsByCategory,
   type FaqPageContext,
   type FaqPreset,
+  type FaqPresetCategory,
 } from "@/lib/dukkan/faq-presets";
 import { cn } from "@/lib/utils/cn";
 
@@ -31,6 +33,11 @@ function previewPresetText(
   };
 }
 
+function buildShopSampleSeed(source?: FaqPlaceholderSource, sampleKey?: string) {
+  const shopPart = source?.dukkan_adi?.trim() || "shop";
+  return `${shopPart}:${sampleKey ?? "default"}`;
+}
+
 export function FaqPresetPicker({
   pageContext,
   onSelect,
@@ -46,10 +53,36 @@ export function FaqPresetPicker({
 }) {
   const [open, setOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sampleKey, setSampleKey] = useState(() => createPoolSampleKey());
 
-  const grouped = useMemo(() => getPresetsByCategory(pageContext), [pageContext]);
-  const categories = Object.keys(grouped) as Array<keyof typeof grouped>;
+  const shopSampleSeed = useMemo(
+    () => buildShopSampleSeed(placeholderSource, sampleKey),
+    [placeholderSource, sampleKey]
+  );
+
+  const grouped = useMemo(
+    () => samplePresetsByCategory(pageContext, shopSampleSeed, FAQ_POOL_SAMPLE_SIZE),
+    [pageContext, shopSampleSeed]
+  );
+
+  const categories = Object.keys(grouped) as FaqPresetCategory[];
   const packages = useMemo(() => getPackagesForPage(pageContext), [pageContext]);
+
+  const packageSamples = useMemo(
+    () =>
+      Object.fromEntries(
+        packages.map((pkg) => [
+          pkg.id,
+          samplePackagePresets(
+            pageContext,
+            pkg.categories,
+            `${shopSampleSeed}:${pkg.id}`,
+            pkg.sampleSize ?? FAQ_POOL_SAMPLE_SIZE
+          ),
+        ])
+      ) as Record<string, FaqPreset[]>,
+    [packages, pageContext, shopSampleSeed]
+  );
 
   if (!categories.length) return null;
 
@@ -65,8 +98,10 @@ export function FaqPresetPicker({
     });
   }
 
-  function handlePackageAdd(presetIds: string[]) {
-    const presets = getPresetsByIds(presetIds);
+  function handlePackageAdd(packageId: string) {
+    const presets = packageSamples[packageId] ?? [];
+    if (!presets.length) return;
+
     if (onSelectMany) {
       onSelectMany(presets);
       return;
@@ -78,7 +113,11 @@ export function FaqPresetPicker({
   }
 
   function handleSelectedAdd() {
-    const presets = getPresetsByIds([...selectedIds]);
+    const visiblePresets = categories.flatMap(
+      (category) => grouped[category] ?? []
+    );
+    const presets = visiblePresets.filter((preset) => selectedIds.has(preset.id));
+
     if (onSelectMany) {
       onSelectMany(presets);
     } else {
@@ -89,14 +128,19 @@ export function FaqPresetPicker({
     setSelectedIds(new Set());
   }
 
+  function refreshPool() {
+    setSampleKey(createPoolSampleKey());
+    setSelectedIds(new Set());
+  }
+
   return (
     <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-900">Hazır SSS Havuzu</p>
           <p className="mt-1 text-xs text-slate-500">
-            Kategorize paketleri tek tıkla ekleyin veya soruları seçerek
-            özelleştirin. Metinlerde{" "}
+            Her kategoriden rastgele {FAQ_POOL_SAMPLE_SIZE} soru gösterilir.
+            Metinler{" "}
             <code className="rounded bg-white px-1 py-0.5 text-[10px]">
               {"{ilce}"}
             </code>
@@ -104,17 +148,27 @@ export function FaqPresetPicker({
             <code className="rounded bg-white px-1 py-0.5 text-[10px]">
               {"{dukkan_adi}"}
             </code>{" "}
-            gibi alanlar mağaza bilgilerinizle otomatik doldurulur.
+            ile mağazanıza göre vitrinde benzersizleşir.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          disabled={disabled}
-          className="inline-flex min-h-9 items-center rounded-full border border-emerald-200 bg-white px-4 py-1.5 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:opacity-50"
-        >
-          {open ? "Havuzu Gizle" : "Hazır Soruları Göster"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={refreshPool}
+            disabled={disabled}
+            className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 disabled:opacity-50"
+          >
+            Yeni Sorular Getir
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen((prev) => !prev)}
+            disabled={disabled}
+            className="inline-flex min-h-9 items-center rounded-full border border-emerald-200 bg-white px-4 py-1.5 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:opacity-50"
+          >
+            {open ? "Havuzu Gizle" : "Hazır Soruları Göster"}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -124,31 +178,51 @@ export function FaqPresetPicker({
               <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                 Hazır Paketler
               </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Paketler de havuzdan rastgele örneklenir; her seferinde farklı
+                kombinasyonlar sunulur.
+              </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {packages.map((pkg) => (
-                  <div
-                    key={pkg.id}
-                    className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3"
-                  >
-                    <p className="text-sm font-semibold text-slate-900">
-                      {pkg.name}
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                      {pkg.description}
-                    </p>
-                    <p className="mt-2 text-[11px] text-slate-400">
-                      {pkg.presetIds.length} soru
-                    </p>
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => handlePackageAdd(pkg.presetIds)}
-                      className="mt-3 inline-flex min-h-8 items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                {packages.map((pkg) => {
+                  const sampled = packageSamples[pkg.id] ?? [];
+
+                  return (
+                    <div
+                      key={pkg.id}
+                      className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3"
                     >
-                      Paketi Ekle
-                    </button>
-                  </div>
-                ))}
+                      <p className="text-sm font-semibold text-slate-900">
+                        {pkg.name}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                        {pkg.description}
+                      </p>
+                      <ul className="mt-2 space-y-1 text-[11px] text-slate-500">
+                        {sampled.slice(0, 3).map((preset) => (
+                          <li key={preset.id} className="truncate">
+                            •{" "}
+                            {
+                              previewPresetText(preset, placeholderSource).soru
+                            }
+                          </li>
+                        ))}
+                        {sampled.length > 3 && (
+                          <li className="text-slate-400">
+                            +{sampled.length - 3} soru daha
+                          </li>
+                        )}
+                      </ul>
+                      <button
+                        type="button"
+                        disabled={disabled || !sampled.length}
+                        onClick={() => handlePackageAdd(pkg.id)}
+                        className="mt-3 inline-flex min-h-8 items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                      >
+                        Paketi Ekle ({sampled.length})
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -171,11 +245,16 @@ export function FaqPresetPicker({
 
           {categories.map((category) => (
             <div key={category}>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                {FAQ_PRESET_CATEGORY_LABELS[category]}
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                  {FAQ_PRESET_CATEGORY_LABELS[category]}
+                </p>
+                <span className="text-[10px] text-slate-400">
+                  {grouped[category]?.length ?? 0} / havuz
+                </span>
+              </div>
               <div className="space-y-2">
-                {grouped[category].map((preset) => {
+                {(grouped[category] ?? []).map((preset) => {
                   const preview = previewPresetText(preset, placeholderSource);
                   const checked = selectedIds.has(preset.id);
 

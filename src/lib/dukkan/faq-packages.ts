@@ -1,11 +1,15 @@
-import type { FaqPageContext } from "@/lib/dukkan/faq-presets";
+import type {
+  FaqPageContext,
+  FaqPresetCategory,
+} from "@/lib/dukkan/faq-presets";
 
 export type FaqPackage = {
   id: string;
   name: string;
   description: string;
   pages: FaqPageContext[];
-  presetIds: string[];
+  categories: FaqPresetCategory[];
+  sampleSize?: number;
 };
 
 export const FAQ_PACKAGES: FaqPackage[] = [
@@ -15,7 +19,8 @@ export const FAQ_PACKAGES: FaqPackage[] = [
     description:
       "Onarım süreleri, ekran/batarya değişimi, garanti ve servis takibi soruları.",
     pages: ["teknik_servis"],
-    presetIds: ["ts-1", "ts-2", "ts-3", "ts-4", "ts-5", "ts-6"],
+    categories: ["teknik_servis"],
+    sampleSize: 5,
   },
   {
     id: "paket-guven-garanti",
@@ -23,7 +28,8 @@ export const FAQ_PACKAGES: FaqPackage[] = [
     description:
       "Orijinal parça, güvenilirlik, deneyim ve müşteri memnuniyeti odaklı sorular.",
     pages: ["hakkimizda"],
-    presetIds: ["hk-1", "hk-2", "hk-3", "hk-4", "aks-1"],
+    categories: ["genel", "aksesuar"],
+    sampleSize: 5,
   },
   {
     id: "paket-konum-iletisim",
@@ -31,7 +37,8 @@ export const FAQ_PACKAGES: FaqPackage[] = [
     description:
       "Adres, ulaşım, çalışma saatleri ve iletişim kanallarına dair sorular.",
     pages: ["iletisim"],
-    presetIds: ["ilet-1", "ilet-2", "ilet-3", "saat-1", "saat-2"],
+    categories: ["lokasyon_iletisim"],
+    sampleSize: 5,
   },
   {
     id: "paket-anasayfa-genel",
@@ -39,7 +46,17 @@ export const FAQ_PACKAGES: FaqPackage[] = [
     description:
       "Ödeme, iade, kargo ve genel mağaza bilgilerini kapsayan sorular.",
     pages: ["anasayfa"],
-    presetIds: ["gen-1", "gen-2", "kargo-1", "kargo-2", "aks-2", "hk-2"],
+    categories: ["genel", "aksesuar", "ikinci_el_takas"],
+    sampleSize: 5,
+  },
+  {
+    id: "paket-ikinci-el",
+    name: "İkinci El & Takas Paketi",
+    description:
+      "Alım-satım, takas, kondisyon ve garanti odaklı pazaryeri soruları.",
+    pages: ["anasayfa", "hakkimizda"],
+    categories: ["ikinci_el_takas"],
+    sampleSize: 5,
   },
 ];
 
