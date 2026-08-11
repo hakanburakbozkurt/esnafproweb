@@ -9,7 +9,6 @@ import {
 } from "@/lib/dukkan/faq-placeholders";
 import type { FaqPackage } from "@/lib/dukkan/faq-packages";
 import type { FaqPreset } from "@/lib/dukkan/faq-presets";
-import { cn } from "@/lib/utils/cn";
 
 function previewPresetText(
   preset: FaqPreset,
@@ -45,7 +44,7 @@ export function FaqPackageCarousel({
 }: FaqPackageCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: packages.length > 1,
-    align: "center",
+    align: "start",
     duration: 24,
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -77,121 +76,94 @@ export function FaqPackageCarousel({
 
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();
-  const scrollTo = (index: number) => emblaApi?.scrollTo(index);
-
   const showNav = packages.length > 1;
+  const activePackage = packages[selectedIndex];
+  const sampled = activePackage
+    ? (packageSamples[activePackage.id] ?? [])
+    : [];
 
   return (
-    <div className="rounded-xl border border-white bg-white/80 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-            Hazır Paketler
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Ok tuşlarıyla paketler arasında gezinin; her paket havuzdan rastgele
-            örneklenir.
-          </p>
-        </div>
-        {showNav && (
-          <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
-            {selectedIndex + 1} / {packages.length}
-          </span>
-        )}
-      </div>
+    <div className="flex justify-end">
+      <div className="w-full max-w-md">
+        <div className="overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
+          <div ref={emblaRef}>
+            <div className="flex">
+              {packages.map((pkg) => {
+                const items = packageSamples[pkg.id] ?? [];
 
-      <div className="relative mt-4">
-        {showNav && (
-          <button
-            type="button"
-            onClick={scrollPrev}
-            aria-label="Önceki paket"
-            className="absolute -left-1 top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-emerald-100 bg-white text-lg text-emerald-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 sm:-left-3 sm:size-10"
-          >
-            ‹
-          </button>
-        )}
+                return (
+                  <div
+                    key={pkg.id}
+                    className="min-w-0 shrink-0 grow-0 basis-full"
+                  >
+                    <article className="p-4">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {pkg.name}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                        {pkg.description}
+                      </p>
+                      <ul className="mt-3 space-y-1.5 text-[11px] text-slate-600">
+                        {items.slice(0, 3).map((preset) => (
+                          <li key={preset.id} className="flex gap-2">
+                            <span className="mt-1 size-1 shrink-0 rounded-full bg-emerald-400" />
+                            <span className="line-clamp-1">
+                              {
+                                previewPresetText(preset, placeholderSource)
+                                  .soru
+                              }
+                            </span>
+                          </li>
+                        ))}
+                        {items.length > 3 && (
+                          <li className="pl-3 text-slate-400">
+                            +{items.length - 3} soru daha
+                          </li>
+                        )}
+                      </ul>
+                    </article>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-        <div
-          className={cn("overflow-hidden", showNav && "mx-8 sm:mx-10")}
-          ref={emblaRef}
-        >
-          <div className="flex touch-pan-y">
-            {packages.map((pkg) => {
-              const sampled = packageSamples[pkg.id] ?? [];
+          <div className="flex items-center justify-between gap-3 border-t border-emerald-50 bg-emerald-50/30 px-4 py-3">
+            <button
+              type="button"
+              disabled={disabled || !sampled.length}
+              onClick={() => activePackage && onAddPackage(activePackage.id)}
+              className="inline-flex min-h-8 items-center rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+            >
+              Paketi Ekle ({sampled.length})
+            </button>
 
-              return (
-                <div
-                  key={pkg.id}
-                  className="min-w-0 shrink-0 grow-0 basis-full px-0.5"
+            {showNav && (
+              <div className="flex items-center gap-1.5">
+                <span className="mr-1 text-[10px] font-medium text-slate-400">
+                  {selectedIndex + 1}/{packages.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={scrollPrev}
+                  aria-label="Önceki paket"
+                  className="flex size-8 items-center justify-center rounded-full border border-emerald-200 bg-white text-base text-emerald-700 transition hover:bg-emerald-50"
                 >
-                  <article className="rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {pkg.name}
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                      {pkg.description}
-                    </p>
-                    <ul className="mt-3 space-y-1.5 text-[11px] text-slate-600">
-                      {sampled.slice(0, 4).map((preset) => (
-                        <li key={preset.id} className="flex gap-2">
-                          <span className="mt-1 size-1 shrink-0 rounded-full bg-emerald-400" />
-                          <span className="line-clamp-2">
-                            {previewPresetText(preset, placeholderSource).soru}
-                          </span>
-                        </li>
-                      ))}
-                      {sampled.length > 4 && (
-                        <li className="pl-3 text-slate-400">
-                          +{sampled.length - 4} soru daha
-                        </li>
-                      )}
-                    </ul>
-                    <button
-                      type="button"
-                      disabled={disabled || !sampled.length}
-                      onClick={() => onAddPackage(pkg.id)}
-                      className="mt-4 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 sm:w-auto"
-                    >
-                      Paketi Ekle ({sampled.length})
-                    </button>
-                  </article>
-                </div>
-              );
-            })}
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={scrollNext}
+                  aria-label="Sonraki paket"
+                  className="flex size-8 items-center justify-center rounded-full border border-emerald-200 bg-white text-base text-emerald-700 transition hover:bg-emerald-50"
+                >
+                  ›
+                </button>
+              </div>
+            )}
           </div>
         </div>
-
-        {showNav && (
-          <button
-            type="button"
-            onClick={scrollNext}
-            aria-label="Sonraki paket"
-            className="absolute -right-1 top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-emerald-100 bg-white text-lg text-emerald-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 sm:-right-3 sm:size-10"
-          >
-            ›
-          </button>
-        )}
       </div>
-
-      {showNav && (
-        <div className="mt-3 flex items-center justify-center gap-1.5">
-          {packages.map((pkg, index) => (
-            <button
-              key={pkg.id}
-              type="button"
-              aria-label={`${pkg.name} paketine git`}
-              onClick={() => scrollTo(index)}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                selectedIndex === index
-                  ? "w-5 bg-emerald-600"
-                  : "w-1.5 bg-emerald-200 hover:bg-emerald-300"
-              )}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

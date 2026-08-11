@@ -174,17 +174,6 @@ export function FaqPresetPicker({
 
       {open && (
         <div className="mt-4 space-y-5">
-          {packages.length > 0 && (
-            <FaqPackageCarousel
-              packages={packages}
-              packageSamples={packageSamples}
-              placeholderSource={placeholderSource}
-              disabled={disabled}
-              onAddPackage={handlePackageAdd}
-              carouselKey={shopSampleSeed}
-            />
-          )}
-
           {selectedIds.size > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-white px-4 py-3">
               <p className="text-xs font-medium text-slate-600">
@@ -258,6 +247,17 @@ export function FaqPresetPicker({
               </div>
             </div>
           ))}
+
+          {packages.length > 0 && (
+            <FaqPackageCarousel
+              packages={packages}
+              packageSamples={packageSamples}
+              placeholderSource={placeholderSource}
+              disabled={disabled}
+              onAddPackage={handlePackageAdd}
+              carouselKey={shopSampleSeed}
+            />
+          )}
         </div>
       )}
     </div>
