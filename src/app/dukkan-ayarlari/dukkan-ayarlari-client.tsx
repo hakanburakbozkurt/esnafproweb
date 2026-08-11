@@ -55,6 +55,7 @@ function DukkanAyarlariForm({
           defaultUrunler={urunler}
           hiddenFields={{ dukkan_id: dukkan.id }}
           layout="wide"
+          showSeoFields
         />
       </div>
     </div>

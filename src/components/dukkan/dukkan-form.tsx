@@ -61,6 +61,8 @@ type DukkanFormProps = {
   defaultUrunler?: UrunFormItem[] | DukkanUrunu[];
   hiddenFields?: Record<string, string>;
   layout?: "default" | "wide";
+  /** Yalnızca /dukkan-ayarlari — mağaza açılış formunda SEO alanları gösterilmez */
+  showSeoFields?: boolean;
 };
 
 export function DukkanForm({
@@ -74,6 +76,7 @@ export function DukkanForm({
   defaultUrunler,
   hiddenFields,
   layout = "default",
+  showSeoFields = false,
 }: DukkanFormProps) {
   const [dukkanAdi, setDukkanAdi] = useState(defaultValues?.dukkan_adi ?? "");
   const [slug, setSlug] = useState(defaultValues?.slug ?? "");
@@ -658,7 +661,7 @@ export function DukkanForm({
   const stackedSections = (
     <>
       {temelBilgiler}
-      {seoAyarlari}
+      {showSeoFields && seoAyarlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}
@@ -675,7 +678,7 @@ export function DukkanForm({
   const defaultSections = (
     <>
       {temelBilgiler}
-      {seoAyarlari}
+      {showSeoFields && seoAyarlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}
