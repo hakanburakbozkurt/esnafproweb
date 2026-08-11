@@ -6,12 +6,10 @@ import {
   resolveFaqPlaceholders,
   type FaqPlaceholderSource,
 } from "@/lib/dukkan/faq-placeholders";
-import { FaqPackageCarousel } from "@/components/dukkan/faq-package-carousel";
 import { getPackagesForPage } from "@/lib/dukkan/faq-packages";
 import { createPoolSampleKey, FAQ_POOL_SAMPLE_SIZE } from "@/lib/dukkan/faq-pool-sampling";
 import {
   FAQ_PRESET_CATEGORY_LABELS,
-  samplePackagePresets,
   samplePresetsByCategory,
   type FaqPageContext,
   type FaqPreset,
@@ -55,35 +53,30 @@ export function FaqPresetPicker({
   const [open, setOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sampleKey, setSampleKey] = useState(() => createPoolSampleKey());
+  const [packageIndex, setPackageIndex] = useState(0);
+
+  const packages = useMemo(() => getPackagesForPage(pageContext), [pageContext]);
+  const activePackage = packages[packageIndex] ?? packages[0];
 
   const shopSampleSeed = useMemo(
     () => buildShopSampleSeed(placeholderSource, sampleKey),
     [placeholderSource, sampleKey]
   );
 
+  const poolSampleSeed = useMemo(
+    () =>
+      activePackage
+        ? `${shopSampleSeed}:${activePackage.id}:${packageIndex}`
+        : shopSampleSeed,
+    [shopSampleSeed, activePackage, packageIndex]
+  );
+
   const grouped = useMemo(
-    () => samplePresetsByCategory(pageContext, shopSampleSeed, FAQ_POOL_SAMPLE_SIZE),
-    [pageContext, shopSampleSeed]
+    () => samplePresetsByCategory(pageContext, poolSampleSeed, FAQ_POOL_SAMPLE_SIZE),
+    [pageContext, poolSampleSeed]
   );
 
   const categories = Object.keys(grouped) as FaqPresetCategory[];
-  const packages = useMemo(() => getPackagesForPage(pageContext), [pageContext]);
-
-  const packageSamples = useMemo(
-    () =>
-      Object.fromEntries(
-        packages.map((pkg) => [
-          pkg.id,
-          samplePackagePresets(
-            pageContext,
-            pkg.categories,
-            `${shopSampleSeed}:${pkg.id}`,
-            pkg.sampleSize ?? FAQ_POOL_SAMPLE_SIZE
-          ),
-        ])
-      ) as Record<string, FaqPreset[]>,
-    [packages, pageContext, shopSampleSeed]
-  );
 
   if (!categories.length) return null;
 
@@ -97,20 +90,6 @@ export function FaqPresetPicker({
       }
       return next;
     });
-  }
-
-  function handlePackageAdd(packageId: string) {
-    const presets = packageSamples[packageId] ?? [];
-    if (!presets.length) return;
-
-    if (onSelectMany) {
-      onSelectMany(presets);
-      return;
-    }
-
-    for (const preset of presets) {
-      onSelect(preset);
-    }
   }
 
   function handleSelectedAdd() {
@@ -131,11 +110,26 @@ export function FaqPresetPicker({
 
   function refreshPool() {
     setSampleKey(createPoolSampleKey());
+    setPackageIndex(0);
     setSelectedIds(new Set());
   }
 
+  function goToPrevPackage() {
+    if (packages.length <= 1) return;
+    setPackageIndex((prev) => (prev - 1 + packages.length) % packages.length);
+    setSelectedIds(new Set());
+  }
+
+  function goToNextPackage() {
+    if (packages.length <= 1) return;
+    setPackageIndex((prev) => (prev + 1) % packages.length);
+    setSelectedIds(new Set());
+  }
+
+  const showPackageNav = open && packages.length > 1;
+
   return (
-    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
+    <div className="relative rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-900">Hazır SSS Havuzu</p>
@@ -173,7 +167,7 @@ export function FaqPresetPicker({
       </div>
 
       {open && (
-        <div className="mt-4 space-y-5">
+        <div className={cn("mt-4 space-y-5", showPackageNav && "pb-2")}>
           {selectedIds.size > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-white px-4 py-3">
               <p className="text-xs font-medium text-slate-600">
@@ -247,17 +241,29 @@ export function FaqPresetPicker({
               </div>
             </div>
           ))}
+        </div>
+      )}
 
-          {packages.length > 0 && (
-            <FaqPackageCarousel
-              packages={packages}
-              packageSamples={packageSamples}
-              placeholderSource={placeholderSource}
-              disabled={disabled}
-              onAddPackage={handlePackageAdd}
-              carouselKey={shopSampleSeed}
-            />
-          )}
+      {showPackageNav && (
+        <div className="absolute bottom-3 right-3 flex items-center gap-1">
+          <button
+            type="button"
+            onClick={goToPrevPackage}
+            disabled={disabled}
+            aria-label="Önceki soru seti"
+            className="flex size-8 items-center justify-center rounded-full border border-emerald-200 bg-white text-base text-emerald-700 shadow-sm transition hover:bg-emerald-50 disabled:opacity-50"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={goToNextPackage}
+            disabled={disabled}
+            aria-label="Sonraki soru seti"
+            className="flex size-8 items-center justify-center rounded-full border border-emerald-200 bg-white text-base text-emerald-700 shadow-sm transition hover:bg-emerald-50 disabled:opacity-50"
+          >
+            ›
+          </button>
         </div>
       )}
     </div>
