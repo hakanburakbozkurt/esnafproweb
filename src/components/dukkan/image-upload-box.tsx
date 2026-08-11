@@ -11,6 +11,7 @@ type ImageUploadBoxProps = {
   name: string;
   value: string;
   onChange: (url: string) => void;
+  storeSlug: string;
   subfolder: string;
   variant: "logo" | "banner";
 };
@@ -21,6 +22,7 @@ export function ImageUploadBox({
   name,
   value,
   onChange,
+  storeSlug,
   subfolder,
   variant,
 }: ImageUploadBoxProps) {
@@ -35,7 +37,7 @@ export function ImageUploadBox({
     setLoading(true);
     setError(null);
 
-    const result = await uploadDukkanImage(file, subfolder);
+    const result = await uploadDukkanImage(file, storeSlug, subfolder);
 
     setLoading(false);
 

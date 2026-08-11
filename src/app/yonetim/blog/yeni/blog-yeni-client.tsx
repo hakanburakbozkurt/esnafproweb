@@ -12,7 +12,7 @@ import { createBlogPost, type BlogFormState } from "@/lib/dukkan/blog-actions";
 
 const initialState: BlogFormState = {};
 
-export function BlogYeniForm() {
+export function BlogYeniForm({ storeSlug }: { storeSlug: string }) {
   const [state, formAction, isPending] = useActionState(createBlogPost, initialState);
   const [kapakUrl, setKapakUrl] = useState("");
 
@@ -30,6 +30,7 @@ export function BlogYeniForm() {
           name="kapak_url"
           value={kapakUrl}
           onChange={setKapakUrl}
+          storeSlug={storeSlug}
           subfolder="blog"
           variant="banner"
         />

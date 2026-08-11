@@ -16,6 +16,8 @@ export type DukkanDbPayload = {
   enlem: number | null;
   boylam: number | null;
   aciklama: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
   logo_url: string | null;
   banner_url: string | null;
   dukkan_fotograflari: string[];
@@ -63,6 +65,8 @@ export const DUKKAN_OPTIONAL_PAYLOAD_KEYS = [
   "teknik_servis_sss",
   "hakkimizda_sss",
   "anasayfa_sss",
+  "meta_title",
+  "meta_description",
   "terms_accepted_at",
 ] as const satisfies readonly (keyof DukkanDbPayload)[];
 
@@ -98,6 +102,8 @@ export function toDukkanDbPayload(
     enlem: data.enlem,
     boylam: data.boylam,
     aciklama: data.aciklama,
+    meta_title: data.meta_title,
+    meta_description: data.meta_description,
     logo_url: data.logo_url,
     banner_url: data.banner_url,
     dukkan_fotograflari: data.dukkan_fotograflari,

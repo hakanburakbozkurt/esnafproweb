@@ -7,10 +7,12 @@ import { MAX_GALLERY_PHOTOS } from "@/lib/supabase/storage.constants";
 export function GalleryUpload({
   values,
   onChange,
+  storeSlug,
   hideHeader = false,
 }: {
   values: string[];
   onChange: (urls: string[]) => void;
+  storeSlug: string;
   hideHeader?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +35,7 @@ export function GalleryUpload({
     const selected = Array.from(files).slice(0, remaining);
 
     for (const file of selected) {
-      const result = await uploadDukkanImage(file, "galeri");
+      const result = await uploadDukkanImage(file, storeSlug, "galeri");
       if ("error" in result) {
         setError(result.error);
         break;

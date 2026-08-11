@@ -99,6 +99,10 @@ export function DukkanForm({
   const [enlem, setEnlem] = useState<number | null>(defaultValues?.enlem ?? null);
   const [boylam, setBoylam] = useState<number | null>(defaultValues?.boylam ?? null);
   const [aciklama, setAciklama] = useState(defaultValues?.aciklama ?? "");
+  const [metaTitle, setMetaTitle] = useState(defaultValues?.meta_title ?? "");
+  const [metaDescription, setMetaDescription] = useState(
+    defaultValues?.meta_description ?? ""
+  );
   const [gallery, setGallery] = useState<string[]>(
     defaultValues?.dukkan_fotograflari ?? []
   );
@@ -263,6 +267,48 @@ export function DukkanForm({
     </FormSection>
   );
 
+  const seoAyarlari = (
+    <FormSection
+      variant={sectionVariant}
+      title="SEO Ayarları"
+      description="Google arama sonuçlarında görünen başlık ve açıklama. Boş bırakılırsa mağaza adı ve tanıtım metni kullanılır."
+    >
+      <div className={fieldStackClass}>
+        <Field
+          label="Meta Başlık"
+          hint="Arama sonuçlarında görünen sayfa başlığı (önerilen: 50–60 karakter)"
+        >
+          <Input
+            name="meta_title"
+            placeholder={dukkanAdi ? `${dukkanAdi} | EsnafPRO` : "Mağaza Adı | EsnafPRO"}
+            value={metaTitle}
+            onChange={(e) => setMetaTitle(e.target.value)}
+            maxLength={120}
+            className="w-full"
+          />
+        </Field>
+
+        <Field
+          label="Meta Açıklama"
+          hint="Arama sonuçlarında başlığın altında görünen kısa açıklama (önerilen: 120–160 karakter)"
+        >
+          <Textarea
+            name="meta_description"
+            rows={3}
+            placeholder={
+              aciklama.trim() ||
+              "Mağazanızı ve hizmetlerinizi kısaca tanıtan, arama motorları için optimize edilmiş bir metin yazın."
+            }
+            value={metaDescription}
+            onChange={(e) => setMetaDescription(e.target.value)}
+            maxLength={320}
+            className="w-full resize-y"
+          />
+        </Field>
+      </div>
+    </FormSection>
+  );
+
   const markaGorselleri = (
     <FormSection
       variant={sectionVariant}
@@ -276,6 +322,7 @@ export function DukkanForm({
           name="logo_url"
           value={logoUrl}
           onChange={setLogoUrl}
+          storeSlug={slug}
           subfolder="logo"
           variant="logo"
         />
@@ -286,6 +333,7 @@ export function DukkanForm({
           name="banner_url"
           value={bannerUrl}
           onChange={setBannerUrl}
+          storeSlug={slug}
           subfolder="banner"
           variant="banner"
         />
@@ -310,12 +358,12 @@ export function DukkanForm({
             className="w-full"
           />
         </Field>
-        <GalleryUpload values={gallery} onChange={setGallery} hideHeader />
+        <GalleryUpload values={gallery} onChange={setGallery} storeSlug={slug} hideHeader />
       </div>
     </FormSection>
   ) : (
     <div className={premiumPanelClassName}>
-      <GalleryUpload values={gallery} onChange={setGallery} />
+      <GalleryUpload values={gallery} onChange={setGallery} storeSlug={slug} />
     </div>
   );
 
@@ -577,7 +625,7 @@ export function DukkanForm({
       className="!space-y-0"
     >
       <div className="pt-2">
-        <ProductPhotoEditor items={urunler} onChange={setUrunler} />
+        <ProductPhotoEditor items={urunler} onChange={setUrunler} storeSlug={slug} />
       </div>
     </FormSection>
   );
@@ -591,6 +639,7 @@ export function DukkanForm({
     >
       <div className="pt-2">
         <TeknikServisEditor
+          storeSlug={slug}
           aktif={teknikServisAktif}
           onAktifChange={setTeknikServisAktif}
           photos={teknikServisPhotos}
@@ -609,6 +658,7 @@ export function DukkanForm({
   const stackedSections = (
     <>
       {temelBilgiler}
+      {seoAyarlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}
@@ -625,6 +675,7 @@ export function DukkanForm({
   const defaultSections = (
     <>
       {temelBilgiler}
+      {seoAyarlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}

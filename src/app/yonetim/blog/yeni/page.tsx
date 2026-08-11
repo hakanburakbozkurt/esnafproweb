@@ -26,7 +26,7 @@ export default async function BlogYeniPage() {
 
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("id")
+    .select("id, slug")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -52,7 +52,7 @@ export default async function BlogYeniPage() {
       }
       description="Yerel SEO ve GEO görünürlüğünüz için mahalle odaklı, samimi bir içerik oluşturun."
     >
-      <BlogYeniForm />
+      <BlogYeniForm storeSlug={dukkan.slug} />
     </SubPageShell>
   );
 }

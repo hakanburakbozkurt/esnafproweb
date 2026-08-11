@@ -188,11 +188,13 @@ function PhotoSlot({
 function UrunRow({
   index,
   item,
+  storeSlug,
   onChange,
   onRemove,
 }: {
   index: number;
   item: UrunFormItem;
+  storeSlug: string;
   onChange: (index: number, next: UrunFormItem) => void;
   onRemove: (index: number) => void;
 }) {
@@ -203,7 +205,7 @@ function UrunRow({
     setLoadingSlot(slot);
     setError(null);
 
-    const result = await uploadDukkanImage(file, "urun");
+    const result = await uploadDukkanImage(file, storeSlug, "urun");
 
     setLoadingSlot(null);
 
@@ -310,9 +312,11 @@ function UrunRow({
 export function ProductPhotoEditor({
   items,
   onChange,
+  storeSlug,
 }: {
   items: UrunFormItem[];
   onChange: (items: UrunFormItem[]) => void;
+  storeSlug: string;
 }) {
   function addItem() {
     if (items.length >= MAX_PRODUCT_PHOTOS) return;
@@ -355,6 +359,7 @@ export function ProductPhotoEditor({
               key={item.id ?? `new-${index}`}
               index={index}
               item={item}
+              storeSlug={storeSlug}
               onChange={(i, next) => {
                 const copy = [...items];
                 copy[i] = next;

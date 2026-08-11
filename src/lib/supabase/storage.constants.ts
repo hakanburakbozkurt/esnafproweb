@@ -1,5 +1,8 @@
 export const DUKKAN_STORAGE_BUCKET = "dukkan-gorselleri";
 
+/** Storage içinde mağaza görselleri kök prefix'i */
+export const STORE_ASSETS_PREFIX = "store-assets";
+
 export const MAX_GALLERY_PHOTOS = 4;
 export const MAX_PRODUCT_PHOTOS = 8;
 export const MAX_PRODUCT_PHOTO_SLOTS = 3;

@@ -25,6 +25,8 @@ export interface Database {
           telefon: string | null;
           adres: string | null;
           aciklama: string | null;
+          meta_title: string | null;
+          meta_description: string | null;
           logo_url: string | null;
           banner_url: string | null;
           dukkan_fotograflari: string[] | null;
@@ -58,6 +60,8 @@ export interface Database {
           telefon?: string | null;
           adres?: string | null;
           aciklama?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
           logo_url?: string | null;
           banner_url?: string | null;
           dukkan_fotograflari?: string[] | null;
@@ -91,6 +95,8 @@ export interface Database {
           telefon?: string | null;
           adres?: string | null;
           aciklama?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
           logo_url?: string | null;
           banner_url?: string | null;
           dukkan_fotograflari?: string[] | null;

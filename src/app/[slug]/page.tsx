@@ -4,6 +4,7 @@ import { VitrinPageContent } from "@/components/dukkan/vitrin/vitrin-page-conten
 import { buildDukkanJsonLd, buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
+import { buildDukkanPageMetadata } from "@/lib/dukkan/metadata";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, aciklama")
+    .select("dukkan_adi, aciklama, meta_title, meta_description")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
@@ -26,10 +27,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Mağaza Bulunamadı | EsnafPRO" };
   }
 
-  return {
-    title: `${dukkan.dukkan_adi} | EsnafPRO`,
-    description: dukkan.aciklama ?? `${dukkan.dukkan_adi} dijital vitrin sayfası`,
-  };
+  const { title, description } = buildDukkanPageMetadata(dukkan);
+
+  return { title, description };
 }
 
 export default async function StoreVitrinPage({ params, searchParams }: PageProps) {

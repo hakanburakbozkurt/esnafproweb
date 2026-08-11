@@ -6,7 +6,9 @@ import {
   ALLOWED_IMAGE_TYPES,
   DUKKAN_STORAGE_BUCKET,
   MAX_IMAGE_SIZE_BYTES,
+  STORE_ASSETS_PREFIX,
 } from "@/lib/supabase/storage.constants";
+import { isValidSlugFormat, sanitizeSlugInput } from "@/lib/utils/slug";
 
 export type UploadResult = { url: string } | { error: string };
 
@@ -36,13 +38,49 @@ export function validateImageFile(file: File): string | null {
   return null;
 }
 
+function normalizeStoreSlug(storeSlug: string): string | null {
+  const normalized = sanitizeSlugInput(storeSlug.trim());
+  if (!normalized || !isValidSlugFormat(normalized)) {
+    return null;
+  }
+  return normalized;
+}
+
+/** store-assets/{slug}/{subfolder}/{fileName} */
+export function buildStoreAssetStoragePath(
+  storeSlug: string,
+  subfolder: string,
+  fileName: string
+): string {
+  const slug = normalizeStoreSlug(storeSlug);
+  if (!slug) {
+    throw new Error("Geçersiz mağaza slug'ı.");
+  }
+
+  const folder = subfolder.trim().replace(/^\/+|\/+$/g, "");
+  if (!folder) {
+    throw new Error("Geçersiz alt klasör.");
+  }
+
+  return `${STORE_ASSETS_PREFIX}/${slug}/${folder}/${fileName}`;
+}
+
 export async function uploadDukkanImage(
   file: File,
+  storeSlug: string,
   subfolder: string
 ): Promise<UploadResult> {
   const validationError = validateImageFile(file);
   if (validationError) {
     return { error: validationError };
+  }
+
+  const slug = normalizeStoreSlug(storeSlug);
+  if (!slug) {
+    return {
+      error:
+        "Görsel yüklemek için geçerli bir mağaza slug'ı girin (ör. beepmobilestore).",
+    };
   }
 
   const supabase = createClient();
@@ -60,7 +98,16 @@ export async function uploadDukkanImage(
 
   const ext = getFileExtension(file);
   const fileName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-  const path = `${user.id}/${subfolder}/${fileName}`;
+
+  let path: string;
+  try {
+    path = buildStoreAssetStoragePath(slug, subfolder, fileName);
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Dosya yolu oluşturulamadı.",
+    };
+  }
 
   const { error } = await supabase.storage
     .from(DUKKAN_STORAGE_BUCKET)

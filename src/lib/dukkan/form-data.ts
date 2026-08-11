@@ -50,6 +50,8 @@ export type ParsedDukkanForm = {
   enlem: number | null;
   boylam: number | null;
   aciklama: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
   logo_url: string | null;
   banner_url: string | null;
   dukkan_fotograflari: string[];
@@ -140,6 +142,8 @@ export function parseDukkanFormData(formData: FormData):
   const enlem = parseCoordinateInput(formData.get("enlem"));
   const boylam = parseCoordinateInput(formData.get("boylam"));
   const aciklama = String(formData.get("aciklama") ?? "").trim();
+  const metaTitle = String(formData.get("meta_title") ?? "").trim();
+  const metaDescription = String(formData.get("meta_description") ?? "").trim();
   const logoUrl = String(formData.get("logo_url") ?? "").trim();
   const bannerUrl = String(formData.get("banner_url") ?? "").trim();
   const iletisimSssGoster =
@@ -229,6 +233,8 @@ export function parseDukkanFormData(formData: FormData):
       enlem,
       boylam,
       aciklama: aciklama || null,
+      meta_title: metaTitle || null,
+      meta_description: metaDescription || null,
       logo_url: logoUrl || null,
       banner_url: bannerUrl || null,
       dukkan_fotograflari: parseGalleryFromFormData(formData),

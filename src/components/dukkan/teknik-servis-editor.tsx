@@ -17,6 +17,7 @@ const PHOTO_FIELDS = [
 type PhotoKey = (typeof PHOTO_FIELDS)[number]["key"];
 
 type TeknikServisEditorProps = {
+  storeSlug: string;
   aktif: boolean;
   onAktifChange: (value: boolean) => void;
   photos: Record<PhotoKey, string>;
@@ -101,6 +102,7 @@ function PhotoSlot({
 }
 
 export function TeknikServisEditor({
+  storeSlug,
   aktif,
   onAktifChange,
   photos,
@@ -117,7 +119,7 @@ export function TeknikServisEditor({
     setLoadingSlot(key);
     setError(null);
 
-    const result = await uploadDukkanImage(file, "servis");
+    const result = await uploadDukkanImage(file, storeSlug, "servis");
 
     setLoadingSlot(null);
 
