@@ -6,6 +6,7 @@ import {
   resolveFaqPlaceholders,
   type FaqPlaceholderSource,
 } from "@/lib/dukkan/faq-placeholders";
+import { FaqPackageCarousel } from "@/components/dukkan/faq-package-carousel";
 import { getPackagesForPage } from "@/lib/dukkan/faq-packages";
 import { createPoolSampleKey, FAQ_POOL_SAMPLE_SIZE } from "@/lib/dukkan/faq-pool-sampling";
 import {
@@ -174,57 +175,14 @@ export function FaqPresetPicker({
       {open && (
         <div className="mt-4 space-y-5">
           {packages.length > 0 && (
-            <div className="rounded-xl border border-white bg-white/80 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                Hazır Paketler
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Paketler de havuzdan rastgele örneklenir; her seferinde farklı
-                kombinasyonlar sunulur.
-              </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {packages.map((pkg) => {
-                  const sampled = packageSamples[pkg.id] ?? [];
-
-                  return (
-                    <div
-                      key={pkg.id}
-                      className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3"
-                    >
-                      <p className="text-sm font-semibold text-slate-900">
-                        {pkg.name}
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                        {pkg.description}
-                      </p>
-                      <ul className="mt-2 space-y-1 text-[11px] text-slate-500">
-                        {sampled.slice(0, 3).map((preset) => (
-                          <li key={preset.id} className="truncate">
-                            •{" "}
-                            {
-                              previewPresetText(preset, placeholderSource).soru
-                            }
-                          </li>
-                        ))}
-                        {sampled.length > 3 && (
-                          <li className="text-slate-400">
-                            +{sampled.length - 3} soru daha
-                          </li>
-                        )}
-                      </ul>
-                      <button
-                        type="button"
-                        disabled={disabled || !sampled.length}
-                        onClick={() => handlePackageAdd(pkg.id)}
-                        className="mt-3 inline-flex min-h-8 items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                      >
-                        Paketi Ekle ({sampled.length})
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <FaqPackageCarousel
+              packages={packages}
+              packageSamples={packageSamples}
+              placeholderSource={placeholderSource}
+              disabled={disabled}
+              onAddPackage={handlePackageAdd}
+              carouselKey={shopSampleSeed}
+            />
           )}
 
           {selectedIds.size > 0 && (
