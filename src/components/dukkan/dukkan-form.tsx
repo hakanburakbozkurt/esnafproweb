@@ -24,8 +24,10 @@ import {
 import {
   coerceCalismaSaatleriState,
   isLegacyCalismaSaatleri,
+  serializeCalismaSaatleri,
   type WeeklySchedule,
 } from "@/lib/dukkan/calisma-saatleri";
+import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
 import { normalizeFaqItems } from "@/lib/dukkan/form-data";
 import {
   MARKA_TERMS_FIELD_NAME,
@@ -157,6 +159,17 @@ export function DukkanForm({
     if (!dukkanAdi.trim()) return null;
     return validateDukkanAdi(dukkanAdi);
   }, [dukkanAdi]);
+
+  const faqPlaceholderSource = useMemo<FaqPlaceholderSource>(
+    () => ({
+      dukkan_adi: dukkanAdi,
+      adres,
+      calisma_saatleri: serializeCalismaSaatleri(calismaSaatleri),
+      telefon,
+      whatsapp,
+    }),
+    [dukkanAdi, adres, calismaSaatleri, telefon, whatsapp]
+  );
 
   const hasBlockingValidationError = Boolean(
     slugValidationError || dukkanAdiValidationError || !markaTermsAccepted
@@ -508,6 +521,7 @@ export function DukkanForm({
         onChange={setHakkimizdaFaqItems}
         fieldPrefix="hakkimizda_faq"
         pageContext="hakkimizda"
+        placeholderSource={faqPlaceholderSource}
         title="Hakkımızda SSS"
         description="Mağaza hikayesi, hizmet kalitesi ve güven odaklı sorular ekleyin."
       />
@@ -519,6 +533,7 @@ export function DukkanForm({
         onChange={setHakkimizdaFaqItems}
         fieldPrefix="hakkimizda_faq"
         pageContext="hakkimizda"
+        placeholderSource={faqPlaceholderSource}
         title="Hakkımızda SSS"
       />
     </div>
@@ -535,6 +550,7 @@ export function DukkanForm({
         onChange={setAnasayfaFaqItems}
         fieldPrefix="anasayfa_faq"
         pageContext="anasayfa"
+        placeholderSource={faqPlaceholderSource}
         title="Ana Sayfa SSS"
         description="Ürünler, hizmetler ve mağazanızla ilgili genel sorular ekleyin."
       />
@@ -546,6 +562,7 @@ export function DukkanForm({
         onChange={setAnasayfaFaqItems}
         fieldPrefix="anasayfa_faq"
         pageContext="anasayfa"
+        placeholderSource={faqPlaceholderSource}
         title="Ana Sayfa SSS"
       />
     </div>
@@ -562,6 +579,7 @@ export function DukkanForm({
         onChange={setIletisimFaqItems}
         fieldPrefix="iletisim_faq"
         pageContext="iletisim"
+        placeholderSource={faqPlaceholderSource}
         title="İletişim SSS"
         description="Adres, çalışma saatleri, ulaşım ve iletişim kanallarına dair sorular ekleyin."
       />
@@ -573,6 +591,7 @@ export function DukkanForm({
         onChange={setIletisimFaqItems}
         fieldPrefix="iletisim_faq"
         pageContext="iletisim"
+        placeholderSource={faqPlaceholderSource}
         title="İletişim SSS"
       />
     </div>
@@ -653,6 +672,7 @@ export function DukkanForm({
           onAciklamaChange={setTeknikServisAciklama}
           faqItems={servisFaqItems}
           onFaqChange={setServisFaqItems}
+          placeholderSource={faqPlaceholderSource}
         />
       </div>
     </FormSection>

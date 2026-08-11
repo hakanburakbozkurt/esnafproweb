@@ -1,15 +1,18 @@
 "use client";
 
+import { useMemo } from "react";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FaqPresetPicker } from "@/components/dukkan/faq-preset-picker";
 import {
   appendFaqPreset,
+  appendFaqPresets,
   countVisibleFaqItems,
   shouldShowFaqSoftWarning,
 } from "@/lib/dukkan/faq";
-import type { FaqPageContext } from "@/lib/dukkan/faq-presets";
+import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
+import type { FaqPageContext, FaqPreset } from "@/lib/dukkan/faq-presets";
 import { MAX_FAQ_ITEMS } from "@/lib/dukkan/form-data";
 import type { FaqItem } from "@/types/database.types";
 
@@ -20,6 +23,7 @@ export function FaqEditor({
   title = "Sık Sorulan Sorular",
   description,
   pageContext,
+  placeholderSource,
 }: {
   items: FaqItem[];
   onChange: (items: FaqItem[]) => void;
@@ -27,9 +31,15 @@ export function FaqEditor({
   title?: string;
   description?: string;
   pageContext?: FaqPageContext;
+  placeholderSource?: FaqPlaceholderSource;
 }) {
   const visibleCount = countVisibleFaqItems(items);
   const showSoftWarning = shouldShowFaqSoftWarning(items);
+
+  const resolvedPlaceholderSource = useMemo(
+    () => placeholderSource,
+    [placeholderSource]
+  );
 
   function updateItem(index: number, field: keyof FaqItem, value: string) {
     const next = items.map((item, i) =>
@@ -64,6 +74,10 @@ export function FaqEditor({
     onChange(appendFaqPreset(items, preset, MAX_FAQ_ITEMS));
   }
 
+  function handlePresetSelectMany(presets: FaqPreset[]) {
+    onChange(appendFaqPresets(items, presets, MAX_FAQ_ITEMS));
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -94,6 +108,8 @@ export function FaqEditor({
         <FaqPresetPicker
           pageContext={pageContext}
           onSelect={handlePresetSelect}
+          onSelectMany={handlePresetSelectMany}
+          placeholderSource={resolvedPlaceholderSource}
           disabled={items.length >= MAX_FAQ_ITEMS}
         />
       )}
@@ -157,7 +173,7 @@ export function FaqEditor({
                   name={`${fieldPrefix}_cevap_${index}`}
                   value={item.cevap}
                   onChange={(e) => updateItem(index, "cevap", e.target.value)}
-                  placeholder="Kısa ve net bir yanıt yazın"
+                  placeholder="Kısa ve net bir yanıt yazın. {ilce}, {dukkan_adi} gibi yer tutucular kullanabilirsiniz."
                   rows={3}
                 />
               </Field>

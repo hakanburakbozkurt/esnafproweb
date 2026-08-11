@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { TeknikServisPageContent } from "@/components/dukkan/vitrin/teknik-servis-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
+import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
+import { buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
 import { createClient } from "@/lib/supabase/server";
@@ -60,7 +62,11 @@ export default async function TeknikServisPage({ params, searchParams }: PagePro
     supabase,
     dukkan.user_id
   );
-  const servisFaqItems = dukkan.teknik_servis_sss ?? [];
+  const servisFaqItems = resolveFaqItemsForDukkan(
+    dukkan.teknik_servis_sss ?? [],
+    dukkan
+  );
+  const faqSchema = buildFaqPageJsonLd(dukkan.teknik_servis_sss ?? [], dukkan);
 
   let qrDevice = null;
   const servisCode = servis?.trim();
@@ -70,19 +76,28 @@ export default async function TeknikServisPage({ params, searchParams }: PagePro
   }
 
   return (
-    <VitrinChrome
-      shopName={dukkan.dukkan_adi}
-      isOwner={isOwner}
-      showContactNav={showContactNav}
-      showTeknikServisNav
-      showPazaryeriNav={showPazaryeriNav}
-      dukkan={dukkan}
-    >
-      <TeknikServisPageContent
+    <>
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+
+      <VitrinChrome
+        shopName={dukkan.dukkan_adi}
+        isOwner={isOwner}
+        showContactNav={showContactNav}
+        showTeknikServisNav
+        showPazaryeriNav={showPazaryeriNav}
         dukkan={dukkan}
-        faqItems={servisFaqItems}
-        qrDevice={qrDevice}
-      />
-    </VitrinChrome>
+      >
+        <TeknikServisPageContent
+          dukkan={dukkan}
+          faqItems={servisFaqItems}
+          qrDevice={qrDevice}
+        />
+      </VitrinChrome>
+    </>
   );
 }

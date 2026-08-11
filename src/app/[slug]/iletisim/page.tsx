@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { IletisimPageContent } from "@/components/dukkan/vitrin/iletisim-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
+import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -60,8 +61,8 @@ export default async function IletisimPage({ params }: PageProps) {
     supabase,
     dukkan.user_id
   );
-  const faqItems = dukkan.sss ?? [];
-  const faqSchema = buildFaqPageJsonLd(faqItems);
+  const faqItems = resolveFaqItemsForDukkan(dukkan.sss ?? [], dukkan);
+  const faqSchema = buildFaqPageJsonLd(dukkan.sss ?? [], dukkan);
 
   return (
     <>

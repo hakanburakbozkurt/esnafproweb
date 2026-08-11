@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { HakkimizdaPageContent } from "@/components/dukkan/vitrin/hakkimizda-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
+import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -56,8 +57,8 @@ export default async function HakkimizdaPage({ params }: PageProps) {
     supabase,
     dukkan.user_id
   );
-  const faqItems = dukkan.hakkimizda_sss ?? [];
-  const faqSchema = buildFaqPageJsonLd(faqItems);
+  const faqItems = resolveFaqItemsForDukkan(dukkan.hakkimizda_sss ?? [], dukkan);
+  const faqSchema = buildFaqPageJsonLd(dukkan.hakkimizda_sss ?? [], dukkan);
 
   return (
     <>

@@ -2,7 +2,11 @@ import {
   parseCalismaSaatleri,
   toSchemaOrgOpeningHours,
 } from "@/lib/dukkan/calisma-saatleri";
-import { getVisibleFaqItems } from "@/lib/dukkan/faq";
+import {
+  getVisibleFaqItems,
+  resolveFaqItemsForSource,
+} from "@/lib/dukkan/faq";
+import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
 import type { Dukkan, FaqItem } from "@/types/database.types";
 
 function getSiteOrigin() {
@@ -66,8 +70,14 @@ export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
   return schema;
 }
 
-export function buildFaqPageJsonLd(faqItems: FaqItem[]) {
-  const visibleItems = getVisibleFaqItems(faqItems);
+export function buildFaqPageJsonLd(
+  faqItems: FaqItem[],
+  placeholderSource?: FaqPlaceholderSource
+) {
+  const visibleItems = placeholderSource
+    ? resolveFaqItemsForSource(faqItems, placeholderSource)
+    : getVisibleFaqItems(faqItems);
+
   if (!visibleItems.length) return null;
 
   return {

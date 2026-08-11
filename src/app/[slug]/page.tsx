@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { VitrinPageContent } from "@/components/dukkan/vitrin/vitrin-page-content";
 import { buildDukkanJsonLd, buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
+import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
 import { buildDukkanPageMetadata } from "@/lib/dukkan/metadata";
@@ -73,10 +74,10 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
   }
 
   const jsonLdSchemas = buildDukkanJsonLd(dukkan);
-  const faqSchema = buildFaqPageJsonLd(dukkan.anasayfa_sss ?? []);
+  const faqSchema = buildFaqPageJsonLd(dukkan.anasayfa_sss ?? [], dukkan);
   if (faqSchema) jsonLdSchemas.push(faqSchema);
 
-  const faqItems = dukkan.anasayfa_sss ?? [];
+  const faqItems = resolveFaqItemsForDukkan(dukkan.anasayfa_sss ?? [], dukkan);
 
   return (
     <>

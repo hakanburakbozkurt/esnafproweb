@@ -6,6 +6,7 @@ import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadDukkanImage } from "@/lib/supabase/upload-dukkan-image";
 import { MAX_PRODUCT_PHOTO_SLOTS } from "@/lib/supabase/storage.constants";
+import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
 import type { FaqItem } from "@/types/database.types";
 
 const PHOTO_FIELDS = [
@@ -26,6 +27,7 @@ type TeknikServisEditorProps = {
   onAciklamaChange: (value: string) => void;
   faqItems: FaqItem[];
   onFaqChange: (items: FaqItem[]) => void;
+  placeholderSource?: FaqPlaceholderSource;
 };
 
 function PhotoSlot({
@@ -111,6 +113,7 @@ export function TeknikServisEditor({
   onAciklamaChange,
   faqItems,
   onFaqChange,
+  placeholderSource,
 }: TeknikServisEditorProps) {
   const [loadingSlot, setLoadingSlot] = useState<PhotoKey | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -210,6 +213,7 @@ export function TeknikServisEditor({
             onChange={onFaqChange}
             fieldPrefix="servis_faq"
             pageContext="teknik_servis"
+            placeholderSource={placeholderSource}
             title="Teknik Servis SSS"
             description="Yalnızca teknik servis sayfasında görünen bağımsız sorular."
           />

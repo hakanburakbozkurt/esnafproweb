@@ -38,7 +38,7 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["teknik_servis", "anasayfa"],
     soru: "Cihazım ne kadar sürede tamir edilir?",
     cevap:
-      "Arıza tespiti sonrası çoğu işlem 1–3 iş günü içinde tamamlanır. Yoğun dönemlerde süre değişebilir; cihazınızı teslim alırken tahmini teslim tarihini paylaşırız.",
+      "{dukkan_adi} olarak arıza tespiti sonrası çoğu işlemi 1–3 iş günü içinde tamamlıyoruz. Yoğun dönemlerde süre değişebilir; cihazınızı teslim alırken tahmini teslim tarihini paylaşırız.",
   },
   {
     id: "ts-2",
@@ -57,6 +57,30 @@ export const FAQ_PRESETS: FaqPreset[] = [
       "Cihaz tesliminde size verilen QR kod veya takip numarası ile servis durumunuzu anlık olarak kontrol edebilirsiniz.",
   },
   {
+    id: "ts-4",
+    category: "teknik_servis",
+    pages: ["teknik_servis"],
+    soru: "Ekran değişimi ne kadar sürer?",
+    cevap:
+      "{ilce} bölgesinde ekran değişim işlemlerini genellikle aynı gün veya en geç ertesi iş günü tamamlıyoruz. Stok durumuna göre süre değişebilir; öncesinde net bilgi verilir.",
+  },
+  {
+    id: "ts-5",
+    category: "teknik_servis",
+    pages: ["teknik_servis"],
+    soru: "Batarya değişimi yapıyor musunuz?",
+    cevap:
+      "Evet. Orijinal ve uyumlu batarya seçenekleriyle değişim yapıyoruz. Değişim sonrası kısa test sürecinin ardından cihazınızı teslim ediyoruz.",
+  },
+  {
+    id: "ts-6",
+    category: "teknik_servis",
+    pages: ["teknik_servis"],
+    soru: "Servis sonrası garanti veriyor musunuz?",
+    cevap:
+      "{dukkan_adi} olarak yapılan işlemler için parça ve işçilik garantisi sunuyoruz. Garanti süresi işlem türüne göre değişir; teslim sırasında yazılı olarak paylaşılır.",
+  },
+  {
     id: "kargo-1",
     category: "kargo",
     pages: ["anasayfa", "iletisim"],
@@ -70,7 +94,7 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["anasayfa", "iletisim"],
     soru: "Teslimat süresi ne kadar?",
     cevap:
-      "Stoktaki ürünlerde aynı gün veya ertesi iş günü kargoya verilir. Bölgenize göre teslimat genellikle 1–3 iş günü sürer.",
+      "Stoktaki ürünlerde aynı gün veya ertesi iş günü kargoya verilir. {il} ve çevresine teslimat genellikle 1–3 iş günü sürer.",
   },
   {
     id: "aks-1",
@@ -78,7 +102,7 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["anasayfa", "hakkimizda"],
     soru: "Orijinal ve yan sanayi ürün farkını nasıl anlarım?",
     cevap:
-      "Mağazamızda ürünlerin uyumluluk ve kalite bilgisi etiketlerde belirtilir. Satış öncesi cihazınıza uygun seçenekleri birlikte değerlendiririz.",
+      "{dukkan_adi} mağazasında ürünlerin uyumluluk ve kalite bilgisi etiketlerde belirtilir. Satış öncesi cihazınıza uygun seçenekleri birlikte değerlendiririz.",
   },
   {
     id: "aks-2",
@@ -86,15 +110,14 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["anasayfa"],
     soru: "Hangi marka ve modellere uyumlu aksesuar satıyorsunuz?",
     cevap:
-      "Güncel telefon, tablet ve aksesuar modellerine uyumlu geniş bir ürün yelpazemiz bulunmaktadır. Modelinizi iletişim kanallarımızdan paylaşabilirsiniz.",
+      "Güncel telefon, tablet ve aksesuar modellerine uyumlu geniş bir ürün yelpazemiz bulunmaktadır. Modelinizi {whatsapp} üzerinden paylaşabilirsiniz.",
   },
   {
     id: "saat-1",
     category: "acilis_saatleri",
     pages: ["iletisim", "anasayfa"],
     soru: "Çalışma saatleriniz nedir?",
-    cevap:
-      "Hafta içi 09:00–19:00, cumartesi 10:00–18:00 arası hizmet veriyoruz. Resmi tatil ve pazar günleri kapalıyız.",
+    cevap: "Çalışma saatlerimiz: {calisma_saatleri}",
   },
   {
     id: "saat-2",
@@ -110,7 +133,7 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["iletisim"],
     soru: "Size nasıl ulaşabilirim?",
     cevap:
-      "Telefon, WhatsApp ve mağaza ziyareti ile bize ulaşabilirsiniz. İletişim sayfamızdaki tüm kanallar günceldir.",
+      "{telefon} numarasından, {whatsapp} WhatsApp hattından veya mağaza ziyareti ile bize ulaşabilirsiniz.",
   },
   {
     id: "ilet-2",
@@ -118,7 +141,15 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["iletisim", "anasayfa"],
     soru: "Mağazanızın adresi ve konumu nerede?",
     cevap:
-      "Adres ve harita bilgilerimizi iletişim sayfasında bulabilirsiniz. Navigasyon için konum pinini kullanabilirsiniz.",
+      "{dukkan_adi} adresimiz: {adres}. {bolge} konumundaki mağazamıza iletişim sayfasındaki harita üzerinden kolayca ulaşabilirsiniz.",
+  },
+  {
+    id: "ilet-3",
+    category: "iletisim",
+    pages: ["iletisim"],
+    soru: "{ilce} bölgesinden nasıl ulaşabilirim?",
+    cevap:
+      "{adres} adresinde hizmet veriyoruz. Toplu taşıma, araç veya yürüyüş rotası için iletişim sayfasındaki harita pinini kullanabilirsiniz.",
   },
   {
     id: "hk-1",
@@ -126,7 +157,7 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["hakkimizda"],
     soru: "Mağazanız ne kadar süredir hizmet veriyor?",
     cevap:
-      "Yılların deneyimiyle bölgedeki müşterilerimize güvenilir satış ve teknik destek sunuyoruz. Detaylı hikayemizi Hakkımızda sayfasında okuyabilirsiniz.",
+      "{dukkan_adi}, {bolge} bölgesinde yılların deneyimiyle güvenilir satış ve teknik destek sunuyor. Detaylı hikayemizi Hakkımızda sayfasında okuyabilirsiniz.",
   },
   {
     id: "hk-2",
@@ -134,7 +165,23 @@ export const FAQ_PRESETS: FaqPreset[] = [
     pages: ["hakkimizda", "anasayfa"],
     soru: "Neden sizi tercih etmeliyim?",
     cevap:
-      "Şeffaf fiyatlandırma, hızlı servis, orijinal parça seçenekleri ve satış sonrası destek ile müşteri memnuniyetini ön planda tutuyoruz.",
+      "Şeffaf fiyatlandırma, hızlı servis, orijinal parça seçenekleri ve satış sonrası destek ile {ilce} bölgesindeki müşteri memnuniyetini ön planda tutuyoruz.",
+  },
+  {
+    id: "hk-3",
+    category: "hakkimizda",
+    pages: ["hakkimizda"],
+    soru: "Orijinal parça kullanıyor musunuz?",
+    cevap:
+      "Evet. Mümkün olduğunca orijinal veya üretici onaylı yedek parça kullanıyoruz. Alternatif seçenekler varsa fiyat ve kalite farkını satış öncesi açıkça paylaşıyoruz.",
+  },
+  {
+    id: "hk-4",
+    category: "hakkimizda",
+    pages: ["hakkimizda"],
+    soru: "Satış sonrası destek sunuyor musunuz?",
+    cevap:
+      "{dukkan_adi} olarak satış ve servis sonrası da yanınızdayız. Sorularınız için {telefon} veya mağaza ziyareti ile destek alabilirsiniz.",
   },
   {
     id: "gen-1",
@@ -172,4 +219,11 @@ export function getPresetsByCategory(
   }
 
   return grouped;
+}
+
+export function getPresetsByIds(ids: string[]): FaqPreset[] {
+  const lookup = new Map(FAQ_PRESETS.map((preset) => [preset.id, preset]));
+  return ids
+    .map((id) => lookup.get(id))
+    .filter((preset): preset is FaqPreset => Boolean(preset));
 }
