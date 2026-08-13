@@ -65,6 +65,8 @@ type DukkanFormProps = {
   layout?: "default" | "wide";
   /** Yalnızca /dukkan-ayarlari — mağaza açılış formunda SEO alanları gösterilmez */
   showSeoFields?: boolean;
+  /** Yalnızca /dukkan-ayarlari — vitrin logo bilgilendirme kutusu */
+  showVitrinLogoHint?: boolean;
 };
 
 export function DukkanForm({
@@ -79,6 +81,7 @@ export function DukkanForm({
   hiddenFields,
   layout = "default",
   showSeoFields = false,
+  showVitrinLogoHint = false,
 }: DukkanFormProps) {
   const [dukkanAdi, setDukkanAdi] = useState(defaultValues?.dukkan_adi ?? "");
   const [slug, setSlug] = useState(defaultValues?.slug ?? "");
@@ -331,6 +334,19 @@ export function DukkanForm({
       title="Marka Görselleri"
       description="Logo ve kapak fotoğrafı vitrininizin vitrin camı gibidir."
     >
+      {showVitrinLogoHint && (
+        <div className="mb-5 flex gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3.5">
+          <span
+            className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-sm text-emerald-600 ring-1 ring-emerald-100"
+            aria-hidden
+          >
+            i
+          </span>
+          <p className="text-sm leading-relaxed text-emerald-900/90">
+            Vitrinimizde yer almak için lütfen işletme logonuzu ekleyin.
+          </p>
+        </div>
+      )}
       <div className={fieldStackClass}>
         <ImageUploadBox
           label="Logo"

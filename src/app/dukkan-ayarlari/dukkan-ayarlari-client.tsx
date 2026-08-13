@@ -56,6 +56,7 @@ function DukkanAyarlariForm({
           hiddenFields={{ dukkan_id: dukkan.id }}
           layout="wide"
           showSeoFields
+          showVitrinLogoHint
         />
       </div>
     </div>

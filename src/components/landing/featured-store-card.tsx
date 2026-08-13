@@ -2,25 +2,14 @@ import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 import type { PublicStoreCard } from "@/lib/dukkan/public-store.types";
 
-function StoreAvatar({ store }: { store: PublicStoreCard }) {
-  const initial = store.dukkan_adi.trim().charAt(0).toUpperCase() || "E";
-
-  if (store.logo_url) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={store.logo_url}
-        alt=""
-        className="size-full object-cover"
-        loading="lazy"
-      />
-    );
-  }
-
+function StorePlaceholder() {
   return (
-    <span className="text-lg font-bold text-emerald-700" aria-hidden>
-      {initial}
-    </span>
+    <div
+      className="flex aspect-[2/1] items-center justify-center border-b border-dashed border-slate-200/80 bg-slate-50/80"
+      aria-hidden
+    >
+      <div className="size-10 rounded-xl bg-slate-100 ring-1 ring-slate-200/80" />
+    </div>
   );
 }
 
@@ -31,6 +20,8 @@ export function FeaturedStoreCard({
   store: PublicStoreCard;
   className?: string;
 }) {
+  const hasLogo = Boolean(store.logo_url?.trim());
+
   return (
     <Link
       href={`/${store.slug}`}
@@ -40,11 +31,19 @@ export function FeaturedStoreCard({
         className
       )}
     >
-      <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50/80 to-slate-50">
-        <div className="flex size-16 items-center justify-center overflow-hidden rounded-2xl border border-white bg-white shadow-sm ring-1 ring-emerald-100/80 transition group-hover:ring-emerald-200 sm:size-[4.5rem]">
-          <StoreAvatar store={store} />
+      {hasLogo ? (
+        <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={store.logo_url!}
+            alt={`${store.dukkan_adi} logosu`}
+            className="size-full object-cover transition duration-300 group-hover:scale-[1.02]"
+            loading="lazy"
+          />
         </div>
-      </div>
+      ) : (
+        <StorePlaceholder />
+      )}
 
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition group-hover:text-emerald-700 sm:text-[15px]">
