@@ -9,6 +9,7 @@ export type CorporateFooterLink = {
  */
 export const CORPORATE_FOOTER_LINKS: CorporateFooterLink[] = [
   { href: "/", label: "Ana Sayfa" },
+  { href: "/pazaryeri", label: "Pazaryeri" },
   { href: "/fiyatlandirma", label: "Fiyatlandırma" },
   { href: "/blog", label: "Esnaf Rehberi" },
   { href: "/hakkimizda", label: "Hakkımızda" },

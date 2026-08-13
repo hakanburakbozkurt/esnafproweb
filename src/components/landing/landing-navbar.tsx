@@ -24,6 +24,11 @@ export function LandingNavbar() {
             </a>
           </li>
           <li>
+            <Link href="/pazaryeri" className={NAV_LINK_CLASS}>
+              Pazaryeri
+            </Link>
+          </li>
+          <li>
             <Link href="/fiyatlandirma" className={NAV_LINK_CLASS}>
               Fiyatlandırma
             </Link>

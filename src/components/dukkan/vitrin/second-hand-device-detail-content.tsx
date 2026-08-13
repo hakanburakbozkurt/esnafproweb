@@ -37,7 +37,7 @@ export function SecondHandDeviceDetailContent({
   const whatsappHref = normalizedWhatsApp
     ? buildWhatsAppUrl(
         normalizedWhatsApp,
-        `Merhaba ${dukkan.dukkan_adi}, "${title}" ilanı hakkında bilgi almak istiyorum.`
+        `Merhaba, Esnaf Pro üzerindeki ${title} ilanınız için yazıyorum...`
       )
     : null;
 
@@ -119,7 +119,7 @@ export function SecondHandDeviceDetailContent({
                   className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#20bd5a] sm:w-auto"
                 >
                   <WhatsAppIcon />
-                  WhatsApp ile İletişime Geç
+                  WhatsApp ile Bilgi Al
                 </a>
               ) : (
                 <p className="text-sm text-slate-400">

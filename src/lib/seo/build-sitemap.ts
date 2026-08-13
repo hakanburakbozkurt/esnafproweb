@@ -40,6 +40,10 @@ function staticSitemapEntries(now: Date): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     }),
+    sitemapEntry("/pazaryeri", now, {
+      changeFrequency: "daily",
+      priority: 0.75,
+    }),
     sitemapEntry("/blog", now, {
       changeFrequency: "weekly",
       priority: 0.7,
