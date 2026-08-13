@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { ESNAF_ROLE, getSignupHref } from "@/lib/auth/roles";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
+import { FeaturedStoresSection } from "@/components/landing/featured-stores-section";
+import type { PublicStoreCard } from "@/lib/dukkan/public-store.types";
 import type { FaqItem } from "@/types/database.types";
 
 const ASSETS = {
@@ -933,13 +935,25 @@ function ModuleGallerySection() {
   );
 }
 
-export function HomePageClient({ faqItems = [] }: { faqItems?: FaqItem[] }) {
+export function HomePageClient({
+  faqItems = [],
+  featuredStores = [],
+  featuredStoresHasMore = false,
+}: {
+  faqItems?: FaqItem[];
+  featuredStores?: PublicStoreCard[];
+  featuredStoresHasMore?: boolean;
+}) {
   return (
     <div className="min-w-0 max-w-full overflow-x-hidden">
       <HeroSection />
       <FeatureMapSection />
       <DigitalSupplySection />
       <ModuleGallerySection />
+      <FeaturedStoresSection
+        stores={featuredStores}
+        hasMore={featuredStoresHasMore}
+      />
       <LandingFaqSection items={faqItems} />
     </div>
   );
