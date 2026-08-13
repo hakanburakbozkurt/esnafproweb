@@ -7,7 +7,11 @@ import {
   getSecondHandDeviceTitle,
 } from "@/lib/dukkan/second-hand-devices";
 import { buildWhatsAppUrl, normalizeWhatsAppNumber } from "@/lib/dukkan/contact";
-import { getPlaceholderDistanceKm } from "@/lib/marketplace/marketplace-filters";
+import type { GeoCoordinates } from "@/lib/geo/haversine";
+import {
+  getListingLocationBadgeLabel,
+  shouldShowLocationSubtitle,
+} from "@/lib/marketplace/listing-location-badge";
 import type { MarketplaceListing } from "@/lib/marketplace/public-listing.types";
 import { cn } from "@/lib/utils/cn";
 
@@ -16,18 +20,21 @@ const WHATSAPP_MESSAGE_PREFIX =
 
 export function MarketplaceDeviceCard({
   listing,
+  userCoords = null,
   className,
 }: {
   listing: MarketplaceListing;
+  userCoords?: GeoCoordinates | null;
   className?: string;
 }) {
-  const { device, shop, locationLabel } = listing;
+  const { device, shop } = listing;
   const title = getSecondHandDeviceTitle(device);
   const imageUrl = getSecondHandDeviceImage(device);
   const condition = formatSecondHandCondition(device.condition);
   const price = formatSecondHandPrice(device.sale_price);
   const detailHref = getSecondHandDeviceHref(shop.slug, device);
-  const distanceLabel = getPlaceholderDistanceKm(device.id ?? shop.slug);
+  const locationBadge = getListingLocationBadgeLabel(listing, userCoords);
+  const showLocationSubtitle = shouldShowLocationSubtitle(listing, userCoords);
   const contactNumber = shop.whatsapp ?? shop.telefon;
   const normalizedWhatsApp = contactNumber
     ? normalizeWhatsAppNumber(contactNumber)
@@ -62,13 +69,15 @@ export function MarketplaceDeviceCard({
             </div>
           )}
 
-          <div className="absolute left-2 top-2 flex flex-wrap gap-1.5 sm:left-3 sm:top-3">
+          <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1.5 sm:left-3 sm:top-3">
             <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 shadow-sm backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
               {condition}
             </span>
-            <span className="rounded-full bg-slate-900/75 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
-              {distanceLabel}
-            </span>
+            {locationBadge && (
+              <span className="max-w-full truncate rounded-full bg-slate-900/75 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
+                {locationBadge}
+              </span>
+            )}
           </div>
         </div>
       </Link>
@@ -82,8 +91,10 @@ export function MarketplaceDeviceCard({
             >
               {shop.dukkan_adi}
             </Link>
-            {locationLabel && (
-              <p className="mt-1 truncate text-xs text-slate-400">{locationLabel}</p>
+            {showLocationSubtitle && listing.locationLabel && (
+              <p className="mt-1 truncate text-xs text-slate-400">
+                {listing.locationLabel}
+              </p>
             )}
           </div>
           <div

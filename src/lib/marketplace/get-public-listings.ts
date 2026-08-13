@@ -7,7 +7,7 @@ const MARKETPLACE_DEVICE_SELECT =
   `${PUBLIC_SECOND_HAND_DEVICE_SELECT}, user_id` as const;
 
 const SHOP_SELECT =
-  "user_id, slug, dukkan_adi, adres, whatsapp, telefon, logo_url" as const;
+  "user_id, slug, dukkan_adi, adres, whatsapp, telefon, logo_url, enlem, boylam" as const;
 
 function buildLocationLabel(il: string | null, ilce: string | null): string | null {
   if (ilce && il) return `${ilce}, ${il}`;
@@ -70,6 +70,8 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
           whatsapp: shop.whatsapp,
           telefon: shop.telefon,
           logo_url: shop.logo_url,
+          enlem: shop.enlem,
+          boylam: shop.boylam,
         },
         il,
         ilce,

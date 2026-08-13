@@ -7,6 +7,8 @@ export type MarketplaceShopInfo = {
   whatsapp: string | null;
   telefon: string | null;
   logo_url: string | null;
+  enlem: number | null;
+  boylam: number | null;
 };
 
 export type MarketplaceListing = {

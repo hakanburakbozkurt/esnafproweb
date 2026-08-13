@@ -148,15 +148,3 @@ export function filterMarketplaceListings(
 
   return filtered;
 }
-
-/** Temsili mesafe rozeti — gerçek konum API'si gelene kadar deterministik */
-export function getPlaceholderDistanceKm(listingId: string): string {
-  let hash = 0;
-
-  for (let index = 0; index < listingId.length; index += 1) {
-    hash = (hash + listingId.charCodeAt(index) * (index + 1)) % 997;
-  }
-
-  const km = ((hash % 140) / 10 + 0.8).toFixed(1);
-  return `${km} km`;
-}

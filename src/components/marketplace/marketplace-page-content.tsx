@@ -8,6 +8,7 @@ import {
   MARKETPLACE_CATEGORIES,
   MARKETPLACE_SORT_OPTIONS,
 } from "@/lib/marketplace/marketplace-filters";
+import { useUserGeolocation } from "@/lib/marketplace/use-user-geolocation";
 import type {
   MarketplaceCategoryId,
   MarketplaceListing,
@@ -24,6 +25,7 @@ export function MarketplacePageContent({
   const [sort, setSort] = useState<MarketplaceSortId>("newest");
   const [category, setCategory] = useState<MarketplaceCategoryId>("all");
   const [location, setLocation] = useState("");
+  const { coords: userCoords } = useUserGeolocation();
 
   const locationOptions = useMemo(
     () => buildLocationOptions(listings),
@@ -142,7 +144,10 @@ export function MarketplacePageContent({
         <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
           {filteredListings.map((listing) => (
             <li key={listing.device.id}>
-              <MarketplaceDeviceCard listing={listing} />
+              <MarketplaceDeviceCard
+                listing={listing}
+                userCoords={userCoords}
+              />
             </li>
           ))}
         </ul>
