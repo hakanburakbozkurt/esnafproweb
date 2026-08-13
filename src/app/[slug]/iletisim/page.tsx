@@ -1,8 +1,17 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { IletisimPageContent } from "@/components/dukkan/vitrin/iletisim-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
-import { buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
+import {
+  buildFaqPageJsonLd,
+  buildStoreBreadcrumbJsonLd,
+  buildWebPageJsonLd,
+} from "@/lib/dukkan/json-ld";
 import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
+import {
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -16,21 +25,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, telefon, adres")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url, telefon")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
-  return {
-    title: `İletişim | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description:
-      dukkan.adres ??
-      `${dukkan.dukkan_adi} iletişim bilgileri ve konum`,
-  };
+  return buildStoreSubpageSeoMetadata(
+    dukkan,
+    "iletisim",
+    "İletişim",
+    dukkan.adres ??
+      `${dukkan.dukkan_adi} iletişim bilgileri, telefon ve konum`
+  );
 }
 
 export default async function IletisimPage({ params }: PageProps) {
@@ -66,12 +76,20 @@ export default async function IletisimPage({ params }: PageProps) {
 
   return (
     <>
-      {faqSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      )}
+      <JsonLdScripts
+        schemas={[
+          buildWebPageJsonLd({
+            slug: dukkan.slug,
+            path: "/iletisim",
+            name: `İletişim | ${dukkan.dukkan_adi}`,
+            description: dukkan.adres,
+          }),
+          buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
+            { name: "İletişim", segment: "iletisim" },
+          ]),
+          faqSchema,
+        ]}
+      />
 
       <VitrinChrome
         shopName={dukkan.dukkan_adi}

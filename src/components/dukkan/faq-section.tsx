@@ -38,7 +38,7 @@ export function FaqSection({
         </h2>
       </header>
 
-      <div itemScope itemType="https://schema.org/FAQPage">
+      <div>
         <ul className={variant === "open" ? "flex flex-col" : "flex flex-col gap-3"}>
           {visibleItems.map((item, index) => {
             const isOpen = openIndex === index;
@@ -48,9 +48,6 @@ export function FaqSection({
             return (
               <li
                 key={`${item.soru}-${index}`}
-                itemScope
-                itemProp="mainEntity"
-                itemType="https://schema.org/Question"
                 className={
                   variant === "open"
                     ? "border-b border-slate-200/60 last:border-b-0"
@@ -72,7 +69,6 @@ export function FaqSection({
                       }
                     >
                       <span
-                        itemProp="name"
                         className="min-w-0 flex-1 text-sm font-semibold leading-snug text-slate-900 sm:text-base"
                       >
                         {item.soru}
@@ -95,9 +91,6 @@ export function FaqSection({
                     id={answerId}
                     role="region"
                     aria-labelledby={questionId}
-                    itemScope
-                    itemProp="acceptedAnswer"
-                    itemType="https://schema.org/Answer"
                     className={cn(
                       "grid transition-[grid-template-rows] duration-200 ease-out",
                       isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
@@ -105,7 +98,6 @@ export function FaqSection({
                   >
                     <div className="overflow-hidden">
                       <p
-                        itemProp="text"
                         className={
                           variant === "open"
                             ? "border-t border-slate-200/60 py-4 text-sm leading-relaxed text-slate-500 sm:text-[15px] lg:text-base"

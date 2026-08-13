@@ -1,3 +1,4 @@
+import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import {
   parseCalismaSaatleri,
   toSchemaOrgOpeningHours,
@@ -6,19 +7,26 @@ import {
   getVisibleFaqItems,
   resolveFaqItemsForSource,
 } from "@/lib/dukkan/faq";
+import { parseLocationFromAdres } from "@/lib/dukkan/faq-placeholders";
 import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
-import type { Dukkan, FaqItem } from "@/types/database.types";
+import type { Dukkan, DukkanBlogYazisi, FaqItem } from "@/types/database.types";
+import type { SecondHandDevicePublic } from "@/types/database.types";
 
-function getSiteOrigin() {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://esnafpro.com";
+function absoluteStorePath(slug: string, path = ""): string {
+  const normalizedPath = path.startsWith("/") ? path : path ? `/${path}` : "";
+  return `${getPublicSiteUrl()}/${slug}${normalizedPath}`;
 }
 
 export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
+  const pageUrl = absoluteStorePath(dukkan.slug);
+  const { il, ilce } = parseLocationFromAdres(dukkan.adres);
+
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": `${pageUrl}#localbusiness`,
     name: dukkan.dukkan_adi,
-    url: `${getSiteOrigin()}/${dukkan.slug}`,
+    url: pageUrl,
   };
 
   if (dukkan.aciklama) schema.description = dukkan.aciklama;
@@ -55,6 +63,8 @@ export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
     schema.address = {
       "@type": "PostalAddress",
       streetAddress: dukkan.adres,
+      ...(ilce ? { addressLocality: ilce } : {}),
+      ...(il ? { addressRegion: il } : {}),
       addressCountry: "TR",
     };
   }
@@ -64,6 +74,13 @@ export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
       "@type": "GeoCoordinates",
       latitude: dukkan.enlem,
       longitude: dukkan.boylam,
+    };
+  }
+
+  if (il || ilce) {
+    schema.areaServed = {
+      "@type": "AdministrativeArea",
+      name: ilce && il ? `${ilce}, ${il}` : il ?? ilce,
     };
   }
 
@@ -91,6 +108,139 @@ export function buildFaqPageJsonLd(
         text: item.cevap.trim(),
       },
     })),
+  };
+}
+
+export function buildBreadcrumbListJsonLd(
+  items: Array<{ name: string; path: string }>
+) {
+  if (!items.length) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `${getPublicSiteUrl()}${item.path.startsWith("/") ? item.path : `/${item.path}`}`,
+    })),
+  };
+}
+
+export function buildStoreBreadcrumbJsonLd(
+  slug: string,
+  shopName: string,
+  crumbs: Array<{ name: string; segment?: string }>
+) {
+  return buildBreadcrumbListJsonLd([
+    { name: shopName, path: `/${slug}` },
+    ...crumbs.map((crumb) => ({
+      name: crumb.name,
+      path: `/${slug}${crumb.segment ? `/${crumb.segment}` : ""}`,
+    })),
+  ]);
+}
+
+export function buildWebPageJsonLd(input: {
+  slug: string;
+  path: string;
+  name: string;
+  description?: string | null;
+}) {
+  const url = absoluteStorePath(input.slug, input.path);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: input.name,
+    url,
+    ...(input.description ? { description: input.description } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "EsnafPRO",
+      url: getPublicSiteUrl(),
+    },
+    about: {
+      "@id": `${absoluteStorePath(input.slug)}#localbusiness`,
+    },
+  };
+}
+
+export function buildBlogPostingJsonLd(input: {
+  post: DukkanBlogYazisi;
+  shopName: string;
+  shopSlug: string;
+}) {
+  const url = absoluteStorePath(input.shopSlug, `/blog/${input.post.slug}`);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: input.post.baslik,
+    datePublished: input.post.created_at,
+    dateModified: input.post.updated_at ?? input.post.created_at,
+    author: {
+      "@type": "Organization",
+      name: input.shopName,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: input.shopName,
+    },
+    url,
+    mainEntityOfPage: url,
+    ...(input.post.kapak_url ? { image: input.post.kapak_url } : {}),
+    ...(input.post.icerik ? { articleBody: input.post.icerik } : {}),
+  };
+}
+
+export function buildProductJsonLd(input: {
+  device: Pick<
+    SecondHandDevicePublic,
+    | "brand"
+    | "model"
+    | "sale_price"
+    | "web_title"
+    | "web_description"
+    | "image_urls"
+    | "web_slug"
+    | "condition"
+  >;
+  shopName: string;
+  shopSlug: string;
+  devicePath: string;
+}) {
+  const name =
+    input.device.web_title?.trim() ||
+    `${input.device.brand} ${input.device.model}`.trim();
+  const url = `${getPublicSiteUrl()}${input.devicePath.startsWith("/") ? input.devicePath : `/${input.devicePath}`}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name,
+    description:
+      input.device.web_description?.trim() ??
+      `${input.shopName} ikinci el cihaz ilanı: ${name}`,
+    url,
+    ...(input.device.image_urls?.[0]
+      ? { image: input.device.image_urls[0] }
+      : {}),
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "TRY",
+      price: input.device.sale_price,
+      availability: "https://schema.org/InStock",
+      seller: {
+        "@type": "LocalBusiness",
+        name: input.shopName,
+        url: absoluteStorePath(input.shopSlug),
+      },
+    },
+    ...(input.device.condition
+      ? { itemCondition: "https://schema.org/UsedCondition" }
+      : {}),
   };
 }
 

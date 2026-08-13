@@ -156,12 +156,17 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       sitemapEntry(`${shopBase}/hakkimizda`, storeLastModified, {
         changeFrequency: "monthly",
         priority: 0.6,
-      }),
-      sitemapEntry(`${shopBase}/blog`, blogIndexLastModified, {
-        changeFrequency: "weekly",
-        priority: 0.6,
       })
     );
+
+    if (storeBlogPosts.length > 0) {
+      dynamicPages.push(
+        sitemapEntry(`${shopBase}/blog`, blogIndexLastModified, {
+          changeFrequency: "weekly",
+          priority: 0.6,
+        })
+      );
+    }
 
     if (dukkan.iletisim_sss_goster ?? true) {
       dynamicPages.push(

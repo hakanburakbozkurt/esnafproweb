@@ -1,7 +1,16 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { BlogPostDetailContent } from "@/components/dukkan/vitrin/blog-post-detail-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { getDukkanBlogPostBySlug } from "@/lib/dukkan/blog-posts";
+import {
+  buildBlogPostingJsonLd,
+  buildStoreBreadcrumbJsonLd,
+} from "@/lib/dukkan/json-ld";
+import {
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -15,25 +24,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("id, dukkan_adi")
+    .select("id, dukkan_adi, slug, adres, banner_url, logo_url")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
   const post = await getDukkanBlogPostBySlug(supabase, dukkan.id, postSlug);
 
   if (!post) {
-    return { title: `Blog | ${dukkan.dukkan_adi} | EsnafPRO` };
+    return buildStoreSubpageSeoMetadata(
+      dukkan,
+      "blog",
+      "Blog",
+      `${dukkan.dukkan_adi} blog yazıları`
+    );
   }
 
-  return {
-    title: `${post.baslik} | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description: post.icerik?.slice(0, 160) ?? post.baslik,
-  };
+  return buildStoreSubpageSeoMetadata(
+    dukkan,
+    `blog/${post.slug}`,
+    post.baslik,
+    post.icerik?.slice(0, 160) ?? post.baslik,
+    { image: post.kapak_url, ogType: "article" }
+  );
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
@@ -66,19 +83,35 @@ export default async function BlogPostPage({ params }: PageProps) {
   const showPazaryeriNav = await hasPublishedSecondHandDevices(supabase, dukkan.user_id);
 
   return (
-    <VitrinChrome
-      shopName={dukkan.dukkan_adi}
-      isOwner={isOwner}
-      showContactNav={showContactNav}
-      showTeknikServisNav={showTeknikServisNav}
-      showPazaryeriNav={showPazaryeriNav}
-      dukkan={dukkan}
-    >
-      <BlogPostDetailContent
-        shopName={dukkan.dukkan_adi}
-        shopSlug={dukkan.slug}
-        post={post}
+    <>
+      <JsonLdScripts
+        schemas={[
+          buildBlogPostingJsonLd({
+            post,
+            shopName: dukkan.dukkan_adi,
+            shopSlug: dukkan.slug,
+          }),
+          buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
+            { name: "Blog", segment: "blog" },
+            { name: post.baslik, segment: `blog/${post.slug}` },
+          ]),
+        ]}
       />
-    </VitrinChrome>
+
+      <VitrinChrome
+        shopName={dukkan.dukkan_adi}
+        isOwner={isOwner}
+        showContactNav={showContactNav}
+        showTeknikServisNav={showTeknikServisNav}
+        showPazaryeriNav={showPazaryeriNav}
+        dukkan={dukkan}
+      >
+        <BlogPostDetailContent
+          shopName={dukkan.dukkan_adi}
+          shopSlug={dukkan.slug}
+          post={post}
+        />
+      </VitrinChrome>
+    </>
   );
 }

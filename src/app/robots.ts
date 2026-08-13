@@ -6,7 +6,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/yonetim", "/yonetim/"],
+      disallow: [
+        "/yonetim",
+        "/yonetim/",
+        "/dukkan-ayarlari",
+        "/dukkan-ac",
+        "/toptanci-ac",
+        "/toptanci-ayarlari",
+        "/toptanci/xml-yukle",
+        "/auth/",
+        "/yeni-sifre",
+        "/sifre-sifirla",
+      ],
     },
     sitemap: `${SITEMAP_CANONICAL_ORIGIN}/sitemap.xml`,
   };

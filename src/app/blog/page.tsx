@@ -6,13 +6,15 @@ import {
   BlogPostCard,
 } from "@/components/landing/blog-post-card";
 import { getPublicBlogPosts } from "@/lib/blog/public-blog-posts";
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Esnaf Rehberi | EsnafPRO Blog",
   description:
     "EsnafPRO mağazalarından yerel SEO yazıları, sektör rehberleri ve duyurular.",
-};
+  path: "/blog",
+});
 
 export default async function BlogIndexPage() {
   const posts = await getPublicBlogPosts();

@@ -1,3 +1,4 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { VitrinPageContent } from "@/components/dukkan/vitrin/vitrin-page-content";
@@ -5,7 +6,10 @@ import { buildDukkanJsonLd, buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
 import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
-import { buildDukkanPageMetadata } from "@/lib/dukkan/metadata";
+import {
+  buildStoreHomeSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
@@ -19,18 +23,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, aciklama, meta_title, meta_description")
+    .select(
+      "dukkan_adi, aciklama, meta_title, meta_description, slug, adres, banner_url, logo_url"
+    )
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
-  const { title, description } = buildDukkanPageMetadata(dukkan);
-
-  return { title, description };
+  return buildStoreHomeSeoMetadata(dukkan);
 }
 
 export default async function StoreVitrinPage({ params, searchParams }: PageProps) {
@@ -81,13 +85,7 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
 
   return (
     <>
-      {jsonLdSchemas.map((schema, index) => (
-        <script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      ))}
+      <JsonLdScripts schemas={jsonLdSchemas} />
 
       <VitrinChrome
         shopName={dukkan.dukkan_adi}

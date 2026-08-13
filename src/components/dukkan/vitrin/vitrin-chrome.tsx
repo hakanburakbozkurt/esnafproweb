@@ -97,6 +97,11 @@ export function VitrinChrome({
                 href={hakkimizdaHref}
                 active={isHakkimizdaPage}
               />
+              <NavRouteLink
+                label="Blog"
+                href={blogHref}
+                active={isBlogPage}
+              />
               {isOwner && (
                 <NavRouteLink
                   label="Mağazam"
@@ -145,6 +150,11 @@ export function VitrinChrome({
               label="Hakkımızda"
               href={hakkimizdaHref}
               active={isHakkimizdaPage}
+            />
+            <NavRoutePill
+              label="Blog"
+              href={blogHref}
+              active={isBlogPage}
             />
             {isOwner && (
               <NavRoutePill

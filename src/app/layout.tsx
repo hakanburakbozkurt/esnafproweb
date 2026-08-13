@@ -1,3 +1,4 @@
+import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
@@ -14,6 +15,7 @@ const siteDescription =
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getPublicSiteUrl()),
   title: "EsnafPRO",
   description: siteDescription,
   ...(googleSiteVerification

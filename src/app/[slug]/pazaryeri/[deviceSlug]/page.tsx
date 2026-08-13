@@ -1,8 +1,18 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { SecondHandDeviceDetailContent } from "@/components/dukkan/vitrin/second-hand-device-detail-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import {
+  buildProductJsonLd,
+  buildStoreBreadcrumbJsonLd,
+} from "@/lib/dukkan/json-ld";
+import {
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
+import {
   fetchPublishedSecondHandDeviceBySlug,
+  getSecondHandDeviceHref,
   getSecondHandDeviceTitle,
   hasPublishedSecondHandDevices,
 } from "@/lib/dukkan/second-hand-devices";
@@ -19,13 +29,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, user_id")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url, user_id")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
   const device = await fetchPublishedSecondHandDeviceBySlug(
@@ -39,13 +49,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = getSecondHandDeviceTitle(device);
+  const deviceSegment = `pazaryeri/${device.web_slug?.trim() || device.id}`;
 
-  return {
-    title: `${title} | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description:
-      device.web_description?.trim() ??
+  return buildStoreSubpageSeoMetadata(
+    dukkan,
+    deviceSegment,
+    title,
+    device.web_description?.trim() ??
       `${dukkan.dukkan_adi} ikinci el cihaz ilanı: ${title}`,
-  };
+    { image: device.image_urls?.[0] ?? null }
+  );
 }
 
 export default async function PazaryeriDevicePage({ params }: PageProps) {
@@ -85,16 +98,37 @@ export default async function PazaryeriDevicePage({ params }: PageProps) {
   const showContactNav = dukkan.iletisim_sss_goster ?? true;
   const showTeknikServisNav = dukkan.teknik_servis_aktif ?? false;
 
+  const devicePath = getSecondHandDeviceHref(dukkan.slug, device);
+  const deviceTitle = getSecondHandDeviceTitle(device);
+  const deviceSegment = `pazaryeri/${device.web_slug?.trim() || device.id}`;
+
   return (
-    <VitrinChrome
-      shopName={dukkan.dukkan_adi}
-      isOwner={isOwner}
-      showContactNav={showContactNav}
-      showTeknikServisNav={showTeknikServisNav}
-      showPazaryeriNav={showPazaryeriNav}
-      dukkan={dukkan}
-    >
-      <SecondHandDeviceDetailContent dukkan={dukkan} device={device} />
-    </VitrinChrome>
+    <>
+      <JsonLdScripts
+        schemas={[
+          buildProductJsonLd({
+            device,
+            shopName: dukkan.dukkan_adi,
+            shopSlug: dukkan.slug,
+            devicePath,
+          }),
+          buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
+            { name: "Pazaryeri", segment: "pazaryeri" },
+            { name: deviceTitle, segment: deviceSegment },
+          ]),
+        ]}
+      />
+
+      <VitrinChrome
+        shopName={dukkan.dukkan_adi}
+        isOwner={isOwner}
+        showContactNav={showContactNav}
+        showTeknikServisNav={showTeknikServisNav}
+        showPazaryeriNav={showPazaryeriNav}
+        dukkan={dukkan}
+      >
+        <SecondHandDeviceDetailContent dukkan={dukkan} device={device} />
+      </VitrinChrome>
+    </>
   );
 }

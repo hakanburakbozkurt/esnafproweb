@@ -1,8 +1,17 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { TeknikServisPageContent } from "@/components/dukkan/vitrin/teknik-servis-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
-import { buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
+import {
+  buildFaqPageJsonLd,
+  buildStoreBreadcrumbJsonLd,
+  buildWebPageJsonLd,
+} from "@/lib/dukkan/json-ld";
+import {
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
 import { createClient } from "@/lib/supabase/server";
@@ -18,19 +27,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
-  return {
-    title: `Teknik Servis | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description: `${dukkan.dukkan_adi} teknik servis ve cihaz takip sayfası`,
-  };
+  return buildStoreSubpageSeoMetadata(
+    dukkan,
+    "teknik-servis",
+    "Teknik Servis",
+    `${dukkan.dukkan_adi} telefon tamiri, ekran değişimi ve cihaz servis takibi`
+  );
 }
 
 export default async function TeknikServisPage({ params, searchParams }: PageProps) {
@@ -77,12 +88,20 @@ export default async function TeknikServisPage({ params, searchParams }: PagePro
 
   return (
     <>
-      {faqSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      )}
+      <JsonLdScripts
+        schemas={[
+          buildWebPageJsonLd({
+            slug: dukkan.slug,
+            path: "/teknik-servis",
+            name: `Teknik Servis | ${dukkan.dukkan_adi}`,
+            description: `${dukkan.dukkan_adi} telefon ve cihaz tamiri`,
+          }),
+          buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
+            { name: "Teknik Servis", segment: "teknik-servis" },
+          ]),
+          faqSchema,
+        ]}
+      />
 
       <VitrinChrome
         shopName={dukkan.dukkan_adi}

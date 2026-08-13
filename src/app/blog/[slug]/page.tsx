@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import {
   formatBlogDate,
   getPublicBlogPostBySlug,
 } from "@/lib/blog/public-blog-posts";
+import { buildBlogPostingJsonLd } from "@/lib/dukkan/json-ld";
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 
 type PageProps = {
@@ -20,10 +23,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Yazı Bulunamadı | Esnaf Rehberi" };
   }
 
-  return {
+  return buildPageMetadata({
     title: `${post.baslik} | Esnaf Rehberi`,
     description: post.icerik?.slice(0, 160) ?? post.baslik,
-  };
+    path: `/${post.shop_slug}/blog/${post.slug}`,
+    image: post.kapak_url,
+    ogType: "article",
+  });
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
@@ -36,6 +42,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-slate-900">
+      <JsonLdScripts
+        schemas={[
+          buildBlogPostingJsonLd({
+            post,
+            shopName: post.shop_name,
+            shopSlug: post.shop_slug,
+          }),
+        ]}
+      />
       <LandingNavbar />
       <main className="px-4 py-16 sm:px-6 md:py-24">
         <article className="mx-auto w-full min-w-0 max-w-3xl">

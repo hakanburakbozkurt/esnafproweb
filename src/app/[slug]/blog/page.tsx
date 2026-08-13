@@ -1,7 +1,16 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { BlogPageContent } from "@/components/dukkan/vitrin/blog-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { getDukkanBlogPosts } from "@/lib/dukkan/blog-posts";
+import {
+  buildStoreBreadcrumbJsonLd,
+  buildWebPageJsonLd,
+} from "@/lib/dukkan/json-ld";
+import {
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -15,19 +24,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
-  return {
-    title: `Blog | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description: `${dukkan.dukkan_adi} blog yazıları — yerel SEO ve duyurular`,
-  };
+  return buildStoreSubpageSeoMetadata(
+    dukkan,
+    "blog",
+    "Blog",
+    `${dukkan.dukkan_adi} blog yazıları — yerel rehber, ipuçları ve duyurular`
+  );
 }
 
 export default async function BlogPage({ params }: PageProps) {
@@ -59,20 +70,36 @@ export default async function BlogPage({ params }: PageProps) {
   ]);
 
   return (
-    <VitrinChrome
-      shopName={dukkan.dukkan_adi}
-      isOwner={isOwner}
-      showContactNav={showContactNav}
-      showTeknikServisNav={showTeknikServisNav}
-      showPazaryeriNav={showPazaryeriNav}
-      dukkan={dukkan}
-    >
-      <BlogPageContent
-        shopName={dukkan.dukkan_adi}
-        shopSlug={dukkan.slug}
-        posts={publishedPosts}
-        isOwner={isOwner && allPosts.length === 0}
+    <>
+      <JsonLdScripts
+        schemas={[
+          buildWebPageJsonLd({
+            slug: dukkan.slug,
+            path: "/blog",
+            name: `Blog | ${dukkan.dukkan_adi}`,
+            description: `${dukkan.dukkan_adi} yerel blog ve rehber yazıları`,
+          }),
+          buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
+            { name: "Blog", segment: "blog" },
+          ]),
+        ]}
       />
-    </VitrinChrome>
+
+      <VitrinChrome
+        shopName={dukkan.dukkan_adi}
+        isOwner={isOwner}
+        showContactNav={showContactNav}
+        showTeknikServisNav={showTeknikServisNav}
+        showPazaryeriNav={showPazaryeriNav}
+        dukkan={dukkan}
+      >
+        <BlogPageContent
+          shopName={dukkan.dukkan_adi}
+          shopSlug={dukkan.slug}
+          posts={publishedPosts}
+          isOwner={isOwner && allPosts.length === 0}
+        />
+      </VitrinChrome>
+    </>
   );
 }

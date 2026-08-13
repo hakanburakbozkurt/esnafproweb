@@ -1,6 +1,15 @@
+import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { PazaryeriPageContent } from "@/components/dukkan/vitrin/pazaryeri-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
+import {
+  buildStoreBreadcrumbJsonLd,
+  buildWebPageJsonLd,
+} from "@/lib/dukkan/json-ld";
+import {
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { fetchPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -14,19 +23,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
   if (!dukkan) {
-    return { title: "Mağaza Bulunamadı | EsnafPRO" };
+    return NOT_FOUND_STORE_METADATA;
   }
 
-  return {
-    title: `Pazaryeri | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description: `${dukkan.dukkan_adi} ikinci el cihaz ilanları`,
-  };
+  return buildStoreSubpageSeoMetadata(
+    dukkan,
+    "pazaryeri",
+    "Pazaryeri",
+    `${dukkan.dukkan_adi} ikinci el telefon ve cihaz ilanları`
+  );
 }
 
 export default async function PazaryeriPage({ params }: PageProps) {
@@ -55,15 +66,31 @@ export default async function PazaryeriPage({ params }: PageProps) {
   const showTeknikServisNav = dukkan.teknik_servis_aktif ?? false;
 
   return (
-    <VitrinChrome
-      shopName={dukkan.dukkan_adi}
-      isOwner={isOwner}
-      showContactNav={showContactNav}
-      showTeknikServisNav={showTeknikServisNav}
-      showPazaryeriNav={showPazaryeriNav}
-      dukkan={dukkan}
-    >
-      <PazaryeriPageContent dukkan={dukkan} devices={devices} />
-    </VitrinChrome>
+    <>
+      <JsonLdScripts
+        schemas={[
+          buildWebPageJsonLd({
+            slug: dukkan.slug,
+            path: "/pazaryeri",
+            name: `Pazaryeri | ${dukkan.dukkan_adi}`,
+            description: `${dukkan.dukkan_adi} ikinci el cihaz ilanları`,
+          }),
+          buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
+            { name: "Pazaryeri", segment: "pazaryeri" },
+          ]),
+        ]}
+      />
+
+      <VitrinChrome
+        shopName={dukkan.dukkan_adi}
+        isOwner={isOwner}
+        showContactNav={showContactNav}
+        showTeknikServisNav={showTeknikServisNav}
+        showPazaryeriNav={showPazaryeriNav}
+        dukkan={dukkan}
+      >
+        <PazaryeriPageContent dukkan={dukkan} devices={devices} />
+      </VitrinChrome>
+    </>
   );
 }
