@@ -520,6 +520,26 @@ export function DukkanForm({
           />
         </Field>
 
+        <div className="flex gap-3 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/40 px-4 py-4 shadow-sm sm:px-5 sm:py-4">
+          <span
+            className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-emerald-600 ring-1 ring-emerald-100"
+            aria-hidden
+          >
+            i
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-emerald-800">
+              📍 Pazaryeri ve Mesafe Özelliği İçin Önemli
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-emerald-900/85">
+              Lütfen adresinizi girdikten sonra harita üzerinden dükkanınızın tam
+              konumunu pinleyin. Bu sayede ana pazaryerinde müşteriler size olan
+              mesafelerini (örn: 850 m) net bir şekilde görebilecek ve size daha
+              kolay ulaşabilecektir.
+            </p>
+          </div>
+        </div>
+
         <input type="hidden" name="enlem" value={enlem ?? ""} />
         <input type="hidden" name="boylam" value={boylam ?? ""} />
       </div>
