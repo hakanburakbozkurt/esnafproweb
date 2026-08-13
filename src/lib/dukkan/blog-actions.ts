@@ -68,6 +68,9 @@ export async function createBlogPost(
   }
 
   revalidatePath("/yonetim");
+  revalidatePath("/");
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
   revalidatePath(`/${dukkan.slug}/blog`);
   revalidatePath(`/${dukkan.slug}/blog/${slug}`);
   revalidateSitemap();

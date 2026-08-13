@@ -65,6 +65,29 @@ export function BlogPostDetailContent({
             </div>
           </ScrollReveal>
         )}
+
+        <ScrollReveal className="mt-8 max-w-3xl">
+          <nav
+            className="flex flex-wrap gap-4 border-t border-slate-100 pt-8 text-sm"
+            aria-label="İlgili sayfalar"
+          >
+            <Link
+              href={`/blog/${post.slug}`}
+              className="font-medium text-slate-600 hover:text-emerald-700"
+            >
+              Esnaf Rehberi&apos;nde oku
+            </Link>
+            <Link
+              href={`/${shopSlug}`}
+              className="font-semibold text-emerald-700 hover:text-emerald-800"
+            >
+              {shopName} vitrini
+            </Link>
+            <Link href="/" className="font-medium text-slate-600 hover:text-emerald-700">
+              Ana sayfa
+            </Link>
+          </nav>
+        </ScrollReveal>
       </article>
     </div>
   );

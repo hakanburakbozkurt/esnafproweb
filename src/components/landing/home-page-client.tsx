@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { ESNAF_ROLE, getSignupHref } from "@/lib/auth/roles";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
+import { LandingBlogSection } from "@/components/landing/landing-blog-section";
 import { FeaturedStoresSection } from "@/components/landing/featured-stores-section";
+import type { PublicBlogPost } from "@/lib/blog/public-blog-post.types";
 import type { PublicStoreCard } from "@/lib/dukkan/public-store.types";
 import type { FaqItem } from "@/types/database.types";
 
@@ -939,10 +941,12 @@ export function HomePageClient({
   faqItems = [],
   featuredStores = [],
   featuredStoresHasMore = false,
+  blogPosts = [],
 }: {
   faqItems?: FaqItem[];
   featuredStores?: PublicStoreCard[];
   featuredStoresHasMore?: boolean;
+  blogPosts?: PublicBlogPost[];
 }) {
   return (
     <div className="min-w-0 max-w-full overflow-x-hidden">
@@ -954,6 +958,7 @@ export function HomePageClient({
         stores={featuredStores}
         hasMore={featuredStoresHasMore}
       />
+      <LandingBlogSection posts={blogPosts} />
       <LandingFaqSection items={faqItems} />
     </div>
   );

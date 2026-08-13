@@ -40,6 +40,14 @@ function staticSitemapEntries(now: Date): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     }),
+    sitemapEntry("/blog", now, {
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }),
+    sitemapEntry("/esnaflar", now, {
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }),
     sitemapEntry("/giris", now, {
       changeFrequency: "monthly",
       priority: 0.4,
@@ -207,10 +215,17 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     const shopSlug = slugByDukkanId.get(post.dukkan_id);
     if (!shopSlug || !post.slug?.trim()) continue;
 
+    const postSlug = post.slug.trim();
+    const lastModified = safeDate(post.updated_at ?? post.created_at, now);
+
     dynamicPages.push(
-      sitemapEntry(`/${shopSlug}/blog/${post.slug.trim()}`, safeDate(post.updated_at ?? post.created_at, now), {
+      sitemapEntry(`/${shopSlug}/blog/${postSlug}`, lastModified, {
         changeFrequency: "monthly",
         priority: 0.5,
+      }),
+      sitemapEntry(`/blog/${postSlug}`, lastModified, {
+        changeFrequency: "monthly",
+        priority: 0.55,
       })
     );
   }
