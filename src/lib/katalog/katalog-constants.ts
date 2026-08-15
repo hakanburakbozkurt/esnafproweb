@@ -1,0 +1,2 @@
+export const MAX_BULK_KATALOG_IMAGES = 20;
+export const MIN_BULK_KATALOG_IMAGES = 1;

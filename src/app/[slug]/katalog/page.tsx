@@ -2,7 +2,7 @@ import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
 import { KatalogPageContent } from "@/components/katalog/katalog-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
-import { getKatalogItemsForUser } from "@/lib/katalog/katalog-items";
+import { getKatalogItemsForShop } from "@/lib/katalog/katalog-items";
 import {
   buildStoreBreadcrumbJsonLd,
   buildWebPageJsonLd,
@@ -65,7 +65,7 @@ export default async function KatalogPage({ params }: PageProps) {
   const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(supabase, dukkan.user_id);
 
-  const items = await getKatalogItemsForUser(dukkan.user_id);
+  const items = await getKatalogItemsForShop(dukkan.user_id, isOwner);
 
   return (
     <>

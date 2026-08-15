@@ -287,6 +287,7 @@ export interface Database {
           price: number | null;
           image_url: string | null;
           is_sold: boolean;
+          sort_order: number;
           created_at: string;
         };
         Insert: {
@@ -298,6 +299,7 @@ export interface Database {
           price?: number | null;
           image_url?: string | null;
           is_sold?: boolean;
+          sort_order?: number;
           created_at?: string;
         };
         Update: {
@@ -309,6 +311,7 @@ export interface Database {
           price?: number | null;
           image_url?: string | null;
           is_sold?: boolean;
+          sort_order?: number;
           created_at?: string;
         };
         Relationships: [];

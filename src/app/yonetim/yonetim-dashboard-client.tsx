@@ -49,6 +49,9 @@ export function YonetimDashboardClient({
         <Link href="/yonetim/blog/yeni" className={quickLinkClass}>
           Blog Yazısı Ekle
         </Link>
+        <Link href="/yonetim/katalog" className={quickLinkClass}>
+          Katalog Yönetimi
+        </Link>
       </div>
 
       <p className="text-center text-xs text-slate-400">
