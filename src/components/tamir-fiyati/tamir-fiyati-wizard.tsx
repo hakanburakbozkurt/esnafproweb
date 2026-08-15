@@ -99,7 +99,7 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="mx-auto w-full max-w-5xl">
       <StepIndicator current={step} />
 
       {error && (
@@ -118,11 +118,12 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
             title="Marka seçin"
             description="Cihazınızın markasını seçerek devam edin."
           />
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {brands.map((brand) => (
-              <ChoiceButton
+              <ImageChoiceCard
                 key={brand.id}
                 label={brand.name}
+                imageUrl={brand.image_url}
                 active={selectedBrand?.id === brand.id}
                 disabled={isPending}
                 onClick={() => handleBrandSelect(brand)}
@@ -147,11 +148,12 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
                   {seriName}
                 </p>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   {seriModels.map((model) => (
-                    <ChoiceButton
+                    <ImageChoiceCard
                       key={model.id}
                       label={model.name}
+                      imageUrl={model.image_url}
                       active={selectedModel?.id === model.id}
                       disabled={isPending}
                       onClick={() => handleModelSelect(model)}
@@ -303,6 +305,65 @@ function ChoiceButton({
     >
       {label}
     </button>
+  );
+}
+
+function ImageChoiceCard({
+  label,
+  imageUrl,
+  active,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  imageUrl: string | null;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex min-h-[8.5rem] flex-col items-center justify-center gap-2 rounded-2xl border px-3 py-4 text-center transition",
+        active
+          ? "border-emerald-400 bg-emerald-50 text-emerald-800 shadow-sm"
+          : "border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:bg-emerald-50/40",
+        disabled && "cursor-not-allowed opacity-60"
+      )}
+    >
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            className="h-full w-full object-contain p-1.5"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <DeviceIconPlaceholder label={label} />
+        )}
+      </span>
+      <span className="line-clamp-2 text-xs font-semibold leading-snug sm:text-sm">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function DeviceIconPlaceholder({ label }: { label: string }) {
+  const initial = label.trim().charAt(0).toUpperCase() || "?";
+
+  return (
+    <span
+      aria-hidden
+      className="flex h-full w-full items-center justify-center text-lg font-bold text-slate-300"
+    >
+      {initial}
+    </span>
   );
 }
 

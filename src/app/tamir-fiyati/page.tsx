@@ -17,7 +17,7 @@ export default async function TamirFiyatiPage() {
     <div className="min-h-screen overflow-x-hidden bg-white text-slate-900">
       <LandingNavbar />
       <main className="px-4 py-10 sm:px-6 sm:py-14">
-        <div className="mx-auto mb-8 max-w-3xl text-center">
+        <div className="mx-auto mb-8 max-w-5xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
             Tamir Fiyat Rehberi
           </p>
