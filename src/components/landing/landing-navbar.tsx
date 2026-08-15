@@ -34,6 +34,11 @@ export function LandingNavbar() {
             </Link>
           </li>
           <li>
+            <Link href="/tamir-fiyati" className={NAV_LINK_CLASS}>
+              Tamir Fiyatı Al
+            </Link>
+          </li>
+          <li>
             <Link
               href="/giris"
               className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"

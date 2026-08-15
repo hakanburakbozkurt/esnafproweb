@@ -337,6 +337,126 @@ export interface Database {
         };
         Relationships: [];
       };
+      tamir_markalari: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          image_url: string | null;
+          sort_order: number;
+          aktif: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          image_url?: string | null;
+          sort_order?: number;
+          aktif?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          image_url?: string | null;
+          sort_order?: number;
+          aktif?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      tamir_serileri: {
+        Row: {
+          id: string;
+          marka_id: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          marka_id: string;
+          name: string;
+          slug: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          marka_id?: string;
+          name?: string;
+          slug?: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      tamir_modelleri: {
+        Row: {
+          id: string;
+          seri_id: string;
+          name: string;
+          slug: string;
+          image_url: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          seri_id: string;
+          name: string;
+          slug: string;
+          image_url?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          seri_id?: string;
+          name?: string;
+          slug?: string;
+          image_url?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      tamir_fiyatlari: {
+        Row: {
+          id: string;
+          model_id: string;
+          category: string;
+          service_name: string;
+          price: number;
+          description: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          model_id: string;
+          category: string;
+          service_name: string;
+          price: number;
+          description?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          model_id?: string;
+          category?: string;
+          service_name?: string;
+          price?: number;
+          description?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       tablet_models: {
         Row: {
           id: string;
@@ -749,6 +869,10 @@ export type SecondHandDevicePublic =
 export type KatalogWebItem = Database["public"]["Tables"]["katalogweb"]["Row"];
 export type PhoneModel = Database["public"]["Tables"]["phone_models"]["Row"];
 export type TabletModel = Database["public"]["Tables"]["tablet_models"]["Row"];
+export type TamirMarkasi = Database["public"]["Tables"]["tamir_markalari"]["Row"];
+export type TamirSerisi = Database["public"]["Tables"]["tamir_serileri"]["Row"];
+export type TamirModeli = Database["public"]["Tables"]["tamir_modelleri"]["Row"];
+export type TamirFiyati = Database["public"]["Tables"]["tamir_fiyatlari"]["Row"];
 
 /** @deprecated Use Dukkan */
 export type Store = Dukkan;

@@ -114,6 +114,7 @@ const APP_RESERVED_SLUGS = [
   "dukkan-ac",
   "dukkan-ayarlari",
   "fiyatlandirma",
+  "tamir-fiyati",
   "giris",
   "hakkimizda",
   "iletisim",
