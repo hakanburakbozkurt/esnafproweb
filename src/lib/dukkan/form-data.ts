@@ -58,6 +58,7 @@ export type ParsedDukkanForm = {
   sss: FaqItem[];
   iletisim_sss_goster: boolean;
   teknik_servis_aktif: boolean;
+  katalog_modu_aktif: boolean;
   teknik_servis_fotograf_1: string | null;
   teknik_servis_fotograf_2: string | null;
   teknik_servis_fotograf_3: string | null;
@@ -150,6 +151,8 @@ export function parseDukkanFormData(formData: FormData):
     String(formData.get("iletisim_sss_goster") ?? "true") === "true";
   const teknikServisAktif =
     String(formData.get("teknik_servis_aktif") ?? "false") === "true";
+  const katalogModuAktif =
+    String(formData.get("katalog_modu_aktif") ?? "false") === "true";
   const teknikServisFoto1 = String(
     formData.get("teknik_servis_fotograf_1") ?? ""
   ).trim();
@@ -241,6 +244,7 @@ export function parseDukkanFormData(formData: FormData):
       sss: parseFaqFromFormData(formData, "iletisim_faq"),
       iletisim_sss_goster: iletisimSssGoster,
       teknik_servis_aktif: teknikServisAktif,
+      katalog_modu_aktif: katalogModuAktif,
       teknik_servis_fotograf_1: teknikServisFoto1 || null,
       teknik_servis_fotograf_2: teknikServisFoto2 || null,
       teknik_servis_fotograf_3: teknikServisFoto3 || null,

@@ -24,6 +24,7 @@ export type DukkanDbPayload = {
   sss: ParsedDukkanForm["sss"];
   iletisim_sss_goster: boolean;
   teknik_servis_aktif: boolean;
+  katalog_modu_aktif: boolean;
   teknik_servis_fotograf_1: string | null;
   teknik_servis_fotograf_2: string | null;
   teknik_servis_fotograf_3: string | null;
@@ -58,6 +59,7 @@ export const DUKKAN_OPTIONAL_PAYLOAD_KEYS = [
   "sss",
   "iletisim_sss_goster",
   "teknik_servis_aktif",
+  "katalog_modu_aktif",
   "teknik_servis_fotograf_1",
   "teknik_servis_fotograf_2",
   "teknik_servis_fotograf_3",
@@ -110,6 +112,7 @@ export function toDukkanDbPayload(
     sss: data.sss,
     iletisim_sss_goster: data.iletisim_sss_goster,
     teknik_servis_aktif: data.teknik_servis_aktif,
+    katalog_modu_aktif: data.katalog_modu_aktif,
     teknik_servis_fotograf_1: data.teknik_servis_fotograf_1,
     teknik_servis_fotograf_2: data.teknik_servis_fotograf_2,
     teknik_servis_fotograf_3: data.teknik_servis_fotograf_3,

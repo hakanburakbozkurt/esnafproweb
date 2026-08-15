@@ -69,6 +69,7 @@ export default async function TeknikServisPage({ params, searchParams }: PagePro
   } = await supabase.auth.getUser();
   const isOwner = user?.id === dukkan.user_id;
   const showContactNav = dukkan.iletisim_sss_goster ?? true;
+  const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(
     supabase,
     dukkan.user_id
@@ -109,6 +110,7 @@ export default async function TeknikServisPage({ params, searchParams }: PagePro
         showContactNav={showContactNav}
         showTeknikServisNav
         showPazaryeriNav={showPazaryeriNav}
+        showKatalogNav={showKatalogNav}
         dukkan={dukkan}
       >
         <TeknikServisPageContent

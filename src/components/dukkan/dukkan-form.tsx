@@ -132,6 +132,9 @@ export function DukkanForm({
   const [teknikServisAktif, setTeknikServisAktif] = useState(
     defaultValues?.teknik_servis_aktif ?? false
   );
+  const [katalogModuAktif, setKatalogModuAktif] = useState(
+    defaultValues?.katalog_modu_aktif ?? false
+  );
   const [teknikServisPhotos, setTeknikServisPhotos] = useState({
     teknik_servis_fotograf_1: defaultValues?.teknik_servis_fotograf_1 ?? "",
     teknik_servis_fotograf_2: defaultValues?.teknik_servis_fotograf_2 ?? "",
@@ -668,6 +671,40 @@ export function DukkanForm({
           <span
             className={`absolute top-0.5 size-6 rounded-full bg-white shadow transition ${
               iletisimSssGoster ? "left-[22px]" : "left-0.5"
+            }`}
+          />
+        </span>
+      </button>
+
+      <input
+        type="hidden"
+        name="katalog_modu_aktif"
+        value={katalogModuAktif ? "true" : "false"}
+      />
+      <button
+        type="button"
+        role="switch"
+        aria-checked={katalogModuAktif}
+        onClick={() => setKatalogModuAktif((prev) => !prev)}
+        className="mt-4 flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-4 text-left transition hover:border-emerald-200 lg:px-6 lg:py-5"
+      >
+        <span>
+          <span className="block text-sm font-semibold text-slate-900 lg:text-base">
+            Katalog Modunu Aktif Et
+          </span>
+          <span className="mt-1 block text-xs text-slate-500 lg:text-sm">
+            Aktifken hamburger menüde Katalog linki görünür ve vitrin katalog sayfası açılır.
+          </span>
+        </span>
+        <span
+          className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition ${
+            katalogModuAktif ? "bg-emerald-600" : "bg-slate-300"
+          }`}
+          aria-hidden
+        >
+          <span
+            className={`absolute top-0.5 size-6 rounded-full bg-white shadow transition ${
+              katalogModuAktif ? "left-[22px]" : "left-0.5"
             }`}
           />
         </span>

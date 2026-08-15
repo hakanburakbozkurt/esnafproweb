@@ -17,17 +17,35 @@ const menuLinkClass =
 
 function MenuLinks({
   blogHref,
+  katalogHref,
+  showKatalogNav,
   isOwner,
   isBlogPage,
+  isKatalogPage,
   onNavigate,
 }: {
   blogHref: string;
+  katalogHref: string;
+  showKatalogNav: boolean;
   isOwner: boolean;
   isBlogPage: boolean;
+  isKatalogPage: boolean;
   onNavigate: () => void;
 }) {
   return (
     <>
+      {showKatalogNav && (
+        <Link
+          href={katalogHref}
+          role="menuitem"
+          aria-current={isKatalogPage ? "page" : undefined}
+          className={cn(menuLinkClass, isKatalogPage && "bg-emerald-50 text-emerald-700")}
+          onClick={onNavigate}
+        >
+          Katalog
+        </Link>
+      )}
+
       <Link
         href={blogHref}
         role="menuitem"
@@ -71,13 +89,19 @@ function MenuLinks({
 
 export function VitrinOwnerMenu({
   blogHref,
+  katalogHref,
+  showKatalogNav,
   isOwner,
   isBlogPage,
+  isKatalogPage,
   headerRef,
 }: {
   blogHref: string;
+  katalogHref: string;
+  showKatalogNav: boolean;
   isOwner: boolean;
   isBlogPage: boolean;
+  isKatalogPage: boolean;
   headerRef?: RefObject<HTMLElement | null>;
 }) {
   const [open, setOpen] = useState(false);
@@ -172,8 +196,11 @@ export function VitrinOwnerMenu({
           <div className="flex flex-col gap-1 p-3">
             <MenuLinks
               blogHref={blogHref}
+              katalogHref={katalogHref}
+              showKatalogNav={showKatalogNav}
               isOwner={isOwner}
               isBlogPage={isBlogPage}
+              isKatalogPage={isKatalogPage}
               onNavigate={closeMenu}
             />
           </div>
@@ -206,8 +233,11 @@ export function VitrinOwnerMenu({
         >
           <MenuLinks
             blogHref={blogHref}
+            katalogHref={katalogHref}
+            showKatalogNav={showKatalogNav}
             isOwner={isOwner}
             isBlogPage={isBlogPage}
+            isKatalogPage={isKatalogPage}
             onNavigate={closeMenu}
           />
         </div>

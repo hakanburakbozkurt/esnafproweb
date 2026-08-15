@@ -77,7 +77,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       supabase
         .from("dukkanlar")
         .select(
-          "id, slug, user_id, updated_at, created_at, iletisim_sss_goster, teknik_servis_aktif"
+          "id, slug, user_id, updated_at, created_at, iletisim_sss_goster, teknik_servis_aktif, katalog_modu_aktif"
         )
         .eq("aktif", true),
       supabase
@@ -186,6 +186,15 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         sitemapEntry(`${shopBase}/teknik-servis`, storeLastModified, {
           changeFrequency: "monthly",
           priority: 0.6,
+        })
+      );
+    }
+
+    if (dukkan.katalog_modu_aktif) {
+      dynamicPages.push(
+        sitemapEntry(`${shopBase}/katalog`, storeLastModified, {
+          changeFrequency: "daily",
+          priority: 0.65,
         })
       );
     }

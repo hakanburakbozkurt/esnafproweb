@@ -63,6 +63,7 @@ export default async function HakkimizdaPage({ params }: PageProps) {
   const isOwner = user?.id === dukkan.user_id;
   const showContactNav = dukkan.iletisim_sss_goster ?? true;
   const showTeknikServisNav = dukkan.teknik_servis_aktif ?? false;
+  const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(
     supabase,
     dukkan.user_id
@@ -93,6 +94,7 @@ export default async function HakkimizdaPage({ params }: PageProps) {
         showContactNav={showContactNav}
         showTeknikServisNav={showTeknikServisNav}
         showPazaryeriNav={showPazaryeriNav}
+        showKatalogNav={showKatalogNav}
         dukkan={dukkan}
       >
         <HakkimizdaPageContent dukkan={dukkan} faqItems={faqItems} />

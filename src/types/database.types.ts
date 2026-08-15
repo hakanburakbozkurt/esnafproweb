@@ -40,6 +40,7 @@ export interface Database {
           sss: FaqItem[] | null;
           iletisim_sss_goster: boolean;
           teknik_servis_aktif: boolean;
+          katalog_modu_aktif: boolean;
           teknik_servis_fotograf_1: string | null;
           teknik_servis_fotograf_2: string | null;
           teknik_servis_fotograf_3: string | null;
@@ -75,6 +76,7 @@ export interface Database {
           sss?: FaqItem[] | null;
           iletisim_sss_goster?: boolean;
           teknik_servis_aktif?: boolean;
+          katalog_modu_aktif?: boolean;
           teknik_servis_fotograf_1?: string | null;
           teknik_servis_fotograf_2?: string | null;
           teknik_servis_fotograf_3?: string | null;
@@ -110,6 +112,7 @@ export interface Database {
           sss?: FaqItem[] | null;
           iletisim_sss_goster?: boolean;
           teknik_servis_aktif?: boolean;
+          katalog_modu_aktif?: boolean;
           teknik_servis_fotograf_1?: string | null;
           teknik_servis_fotograf_2?: string | null;
           teknik_servis_fotograf_3?: string | null;
@@ -271,6 +274,63 @@ export interface Database {
           context?: string;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      katalogweb: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          brand: string | null;
+          model_name: string | null;
+          product_name: string | null;
+          price: number | null;
+          image_url: string | null;
+          is_sold: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          brand?: string | null;
+          model_name?: string | null;
+          product_name?: string | null;
+          price?: number | null;
+          image_url?: string | null;
+          is_sold?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          brand?: string | null;
+          model_name?: string | null;
+          product_name?: string | null;
+          price?: number | null;
+          image_url?: string | null;
+          is_sold?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      phone_models: {
+        Row: {
+          id: string;
+          brand: string;
+          model_name: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          brand: string;
+          model_name: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          brand?: string;
+          model_name?: string;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -662,6 +722,8 @@ export type ToptanciProduct = Database["public"]["Tables"]["toptanci_products"][
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 export type SecondHandDevicePublic =
   Database["public"]["Views"]["second_hand_devices_public"]["Row"];
+export type KatalogWebItem = Database["public"]["Tables"]["katalogweb"]["Row"];
+export type PhoneModel = Database["public"]["Tables"]["phone_models"]["Row"];
 
 /** @deprecated Use Dukkan */
 export type Store = Dukkan;

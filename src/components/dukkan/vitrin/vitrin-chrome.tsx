@@ -15,6 +15,7 @@ export function VitrinChrome({
   showContactNav,
   showTeknikServisNav,
   showPazaryeriNav,
+  showKatalogNav,
   dukkan,
   children,
 }: {
@@ -23,6 +24,7 @@ export function VitrinChrome({
   showContactNav: boolean;
   showTeknikServisNav: boolean;
   showPazaryeriNav: boolean;
+  showKatalogNav: boolean;
   dukkan: Dukkan;
   children: ReactNode;
 }) {
@@ -31,6 +33,7 @@ export function VitrinChrome({
   const teknikServisHref = `/${dukkan.slug}/teknik-servis`;
   const pazaryeriHref = `/${dukkan.slug}/pazaryeri`;
   const blogHref = `/${dukkan.slug}/blog`;
+  const katalogHref = `/${dukkan.slug}/katalog`;
   const hakkimizdaHref = `/${dukkan.slug}/hakkimizda`;
   const magazamHref = `/${dukkan.slug}`;
   const isMagazamPage = pathname === magazamHref;
@@ -40,6 +43,8 @@ export function VitrinChrome({
     pathname === pazaryeriHref || pathname.startsWith(`${pazaryeriHref}/`);
   const isBlogPage =
     pathname === blogHref || pathname.startsWith(`${blogHref}/`);
+  const isKatalogPage =
+    pathname === katalogHref || pathname.startsWith(`${katalogHref}/`);
   const isHakkimizdaPage = pathname === hakkimizdaHref;
 
   const headerRef = useRef<HTMLElement>(null);
@@ -114,8 +119,11 @@ export function VitrinChrome({
             <div className="flex shrink-0 items-center">
               <VitrinOwnerMenu
                 blogHref={blogHref}
+                katalogHref={katalogHref}
+                showKatalogNav={showKatalogNav}
                 isOwner={Boolean(isOwner)}
                 isBlogPage={isBlogPage}
+                isKatalogPage={isKatalogPage}
                 headerRef={headerRef}
               />
             </div>

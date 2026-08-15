@@ -1,11 +1,12 @@
 import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { notFound } from "next/navigation";
-import { BlogPostDetailContent } from "@/components/dukkan/vitrin/blog-post-detail-content";
+import { KatalogPageContent } from "@/components/katalog/katalog-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
-import { getDukkanBlogPostBySlug } from "@/lib/dukkan/blog-posts";
+import { getKatalogItemsForUser } from "@/lib/katalog/katalog-items";
+import { getPhoneModels } from "@/lib/katalog/get-phone-models";
 import {
-  buildBlogPostingJsonLd,
   buildStoreBreadcrumbJsonLd,
+  buildWebPageJsonLd,
 } from "@/lib/dukkan/json-ld";
 import {
   buildStoreSubpageSeoMetadata,
@@ -16,45 +17,33 @@ import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
 type PageProps = {
-  params: Promise<{ slug: string; postSlug: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug, postSlug } = await params;
+  const { slug } = await params;
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("id, dukkan_adi, slug, adres, banner_url, logo_url")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url, katalog_modu_aktif")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
 
-  if (!dukkan) {
+  if (!dukkan || !dukkan.katalog_modu_aktif) {
     return NOT_FOUND_STORE_METADATA;
-  }
-
-  const post = await getDukkanBlogPostBySlug(supabase, dukkan.id, postSlug);
-
-  if (!post) {
-    return buildStoreSubpageSeoMetadata(
-      dukkan,
-      "blog",
-      "Blog",
-      `${dukkan.dukkan_adi} blog yazıları`
-    );
   }
 
   return buildStoreSubpageSeoMetadata(
     dukkan,
-    `blog/${post.slug}`,
-    post.baslik,
-    post.icerik?.slice(0, 160) ?? post.baslik,
-    { image: post.kapak_url, ogType: "article" }
+    "katalog",
+    "Katalog",
+    `${dukkan.dukkan_adi} ürün kataloğu — güncel stok ve fiyatlar`
   );
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
-  const { slug, postSlug } = await params;
+export default async function KatalogPage({ params }: PageProps) {
+  const { slug } = await params;
   const supabase = await createClient();
 
   const { data: dukkan, error: dukkanError } = await supabase
@@ -64,13 +53,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     .eq("aktif", true)
     .maybeSingle();
 
-  if (dukkanError || !dukkan) {
-    notFound();
-  }
-
-  const post = await getDukkanBlogPostBySlug(supabase, dukkan.id, postSlug);
-
-  if (!post) {
+  if (dukkanError || !dukkan || !dukkan.katalog_modu_aktif) {
     notFound();
   }
 
@@ -83,18 +66,23 @@ export default async function BlogPostPage({ params }: PageProps) {
   const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(supabase, dukkan.user_id);
 
+  const [items, phoneModels] = await Promise.all([
+    getKatalogItemsForUser(dukkan.user_id),
+    getPhoneModels(),
+  ]);
+
   return (
     <>
       <JsonLdScripts
         schemas={[
-          buildBlogPostingJsonLd({
-            post,
-            shopName: dukkan.dukkan_adi,
-            shopSlug: dukkan.slug,
+          buildWebPageJsonLd({
+            slug: dukkan.slug,
+            path: "/katalog",
+            name: `Katalog | ${dukkan.dukkan_adi}`,
+            description: `${dukkan.dukkan_adi} mağaza ürün kataloğu`,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
-            { name: "Blog", segment: "blog" },
-            { name: post.baslik, segment: `blog/${post.slug}` },
+            { name: "Katalog", segment: "katalog" },
           ]),
         ]}
       />
@@ -108,10 +96,12 @@ export default async function BlogPostPage({ params }: PageProps) {
         showKatalogNav={showKatalogNav}
         dukkan={dukkan}
       >
-        <BlogPostDetailContent
-          shopName={dukkan.dukkan_adi}
+        <KatalogPageContent
           shopSlug={dukkan.slug}
-          post={post}
+          shopName={dukkan.dukkan_adi}
+          items={items}
+          phoneModels={phoneModels}
+          isOwner={isOwner}
         />
       </VitrinChrome>
     </>

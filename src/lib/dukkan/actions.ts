@@ -30,6 +30,7 @@ function revalidateDukkanPaths(slug: string, previousSlug?: string) {
   revalidatePath(`/${slug}/hakkimizda`);
   revalidatePath(`/${slug}/blog`);
   revalidatePath(`/${slug}/pazaryeri`);
+  revalidatePath(`/${slug}/katalog`);
   revalidatePath("/dukkan-ayarlari");
   revalidateSitemap();
 
@@ -40,6 +41,7 @@ function revalidateDukkanPaths(slug: string, previousSlug?: string) {
     revalidatePath(`/${previousSlug}/hakkimizda`);
     revalidatePath(`/${previousSlug}/blog`);
     revalidatePath(`/${previousSlug}/pazaryeri`);
+    revalidatePath(`/${previousSlug}/katalog`);
   }
 }
 

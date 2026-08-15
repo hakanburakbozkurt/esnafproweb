@@ -67,6 +67,7 @@ export default async function IletisimPage({ params }: PageProps) {
   } = await supabase.auth.getUser();
   const isOwner = user?.id === dukkan.user_id;
   const showTeknikServisNav = dukkan.teknik_servis_aktif ?? false;
+  const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(
     supabase,
     dukkan.user_id
@@ -97,6 +98,7 @@ export default async function IletisimPage({ params }: PageProps) {
         showContactNav
         showTeknikServisNav={showTeknikServisNav}
         showPazaryeriNav={showPazaryeriNav}
+        showKatalogNav={showKatalogNav}
         dukkan={dukkan}
       >
         <IletisimPageContent dukkan={dukkan} faqItems={faqItems} />

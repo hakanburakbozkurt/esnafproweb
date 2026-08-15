@@ -117,6 +117,7 @@ const APP_RESERVED_SLUGS = [
   "giris",
   "hakkimizda",
   "iletisim",
+  "katalog",
   "logout",
   "magaza",
   "servis-takip",
