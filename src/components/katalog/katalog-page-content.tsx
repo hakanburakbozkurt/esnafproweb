@@ -41,6 +41,14 @@ export function KatalogPageContent({
     );
   }
 
+  function handleItemUnsold(itemId: string) {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === itemId ? { ...item, is_sold: false } : item
+      )
+    );
+  }
+
   return (
     <div className="py-8 lg:py-12">
       <div className={desktopContainerClass}>
@@ -81,6 +89,7 @@ export function KatalogPageContent({
             shopSlug={shopSlug}
             isOwner={isOwner}
             onItemSold={handleItemSold}
+            onItemUnsold={handleItemUnsold}
           />
         </div>
       </div>

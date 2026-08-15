@@ -81,6 +81,40 @@ export async function markKatalogItemSold(
   return { success: true };
 }
 
+export async function markKatalogItemUnsold(
+  itemId: string,
+  shopSlug: string
+): Promise<KatalogActionState> {
+  if (!itemId?.trim()) {
+    return { error: "Geçersiz ürün." };
+  }
+
+  const owner = await assertShopOwner(shopSlug);
+  if ("error" in owner) return owner;
+
+  const { supabase, user } = owner;
+
+  const { data, error } = await supabase
+    .from("katalogweb")
+    .update({ is_sold: false })
+    .eq("id", itemId)
+    .eq("user_id", user.id)
+    .eq("is_sold", true)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (!data) {
+    return { error: "Ürün bulunamadı veya zaten satışta." };
+  }
+
+  revalidateKatalogPaths(shopSlug);
+  return { success: true };
+}
+
 export async function bulkCreateKatalogItems(
   shopSlug: string,
   brand: string,

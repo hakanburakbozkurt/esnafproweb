@@ -1,7 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
-import { markKatalogItemSold } from "@/lib/katalog/katalog-actions";
+import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
+import {
+  markKatalogItemSold,
+  markKatalogItemUnsold,
+} from "@/lib/katalog/katalog-actions";
 import { getKatalogProductTitle } from "@/lib/katalog/katalog-display";
 import type { KatalogSelection } from "@/lib/katalog/katalog-tree";
 import type { KatalogWebItem } from "@/types/database.types";
@@ -13,13 +17,17 @@ export function KatalogModelGallery({
   shopSlug,
   isOwner,
   onItemSold,
+  onItemUnsold,
 }: {
   items: KatalogWebItem[];
   selection: KatalogSelection | null;
   shopSlug: string;
   isOwner: boolean;
   onItemSold: (itemId: string) => void;
+  onItemUnsold: (itemId: string) => void;
 }) {
+  const [previewItem, setPreviewItem] = useState<KatalogWebItem | null>(null);
+
   if (!selection) {
     return <KatalogGalleryEmptyState />;
   }
@@ -55,9 +63,16 @@ export function KatalogModelGallery({
             shopSlug={shopSlug}
             isOwner={isOwner}
             onSold={onItemSold}
+            onUnsold={onItemUnsold}
+            onPreview={setPreviewItem}
           />
         ))}
       </div>
+
+      <KatalogImageLightbox
+        item={previewItem}
+        onClose={() => setPreviewItem(null)}
+      />
     </div>
   );
 }
@@ -67,11 +82,15 @@ function KatalogGalleryItem({
   shopSlug,
   isOwner,
   onSold,
+  onUnsold,
+  onPreview,
 }: {
   item: KatalogWebItem;
   shopSlug: string;
   isOwner: boolean;
   onSold: (itemId: string) => void;
+  onUnsold: (itemId: string) => void;
+  onPreview: (item: KatalogWebItem) => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const isSold = item.is_sold;
@@ -88,14 +107,34 @@ function KatalogGalleryItem({
     });
   }
 
+  function handleMarkUnsold() {
+    if (!isOwner || !isSold || isPending) return;
+
+    startTransition(async () => {
+      const result = await markKatalogItemUnsold(item.id, shopSlug);
+      if (result.success) {
+        onUnsold(item.id);
+      }
+    });
+  }
+
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition",
+        "group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-opacity duration-300",
         isSold && "opacity-50"
       )}
     >
-      <div className="relative aspect-square overflow-hidden bg-slate-100">
+      <button
+        type="button"
+        onClick={() => item.image_url && onPreview(item)}
+        disabled={!item.image_url}
+        aria-label={`${title} görselini büyüt`}
+        className={cn(
+          "relative aspect-square w-full overflow-hidden bg-slate-100 text-left",
+          item.image_url && "cursor-zoom-in"
+        )}
+      >
         {item.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -103,7 +142,7 @@ function KatalogGalleryItem({
             alt={title}
             className={cn(
               "h-full w-full object-cover object-center transition duration-500",
-              !isSold && "group-hover:scale-[1.02]"
+              !isSold && "group-hover:scale-[1.03]"
             )}
             loading="lazy"
           />
@@ -114,32 +153,106 @@ function KatalogGalleryItem({
         )}
 
         {isSold && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/20">
             <span className="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-bold tracking-wide text-white">
               SATILDI
             </span>
           </div>
         )}
-      </div>
+      </button>
 
       {isOwner && (
         <div className="p-3">
-          <button
-            type="button"
-            onClick={handleMarkSold}
-            disabled={isSold || isPending}
-            className={cn(
-              "inline-flex min-h-10 w-full items-center justify-center rounded-xl px-3 text-xs font-extrabold tracking-wide transition sm:text-sm",
-              isSold
-                ? "cursor-default bg-slate-100 text-slate-500"
-                : "bg-emerald-600 text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-            )}
-          >
-            {isSold ? "SATILDI" : isPending ? "İşleniyor…" : "SATILDI"}
-          </button>
+          {isSold ? (
+            <button
+              type="button"
+              onClick={handleMarkUnsold}
+              disabled={isPending}
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-xs font-extrabold tracking-wide text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
+            >
+              {isPending ? "İşleniyor…" : "GERİ AL"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleMarkSold}
+              disabled={isPending}
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-emerald-600 px-3 text-xs font-extrabold tracking-wide text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
+            >
+              {isPending ? "İşleniyor…" : "SATILDI"}
+            </button>
+          )}
         </div>
       )}
     </article>
+  );
+}
+
+function KatalogImageLightbox({
+  item,
+  onClose,
+}: {
+  item: KatalogWebItem | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!item) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [item, onClose]);
+
+  if (!item?.image_url || typeof document === "undefined") {
+    return null;
+  }
+
+  const title = getKatalogProductTitle(item);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8">
+      <button
+        type="button"
+        aria-label="Önizlemeyi kapat"
+        className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <figure className="relative z-[201] flex max-h-[min(90vh,900px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
+          <figcaption className="min-w-0 truncate text-sm font-semibold text-slate-900 sm:text-base">
+            {title}
+          </figcaption>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Kapat"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-50 p-4 sm:p-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.image_url}
+            alt={title}
+            className="max-h-[min(75vh,780px)] w-full object-contain"
+          />
+        </div>
+      </figure>
+    </div>,
+    document.body
   );
 }
 
