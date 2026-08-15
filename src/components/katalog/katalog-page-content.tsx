@@ -2,34 +2,35 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { KatalogProductCard } from "@/components/katalog/katalog-product-card";
-import { buildPhoneModelFilters } from "@/lib/katalog/phone-models";
-import { useKatalogFilters } from "@/lib/katalog/use-katalog-filters";
+import { useKatalogDeviceFilters } from "@/lib/katalog/use-katalog-device-filters";
 import { desktopContainerClass } from "@/lib/utils/layout";
-import type { KatalogWebItem, PhoneModel } from "@/types/database.types";
+import type { KatalogWebItem } from "@/types/database.types";
 import { cn } from "@/lib/utils/cn";
 
 export function KatalogPageContent({
   shopSlug,
   shopName,
   items: initialItems,
-  phoneModels,
   isOwner,
 }: {
   shopSlug: string;
   shopName: string;
   items: KatalogWebItem[];
-  phoneModels: PhoneModel[];
   isOwner: boolean;
 }) {
   const [items, setItems] = useState(initialItems);
-  const filters = buildPhoneModelFilters(phoneModels);
-  const { brand, model, setBrand, setModel, filteredItems, resetFilters } =
-    useKatalogFilters(items);
-
-  const availableModels = useMemo(() => {
-    if (!brand) return [];
-    return filters.modelsByBrand[brand] ?? [];
-  }, [brand, filters.modelsByBrand]);
+  const {
+    brand,
+    model,
+    brands,
+    models,
+    brandsLoading,
+    modelsLoading,
+    filteredItems,
+    setBrand,
+    setModel,
+    resetFilters,
+  } = useKatalogDeviceFilters(items);
 
   function handleSold(itemId: string) {
     setItems((current) => current.filter((item) => item.id !== itemId));
@@ -56,10 +57,13 @@ export function KatalogPageContent({
               <select
                 value={brand}
                 onChange={(event) => setBrand(event.target.value)}
-                className={selectClassName}
+                disabled={brandsLoading}
+                className={cn(selectClassName, brandsLoading && "opacity-70")}
               >
-                <option value="">Tüm markalar</option>
-                {filters.brands.map((item) => (
+                <option value="">
+                  {brandsLoading ? "Markalar yükleniyor…" : "Tüm markalar"}
+                </option>
+                {brands.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -71,11 +75,22 @@ export function KatalogPageContent({
               <select
                 value={model}
                 onChange={(event) => setModel(event.target.value)}
-                disabled={!brand}
-                className={cn(selectClassName, !brand && "cursor-not-allowed opacity-60")}
+                disabled={!brand || modelsLoading}
+                className={cn(
+                  selectClassName,
+                  (!brand || modelsLoading) && "cursor-not-allowed opacity-60"
+                )}
               >
-                <option value="">Tüm modeller</option>
-                {availableModels.map((item) => (
+                <option value="">
+                  {!brand
+                    ? "Önce marka seçin"
+                    : modelsLoading
+                      ? "Modeller yükleniyor…"
+                      : models.length === 0
+                        ? "Bu marka için model yok"
+                        : "Tüm modeller"}
+                </option>
+                {models.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>

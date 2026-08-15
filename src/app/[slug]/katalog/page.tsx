@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { KatalogPageContent } from "@/components/katalog/katalog-page-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { getKatalogItemsForUser } from "@/lib/katalog/katalog-items";
-import { getPhoneModels } from "@/lib/katalog/get-phone-models";
 import {
   buildStoreBreadcrumbJsonLd,
   buildWebPageJsonLd,
@@ -66,10 +65,7 @@ export default async function KatalogPage({ params }: PageProps) {
   const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(supabase, dukkan.user_id);
 
-  const [items, phoneModels] = await Promise.all([
-    getKatalogItemsForUser(dukkan.user_id),
-    getPhoneModels(),
-  ]);
+  const items = await getKatalogItemsForUser(dukkan.user_id);
 
   return (
     <>
@@ -100,7 +96,6 @@ export default async function KatalogPage({ params }: PageProps) {
           shopSlug={dukkan.slug}
           shopName={dukkan.dukkan_adi}
           items={items}
-          phoneModels={phoneModels}
           isOwner={isOwner}
         />
       </VitrinChrome>

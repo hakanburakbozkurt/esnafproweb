@@ -46,3 +46,21 @@ create policy phone_models_select_public
   for select
   to public
   using (true);
+
+-- tablet_models: marka/model filtre kaynağı (yoksa oluştur)
+create table if not exists public.tablet_models (
+  id uuid primary key default gen_random_uuid(),
+  brand text not null,
+  model_name text not null,
+  created_at timestamptz not null default now(),
+  unique (brand, model_name)
+);
+
+alter table public.tablet_models enable row level security;
+
+drop policy if exists tablet_models_select_public on public.tablet_models;
+create policy tablet_models_select_public
+  on public.tablet_models
+  for select
+  to public
+  using (true);

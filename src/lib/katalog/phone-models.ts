@@ -1,3 +1,7 @@
+import {
+  mergeUniqueSorted,
+  normalizeDeviceModelRow,
+} from "@/lib/katalog/device-model-normalize";
 import type { PhoneModel } from "@/types/database.types";
 
 export type PhoneModelFilters = {
@@ -5,29 +9,33 @@ export type PhoneModelFilters = {
   modelsByBrand: Record<string, string[]>;
 };
 
-export function buildPhoneModelFilters(models: PhoneModel[]): PhoneModelFilters {
+export function buildPhoneModelFilters(
+  models: Array<PhoneModel | Record<string, unknown>>
+): PhoneModelFilters {
   const modelsByBrand: Record<string, Set<string>> = {};
 
   for (const model of models) {
-    const brand = model.brand?.trim();
-    const modelName = model.model_name?.trim();
-    if (!brand || !modelName) continue;
+    const row =
+      typeof model === "object" && model !== null
+        ? normalizeDeviceModelRow(model as Record<string, unknown>)
+        : { brand: "", modelName: "" };
+    const { brand, modelName } = row;
+    if (!brand) continue;
 
     if (!modelsByBrand[brand]) {
       modelsByBrand[brand] = new Set();
     }
-    modelsByBrand[brand].add(modelName);
+
+    if (modelName) {
+      modelsByBrand[brand].add(modelName);
+    }
   }
 
-  const brands = Object.keys(modelsByBrand).sort((a, b) =>
-    a.localeCompare(b, "tr")
-  );
-
+  const brands = mergeUniqueSorted(Object.keys(modelsByBrand));
   const normalized: Record<string, string[]> = {};
+
   for (const brand of brands) {
-    normalized[brand] = [...modelsByBrand[brand]].sort((a, b) =>
-      a.localeCompare(b, "tr")
-    );
+    normalized[brand] = mergeUniqueSorted([...modelsByBrand[brand]]);
   }
 
   return { brands, modelsByBrand: normalized };

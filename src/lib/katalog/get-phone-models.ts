@@ -1,4 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  DEVICE_MODEL_TABLES,
+  mergeUniqueSorted,
+  normalizeDeviceModelRow,
+} from "@/lib/katalog/device-model-normalize";
 import type { PhoneModel } from "@/types/database.types";
 
 export async function getPhoneModels(): Promise<PhoneModel[]> {
@@ -15,4 +20,26 @@ export async function getPhoneModels(): Promise<PhoneModel[]> {
   } catch {
     return [];
   }
+}
+
+export async function getAllDeviceModels(): Promise<
+  Array<Record<string, unknown>>
+> {
+  const supabase = await createClient();
+  const rows: Array<Record<string, unknown>> = [];
+
+  for (const table of DEVICE_MODEL_TABLES) {
+    const { data, error } = await supabase.from(table).select("*");
+    if (error || !data) continue;
+    rows.push(...(data as Record<string, unknown>[]));
+  }
+
+  return rows;
+}
+
+export async function getDeviceModelBrands(): Promise<string[]> {
+  const rows = await getAllDeviceModels();
+  return mergeUniqueSorted(
+    rows.map((row) => normalizeDeviceModelRow(row).brand).filter(Boolean)
+  );
 }

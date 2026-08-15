@@ -334,6 +334,27 @@ export interface Database {
         };
         Relationships: [];
       };
+      tablet_models: {
+        Row: {
+          id: string;
+          brand: string;
+          model_name: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          brand: string;
+          model_name: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          brand?: string;
+          model_name?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       kullanici_profilleri: {
         Row: {
           id: string;
@@ -724,6 +745,7 @@ export type SecondHandDevicePublic =
   Database["public"]["Views"]["second_hand_devices_public"]["Row"];
 export type KatalogWebItem = Database["public"]["Tables"]["katalogweb"]["Row"];
 export type PhoneModel = Database["public"]["Tables"]["phone_models"]["Row"];
+export type TabletModel = Database["public"]["Tables"]["tablet_models"]["Row"];
 
 /** @deprecated Use Dukkan */
 export type Store = Dukkan;
