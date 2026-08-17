@@ -98,6 +98,46 @@ export async function getTamirKategorileriByModel(
   }
 }
 
+export async function getTamirFiyatlariByModel(
+  modelId: string
+): Promise<TamirFiyati[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("tamir_fiyatlari")
+      .select("*")
+      .eq("model_id", modelId)
+      .order("sort_order", { ascending: true });
+
+    if (error || !data) return [];
+    return data;
+  } catch {
+    return [];
+  }
+}
+
+export type TamirFiyatGroup = {
+  category: string;
+  items: TamirFiyati[];
+};
+
+export function groupTamirFiyatlariByCategory(
+  prices: TamirFiyati[]
+): TamirFiyatGroup[] {
+  const groups = new Map<string, TamirFiyati[]>();
+
+  for (const item of prices) {
+    const key = item.category || "Diğer";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(item);
+  }
+
+  return [...groups.entries()].map(([category, items]) => ({
+    category,
+    items,
+  }));
+}
+
 export async function getTamirFiyatlariByModelAndCategory(
   modelId: string,
   category: string
@@ -119,7 +159,9 @@ export async function getTamirFiyatlariByModelAndCategory(
 }
 
 export function formatTamirPrice(price: number | null | undefined): string {
-  if (price == null || Number.isNaN(Number(price))) return "Fiyat sorunuz";
+  if (price == null || Number.isNaN(Number(price)) || Number(price) === 0) {
+    return "Fiyat sorunuz";
+  }
 
   return new Intl.NumberFormat("tr-TR", {
     style: "currency",

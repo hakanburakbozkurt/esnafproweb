@@ -1,25 +1,37 @@
 "use client";
 
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useMemo, useState, useTransition } from "react";
+import { TamirChoiceCard } from "@/components/tamir-fiyati/tamir-choice-card";
+import { TamirPricePanel } from "@/components/tamir-fiyati/tamir-price-panel";
 import {
-  fetchTamirFiyatlari,
-  fetchTamirKategorileri,
+  fetchTamirFiyatlariByModel,
   fetchTamirModelleri,
 } from "@/lib/tamir-fiyati/tamir-fiyati-actions";
-import { formatTamirPrice } from "@/lib/tamir-fiyati/tamir-fiyati-queries";
-import type { TamirFiyati, TamirMarkasi } from "@/types/database.types";
+import {
+  getTamirBrandIconSources,
+  getTamirModelIconSources,
+} from "@/lib/tamir-fiyati/tamir-fiyati-icons";
 import type { TamirModelOption } from "@/lib/tamir-fiyati/tamir-fiyati-queries";
+import type { TamirFiyati, TamirMarkasi } from "@/types/database.types";
 import { cn } from "@/lib/utils/cn";
 
-type Step = 1 | 2 | 3 | 4;
+type View = "brands" | "models" | "prices";
+
+const viewMotion = {
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+};
 
 export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
-  const [step, setStep] = useState<Step>(1);
+  const prefersReducedMotion = useReducedMotion();
+  const [view, setView] = useState<View>("brands");
   const [selectedBrand, setSelectedBrand] = useState<TamirMarkasi | null>(null);
   const [models, setModels] = useState<TamirModelOption[]>([]);
-  const [selectedModel, setSelectedModel] = useState<TamirModelOption | null>(null);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<TamirModelOption | null>(
+    null
+  );
   const [prices, setPrices] = useState<TamirFiyati[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -34,26 +46,9 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
     return [...groups.entries()];
   }, [models]);
 
-  function resetFromStep(nextStep: Step) {
-    setStep(nextStep);
-    setError(null);
-    if (nextStep <= 1) {
-      setSelectedBrand(null);
-      setModels([]);
-      setSelectedModel(null);
-      setCategories([]);
-      setSelectedCategory(null);
-      setPrices([]);
-    } else if (nextStep <= 2) {
-      setSelectedModel(null);
-      setCategories([]);
-      setSelectedCategory(null);
-      setPrices([]);
-    } else if (nextStep <= 3) {
-      setSelectedCategory(null);
-      setPrices([]);
-    }
-  }
+  const transition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
 
   function handleBrandSelect(brand: TamirMarkasi) {
     setSelectedBrand(brand);
@@ -65,7 +60,9 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
         return;
       }
       setModels(nextModels);
-      setStep(2);
+      setSelectedModel(null);
+      setPrices([]);
+      setView("models");
     });
   }
 
@@ -73,196 +70,167 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
     setSelectedModel(model);
     setError(null);
     startTransition(async () => {
-      const nextCategories = await fetchTamirKategorileri(model.id);
-      if (!nextCategories.length) {
-        setError("Bu model için tamir kategorisi bulunamadı.");
-        return;
-      }
-      setCategories(nextCategories);
-      setStep(3);
-    });
-  }
-
-  function handleCategorySelect(category: string) {
-    if (!selectedModel) return;
-    setSelectedCategory(category);
-    setError(null);
-    startTransition(async () => {
-      const nextPrices = await fetchTamirFiyatlari(selectedModel.id, category);
+      const nextPrices = await fetchTamirFiyatlariByModel(model.id);
       if (!nextPrices.length) {
-        setError("Bu kategori için fiyat bulunamadı.");
+        setError("Bu model için fiyat listesi bulunamadı.");
         return;
       }
       setPrices(nextPrices);
-      setStep(4);
+      setView("prices");
     });
+  }
+
+  function goToBrands() {
+    setView("brands");
+    setSelectedBrand(null);
+    setModels([]);
+    setSelectedModel(null);
+    setPrices([]);
+    setError(null);
+  }
+
+  function goToModels() {
+    setView("models");
+    setSelectedModel(null);
+    setPrices([]);
+    setError(null);
   }
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <StepIndicator current={step} />
+      <TamirBreadcrumb
+        brand={selectedBrand}
+        model={selectedModel}
+        view={view}
+        onBrandClick={view !== "brands" ? goToBrands : undefined}
+        onModelClick={view === "prices" ? goToModels : undefined}
+      />
 
       {error && (
-        <p className="mb-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
           {error}
-        </p>
+        </motion.p>
       )}
 
       {isPending && (
-        <p className="mb-4 text-center text-sm text-slate-500">Yükleniyor…</p>
+        <div className="mb-5 flex items-center justify-center gap-2 text-sm text-slate-500">
+          <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-emerald-500" />
+          Yükleniyor…
+        </div>
       )}
 
-      {step === 1 && (
-        <section>
-          <SectionTitle
-            title="Marka seçin"
-            description="Cihazınızın markasını seçerek devam edin."
-          />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {brands.map((brand) => (
-              <ImageChoiceCard
-                key={brand.id}
-                label={brand.name}
-                imageUrl={brand.image_url}
-                active={selectedBrand?.id === brand.id}
-                disabled={isPending}
-                onClick={() => handleBrandSelect(brand)}
-              />
-            ))}
-          </div>
-          {!brands.length && (
-            <EmptyHint text="Henüz marka eklenmemiş. Veritabanı seed dosyasını Supabase'e uygulayın." />
-          )}
-        </section>
-      )}
-
-      {step === 2 && selectedBrand && (
-        <section>
-          <SectionTitle
-            title="Model seçin"
-            description={`${selectedBrand.name} cihazınızın modelini seçin.`}
-          />
-          <div className="space-y-5">
-            {groupedModels.map(([seriName, seriModels]) => (
-              <div key={seriName}>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                  {seriName}
-                </p>
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  {seriModels.map((model) => (
-                    <ImageChoiceCard
-                      key={model.id}
-                      label={model.name}
-                      imageUrl={model.image_url}
-                      active={selectedModel?.id === model.id}
-                      disabled={isPending}
-                      onClick={() => handleModelSelect(model)}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <BackButton onClick={() => resetFromStep(1)} />
-        </section>
-      )}
-
-      {step === 3 && selectedModel && (
-        <section>
-          <SectionTitle
-            title="Tamir türü seçin"
-            description={`${selectedModel.name} için hangi işlemi yaptırmak istiyorsunuz?`}
-          />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {categories.map((category) => (
-              <ChoiceButton
-                key={category}
-                label={category}
-                active={selectedCategory === category}
-                disabled={isPending}
-                onClick={() => handleCategorySelect(category)}
-              />
-            ))}
-          </div>
-          <BackButton onClick={() => resetFromStep(2)} />
-        </section>
-      )}
-
-      {step === 4 && selectedModel && selectedCategory && (
-        <section>
-          <SectionTitle
-            title="Referans fiyatlar"
-            description={`${selectedModel.name} · ${selectedCategory}`}
-          />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <ul className="divide-y divide-slate-100">
-              {prices.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      <AnimatePresence mode="wait">
+        {view === "brands" && (
+          <motion.section
+            key="brands"
+            {...viewMotion}
+            transition={transition}
+            className="space-y-6"
+          >
+            <ViewHeader
+              title="Markanızı seçin"
+              description="Cihazınızın markasına dokunarak modele geçin."
+            />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+              {brands.map((brand, index) => (
+                <motion.div
+                  key={brand.id}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    ...transition,
+                    delay: prefersReducedMotion ? 0 : index * 0.03,
+                  }}
                 >
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900">{item.service_name}</p>
-                    {item.description && (
-                      <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+                  <TamirChoiceCard
+                    label={brand.name}
+                    sources={getTamirBrandIconSources(
+                      brand.slug,
+                      brand.image_url
                     )}
-                  </div>
-                  <p className="shrink-0 text-lg font-extrabold text-emerald-700">
-                    {formatTamirPrice(item.price)}
-                  </p>
-                </li>
+                    disabled={isPending}
+                    onClick={() => handleBrandSelect(brand)}
+                  />
+                </motion.div>
               ))}
-            </ul>
-          </div>
-          <p className="mt-4 text-center text-xs text-slate-400">
-            Fiyatlar referans amaçlıdır. Kesin teklif için yetkili servis noktası ile iletişime geçin.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <BackButton onClick={() => resetFromStep(3)} />
-            <button
-              type="button"
-              onClick={() => resetFromStep(1)}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700"
-            >
-              Baştan başla
-            </button>
-          </div>
-        </section>
-      )}
+            </div>
+            {!brands.length && (
+              <EmptyHint text="Henüz marka eklenmemiş. Veritabanı seed dosyasını Supabase'e uygulayın." />
+            )}
+          </motion.section>
+        )}
+
+        {view === "models" && selectedBrand && (
+          <motion.section
+            key="models"
+            {...viewMotion}
+            transition={transition}
+            className="space-y-6"
+          >
+            <ViewHeader
+              title={`${selectedBrand.name} modelleri`}
+              description="Tamir fiyatlarını görmek istediğiniz modeli seçin."
+            />
+            <div className="space-y-8">
+              {groupedModels.map(([seriName, seriModels]) => (
+                <div key={seriName}>
+                  <p className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600/90">
+                    {seriName}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+                    {seriModels.map((model) => (
+                      <TamirChoiceCard
+                        key={model.id}
+                        label={model.name}
+                        sources={getTamirModelIconSources(
+                          model.slug,
+                          model.image_url
+                        )}
+                        disabled={isPending}
+                        onClick={() => handleModelSelect(model)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <WizardNav onBack={goToBrands} backLabel="Markalara dön" />
+          </motion.section>
+        )}
+
+        {view === "prices" && selectedBrand && selectedModel && (
+          <motion.section
+            key="prices"
+            {...viewMotion}
+            transition={transition}
+            className="space-y-6"
+          >
+            <TamirPricePanel
+              brand={selectedBrand}
+              model={selectedModel}
+              modelIconSources={getTamirModelIconSources(
+                selectedModel.slug,
+                selectedModel.image_url
+              )}
+              prices={prices}
+            />
+            <WizardNav
+              onBack={goToModels}
+              backLabel="Modellere dön"
+              onReset={goToBrands}
+            />
+          </motion.section>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function StepIndicator({ current }: { current: Step }) {
-  const labels = ["Marka", "Model", "Tamir", "Fiyat"];
-  return (
-    <ol className="mb-8 grid grid-cols-4 gap-2">
-      {labels.map((label, index) => {
-        const stepNumber = (index + 1) as Step;
-        const active = current === stepNumber;
-        const done = current > stepNumber;
-        return (
-          <li
-            key={label}
-            className={cn(
-              "rounded-xl border px-2 py-3 text-center text-[11px] font-semibold sm:text-xs",
-              active && "border-emerald-300 bg-emerald-50 text-emerald-700",
-              done && "border-emerald-100 bg-emerald-50/60 text-emerald-600",
-              !active && !done && "border-slate-200 bg-slate-50 text-slate-400"
-            )}
-          >
-            <span className="block text-[10px] uppercase tracking-wide opacity-70">
-              {stepNumber}
-            </span>
-            {label}
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-function SectionTitle({
+function ViewHeader({
   title,
   description,
 }: {
@@ -270,118 +238,132 @@ function SectionTitle({
   description: string;
 }) {
   return (
-    <header className="mb-5 text-center">
-      <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+    <header className="text-center">
+      <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
         {title}
       </h2>
-      <p className="mt-2 text-sm text-slate-500">{description}</p>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
+        {description}
+      </p>
     </header>
   );
 }
 
-function ChoiceButton({
-  label,
-  active,
-  disabled,
-  onClick,
+function TamirBreadcrumb({
+  brand,
+  model,
+  view,
+  onBrandClick,
+  onModelClick,
 }: {
-  label: string;
-  active?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
+  brand: TamirMarkasi | null;
+  model: TamirModelOption | null;
+  view: View;
+  onBrandClick?: () => void;
+  onModelClick?: () => void;
 }) {
+  if (view === "brands") return null;
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        "min-h-12 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition",
-        active
-          ? "border-emerald-400 bg-emerald-50 text-emerald-800"
-          : "border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:bg-emerald-50/40",
-        disabled && "cursor-not-allowed opacity-60"
-      )}
+    <nav
+      aria-label="Tamir fiyatı gezinme"
+      className="mb-6 flex flex-wrap items-center justify-center gap-2 text-sm"
     >
-      {label}
-    </button>
+      <BreadcrumbButton active={view === "models"} onClick={onBrandClick}>
+        {brand?.name ?? "Marka"}
+      </BreadcrumbButton>
+      {model && (
+        <>
+          <span className="text-slate-300">/</span>
+          <BreadcrumbButton active={view === "prices"} onClick={onModelClick}>
+            {model.name}
+          </BreadcrumbButton>
+        </>
+      )}
+      {view === "prices" && (
+        <>
+          <span className="text-slate-300">/</span>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            Fiyatlar
+          </span>
+        </>
+      )}
+    </nav>
   );
 }
 
-function ImageChoiceCard({
-  label,
-  imageUrl,
+function BreadcrumbButton({
+  children,
   active,
-  disabled,
   onClick,
 }: {
-  label: string;
-  imageUrl: string | null;
+  children: React.ReactNode;
   active?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        "flex min-h-[8.5rem] flex-col items-center justify-center gap-2 rounded-2xl border px-3 py-4 text-center transition",
-        active
-          ? "border-emerald-400 bg-emerald-50 text-emerald-800 shadow-sm"
-          : "border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:bg-emerald-50/40",
-        disabled && "cursor-not-allowed opacity-60"
-      )}
-    >
-      <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt=""
-            className="h-full w-full object-contain p-1.5"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <DeviceIconPlaceholder label={label} />
+  if (!onClick) {
+    return (
+      <span
+        className={cn(
+          "rounded-full px-3 py-1 font-medium",
+          active ? "bg-slate-100 text-slate-700" : "text-slate-500"
         )}
+      >
+        {children}
       </span>
-      <span className="line-clamp-2 text-xs font-semibold leading-snug sm:text-sm">
-        {label}
-      </span>
-    </button>
-  );
-}
+    );
+  }
 
-function DeviceIconPlaceholder({ label }: { label: string }) {
-  const initial = label.trim().charAt(0).toUpperCase() || "?";
-
-  return (
-    <span
-      aria-hidden
-      className="flex h-full w-full items-center justify-center text-lg font-bold text-slate-300"
-    >
-      {initial}
-    </span>
-  );
-}
-
-function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700"
+      className={cn(
+        "rounded-full px-3 py-1 font-medium transition duration-200",
+        active
+          ? "bg-slate-100 text-slate-700"
+          : "text-slate-500 hover:bg-slate-50 hover:text-emerald-700"
+      )}
     >
-      Geri
+      {children}
     </button>
+  );
+}
+
+function WizardNav({
+  onBack,
+  backLabel,
+  onReset,
+}: {
+  onBack: () => void;
+  backLabel: string;
+  onReset?: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:border-emerald-300 hover:text-emerald-700"
+      >
+        {backLabel}
+      </button>
+      {onReset && (
+        <button
+          type="button"
+          onClick={onReset}
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-transparent bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-600 transition duration-200 hover:bg-slate-200/80 hover:text-slate-800"
+        >
+          Baştan başla
+        </button>
+      )}
+    </div>
   );
 }
 
 function EmptyHint({ text }: { text: string }) {
   return (
-    <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+    <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-10 text-center text-sm text-slate-500">
       {text}
     </p>
   );
