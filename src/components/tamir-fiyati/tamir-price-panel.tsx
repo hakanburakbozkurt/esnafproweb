@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { TamirIconImage } from "@/components/tamir-fiyati/tamir-icon-image";
 import {
   formatTamirPrice,
@@ -32,7 +33,7 @@ export function TamirPricePanel({
           <TamirIconImage
             sources={modelIconSources}
             label={model.name}
-            className="h-24 w-24 shrink-0 rounded-2xl ring-1 ring-slate-200/80 sm:h-28 sm:w-28"
+            className="h-24 w-24 shrink-0 sm:h-28 sm:w-28"
             imageClassName="p-2.5"
           />
           <div className="min-w-0">
@@ -57,7 +58,7 @@ export function TamirPricePanel({
                 {group.category}
               </h3>
             )}
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {group.items.map((item) => (
                 <TamirPriceRow key={item.id} item={item} />
               ))}
@@ -67,38 +68,82 @@ export function TamirPricePanel({
       </div>
 
       <p className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-center text-xs leading-relaxed text-slate-500">
-        Fiyatlar referans amaçlıdır. Kesin teklif için yetkili servis noktası ile
-        iletişime geçin.
+        Fiyatlar referans amaçlıdır. Kesin teklif için yetkili servis noktası
+        ile iletişime geçin.
       </p>
     </div>
   );
 }
 
 function TamirPriceRow({ item }: { item: TamirFiyati }) {
+  const [open, setOpen] = useState(false);
   const isQuote = item.price == null || Number(item.price) === 0;
+  const hasDetail = Boolean(item.description);
 
   return (
-    <li className="rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition duration-200 hover:border-emerald-200/80 hover:shadow-[0_8px_24px_rgba(16,185,129,0.06)] sm:px-5 sm:py-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div className="min-w-0 flex-1">
-          <p className="text-base font-semibold text-slate-900 sm:text-[1.05rem]">
-            {item.service_name}
+    <li className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition duration-200 hover:border-emerald-200/80 hover:shadow-[0_8px_24px_rgba(16,185,129,0.06)]">
+      <button
+        type="button"
+        onClick={() => hasDetail && setOpen((v) => !v)}
+        disabled={!hasDetail}
+        className={cn(
+          "flex w-full items-center justify-between gap-3 px-4 py-4 text-left sm:px-5",
+          hasDetail && "cursor-pointer"
+        )}
+        aria-expanded={hasDetail ? open : undefined}
+      >
+        <span className="min-w-0 flex-1 text-base font-semibold text-slate-900 sm:text-[1.05rem]">
+          {item.service_name}
+        </span>
+
+        <span className="flex shrink-0 items-center gap-2">
+          <span
+            className={cn(
+              "text-lg font-extrabold",
+              isQuote ? "text-slate-500" : "text-emerald-700"
+            )}
+          >
+            {formatTamirPrice(item.price)}
+          </span>
+
+          {hasDetail && (
+            <InfoIcon
+              open={open}
+              className="text-slate-400 transition-colors group-hover:text-emerald-500"
+            />
+          )}
+        </span>
+      </button>
+
+      {hasDetail && open && (
+        <div className="border-t border-slate-100 bg-slate-50/60 px-4 pb-4 pt-3 sm:px-5">
+          <p className="text-sm leading-relaxed text-slate-600">
+            {item.description}
           </p>
-          {item.description && (
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              {item.description}
-            </p>
-          )}
         </div>
-        <p
-          className={cn(
-            "shrink-0 text-lg font-extrabold sm:text-right",
-            isQuote ? "text-slate-500" : "text-emerald-700"
-          )}
-        >
-          {formatTamirPrice(item.price)}
-        </p>
-      </div>
+      )}
     </li>
+  );
+}
+
+function InfoIcon({ open, className }: { open: boolean; className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={cn(
+        "h-5 w-5 shrink-0 transition-transform duration-200",
+        open ? "rotate-180 text-emerald-500" : "text-slate-400",
+        className
+      )}
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+        clipRule="evenodd"
+      />
+    </svg>
   );
 }

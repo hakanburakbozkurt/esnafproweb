@@ -129,12 +129,7 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
             key="brands"
             {...viewMotion}
             transition={transition}
-            className="space-y-6"
           >
-            <ViewHeader
-              title="Markanızı seçin"
-              description="Cihazınızın markasına dokunarak modele geçin."
-            />
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
               {brands.map((brand, index) => (
                 <motion.div
@@ -152,6 +147,7 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
                       brand.slug,
                       brand.image_url
                     )}
+                    showLabel={false}
                     disabled={isPending}
                     onClick={() => handleBrandSelect(brand)}
                   />
@@ -171,10 +167,6 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
             transition={transition}
             className="space-y-6"
           >
-            <ViewHeader
-              title={`${selectedBrand.name} modelleri`}
-              description="Tamir fiyatlarını görmek istediğiniz modeli seçin."
-            />
             <div className="space-y-8">
               {groupedModels.map(([seriName, seriModels]) => (
                 <div key={seriName}>
@@ -230,24 +222,6 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
   );
 }
 
-function ViewHeader({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <header className="text-center">
-      <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-        {title}
-      </h2>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
-        {description}
-      </p>
-    </header>
-  );
-}
 
 function TamirBreadcrumb({
   brand,

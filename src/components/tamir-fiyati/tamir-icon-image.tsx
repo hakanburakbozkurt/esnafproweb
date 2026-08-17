@@ -31,7 +31,7 @@ export function TamirIconImage({
   return (
     <span
       className={cn(
-        "flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100/80",
+        "flex items-center justify-center overflow-hidden",
         className
       )}
     >
@@ -39,8 +39,8 @@ export function TamirIconImage({
         <img
           key={currentSource}
           src={currentSource}
-          alt=""
-          className={cn("h-full w-full object-contain p-2", imageClassName)}
+          alt={label}
+          className={cn("h-full w-full object-contain", imageClassName)}
           loading="lazy"
           decoding="async"
           onError={handleError}
@@ -48,7 +48,7 @@ export function TamirIconImage({
       ) : (
         <span
           aria-hidden
-          className="text-xl font-bold text-slate-300 sm:text-2xl"
+          className="flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-b from-slate-50 to-slate-100/80 text-xl font-bold text-slate-300 sm:text-2xl"
         >
           {label.trim().charAt(0).toUpperCase() || "?"}
         </span>
