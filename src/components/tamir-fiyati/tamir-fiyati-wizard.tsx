@@ -130,6 +130,9 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
             {...viewMotion}
             transition={transition}
           >
+            <p className="mx-auto mb-8 max-w-md text-center text-lg leading-relaxed text-slate-500 sm:mb-10 sm:text-xl">
+              Tamir ve fiyat bilgisi için lütfen cihaz markanızı seçin
+            </p>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
               {brands.map((brand, index) => (
                 <motion.div
