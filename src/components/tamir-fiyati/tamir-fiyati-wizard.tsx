@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { TamirChoiceCard } from "@/components/tamir-fiyati/tamir-choice-card";
 import { TamirPricePanel } from "@/components/tamir-fiyati/tamir-price-panel";
 import {
@@ -18,11 +18,21 @@ import { cn } from "@/lib/utils/cn";
 
 type View = "brands" | "models" | "prices";
 
+type WizardHistoryState = {
+  tamirWizard: {
+    step: View;
+  };
+};
+
 const viewMotion = {
   initial: { opacity: 0, y: 14 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -10 },
 };
+
+function buildHistoryState(step: View): WizardHistoryState {
+  return { tamirWizard: { step } };
+}
 
 export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
   const prefersReducedMotion = useReducedMotion();
@@ -35,6 +45,19 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
   const [prices, setPrices] = useState<TamirFiyati[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const wizardDataRef = useRef({
+    selectedBrand: null as TamirMarkasi | null,
+    models: [] as TamirModelOption[],
+    selectedModel: null as TamirModelOption | null,
+    prices: [] as TamirFiyati[],
+  });
+
+  wizardDataRef.current = {
+    selectedBrand,
+    models,
+    selectedModel,
+    prices,
+  };
 
   const groupedModels = useMemo(() => {
     const groups = new Map<string, TamirModelOption[]>();
@@ -50,6 +73,86 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
     ? { duration: 0 }
     : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
 
+  const applyStep = useCallback((step: View) => {
+    if (step === "brands") {
+      setView("brands");
+      setSelectedBrand(null);
+      setModels([]);
+      setSelectedModel(null);
+      setPrices([]);
+      setError(null);
+      return;
+    }
+
+    if (step === "models") {
+      setView("models");
+      setSelectedModel(null);
+      setPrices([]);
+      setError(null);
+      return;
+    }
+
+    setView("prices");
+    setError(null);
+  }, []);
+
+  const resetToBrands = useCallback(() => {
+    const depth =
+      view === "prices" ? 2 : view === "models" ? 1 : 0;
+
+    applyStep("brands");
+
+    if (depth > 0) {
+      window.history.go(-depth);
+    }
+
+    window.history.replaceState(buildHistoryState("brands"), "");
+  }, [applyStep, view]);
+
+  const goBackOneStep = useCallback(() => {
+    window.history.back();
+  }, []);
+
+  useEffect(() => {
+    const currentState = window.history.state as WizardHistoryState | null;
+    if (!currentState?.tamirWizard) {
+      window.history.replaceState(buildHistoryState("brands"), "");
+    }
+
+    function handlePopState(event: PopStateEvent) {
+      const wizardState = (event.state as WizardHistoryState | null)?.tamirWizard;
+      const data = wizardDataRef.current;
+
+      if (!wizardState || wizardState.step === "brands") {
+        applyStep("brands");
+        return;
+      }
+
+      if (
+        wizardState.step === "models" &&
+        (!data.selectedBrand || !data.models.length)
+      ) {
+        applyStep("brands");
+        window.history.replaceState(buildHistoryState("brands"), "");
+        return;
+      }
+
+      if (
+        wizardState.step === "prices" &&
+        (!data.selectedBrand || !data.selectedModel || !data.prices.length)
+      ) {
+        applyStep("brands");
+        window.history.replaceState(buildHistoryState("brands"), "");
+        return;
+      }
+
+      applyStep(wizardState.step);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [applyStep]);
+
   function handleBrandSelect(brand: TamirMarkasi) {
     setSelectedBrand(brand);
     setError(null);
@@ -63,6 +166,7 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
       setSelectedModel(null);
       setPrices([]);
       setView("models");
+      window.history.pushState(buildHistoryState("models"), "");
     });
   }
 
@@ -77,23 +181,25 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
       }
       setPrices(nextPrices);
       setView("prices");
+      window.history.pushState(buildHistoryState("prices"), "");
     });
   }
 
-  function goToBrands() {
-    setView("brands");
-    setSelectedBrand(null);
-    setModels([]);
-    setSelectedModel(null);
-    setPrices([]);
-    setError(null);
+  function handleBrandBreadcrumbClick() {
+    if (view === "models") {
+      goBackOneStep();
+      return;
+    }
+
+    if (view === "prices") {
+      window.history.go(-2);
+    }
   }
 
-  function goToModels() {
-    setView("models");
-    setSelectedModel(null);
-    setPrices([]);
-    setError(null);
+  function handleModelBreadcrumbClick() {
+    if (view === "prices") {
+      goBackOneStep();
+    }
   }
 
   return (
@@ -102,8 +208,8 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
         brand={selectedBrand}
         model={selectedModel}
         view={view}
-        onBrandClick={view !== "brands" ? goToBrands : undefined}
-        onModelClick={view === "prices" ? goToModels : undefined}
+        onBrandClick={view !== "brands" ? handleBrandBreadcrumbClick : undefined}
+        onModelClick={view === "prices" ? handleModelBreadcrumbClick : undefined}
       />
 
       {error && (
@@ -130,8 +236,8 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
             {...viewMotion}
             transition={transition}
           >
-            <p className="mx-auto mb-8 max-w-md text-center text-lg leading-relaxed text-slate-500 sm:mb-10 sm:text-xl">
-              Tamir ve fiyat bilgisi için lütfen cihaz markanızı seçin
+            <p className="mx-auto mb-8 text-center text-sm font-normal whitespace-nowrap text-slate-500 sm:mb-10 sm:text-base">
+              Tamir fiyatı alın
             </p>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
               {brands.map((brand, index) => (
@@ -193,7 +299,7 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
                 </div>
               ))}
             </div>
-            <WizardNav onBack={goToBrands} backLabel="Markalara dön" />
+            <WizardNav onBack={goBackOneStep} />
           </motion.section>
         )}
 
@@ -213,11 +319,7 @@ export function TamirFiyatiWizard({ brands }: { brands: TamirMarkasi[] }) {
               )}
               prices={prices}
             />
-            <WizardNav
-              onBack={goToModels}
-              backLabel="Modellere dön"
-              onReset={goToBrands}
-            />
+            <WizardNav onBack={goBackOneStep} onReset={resetToBrands} />
           </motion.section>
         )}
       </AnimatePresence>
@@ -309,11 +411,9 @@ function BreadcrumbButton({
 
 function WizardNav({
   onBack,
-  backLabel,
   onReset,
 }: {
   onBack: () => void;
-  backLabel: string;
   onReset?: () => void;
 }) {
   return (
@@ -323,7 +423,7 @@ function WizardNav({
         onClick={onBack}
         className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:border-emerald-300 hover:text-emerald-700"
       >
-        {backLabel}
+        Geri
       </button>
       {onReset && (
         <button
