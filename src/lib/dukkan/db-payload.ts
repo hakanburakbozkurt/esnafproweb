@@ -33,6 +33,8 @@ export type DukkanDbPayload = {
   hakkimizda_sss: ParsedDukkanForm["hakkimizda_sss"];
   anasayfa_sss: ParsedDukkanForm["anasayfa_sss"];
   terms_accepted_at: string;
+  google_place_id: string | null;
+  google_reviews_enabled: boolean;
 };
 
 /** Temel vitrin alanları — migration uygulanmamış ortamlarda bile güncellenebilir olmalı */
@@ -70,6 +72,8 @@ export const DUKKAN_OPTIONAL_PAYLOAD_KEYS = [
   "meta_title",
   "meta_description",
   "terms_accepted_at",
+  "google_place_id",
+  "google_reviews_enabled",
 ] as const satisfies readonly (keyof DukkanDbPayload)[];
 
 export const DUKKAN_URUN_OPTIONAL_KEYS = [
@@ -121,6 +125,8 @@ export function toDukkanDbPayload(
     hakkimizda_sss: data.hakkimizda_sss,
     anasayfa_sss: data.anasayfa_sss,
     terms_accepted_at: new Date().toISOString(),
+    google_place_id: data.google_place_id,
+    google_reviews_enabled: data.google_reviews_enabled,
   };
 }
 

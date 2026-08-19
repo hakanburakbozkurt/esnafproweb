@@ -21,6 +21,10 @@ import {
   validateWhatsAppNumber,
 } from "@/lib/dukkan/contact";
 import {
+  normalizeGooglePlaceId,
+  validateGooglePlaceIdInput,
+} from "@/lib/google-reviews/place-id";
+import {
   MAX_GALLERY_PHOTOS,
   MAX_PRODUCT_PHOTOS,
 } from "@/lib/supabase/storage.constants";
@@ -68,6 +72,8 @@ export type ParsedDukkanForm = {
   anasayfa_sss: FaqItem[];
   urunler: ParsedUrun[];
   markaTermsAccepted: boolean;
+  google_place_id: string | null;
+  google_reviews_enabled: boolean;
 };
 
 export function parseFaqFromFormData(
@@ -153,6 +159,10 @@ export function parseDukkanFormData(formData: FormData):
     String(formData.get("teknik_servis_aktif") ?? "false") === "true";
   const katalogModuAktif =
     String(formData.get("katalog_modu_aktif") ?? "false") === "true";
+  const googleReviewsEnabled =
+    String(formData.get("google_reviews_enabled") ?? "false") === "true";
+  const googlePlaceIdInput = String(formData.get("google_place_id") ?? "").trim();
+  const googlePlaceId = normalizeGooglePlaceId(googlePlaceIdInput);
   const teknikServisFoto1 = String(
     formData.get("teknik_servis_fotograf_1") ?? ""
   ).trim();
@@ -222,6 +232,17 @@ export function parseDukkanFormData(formData: FormData):
     calisma_saatleri = serializeCalismaSaatleri(schedule);
   }
 
+  if (googleReviewsEnabled) {
+    if (!googlePlaceIdInput) {
+      return { error: "Google yorumları için Place ID zorunludur." };
+    }
+
+    const placeIdError = validateGooglePlaceIdInput(googlePlaceIdInput);
+    if (placeIdError) {
+      return { error: placeIdError };
+    }
+  }
+
   return {
     data: {
       dukkan_adi: dukkanAdi,
@@ -254,6 +275,8 @@ export function parseDukkanFormData(formData: FormData):
       anasayfa_sss: parseFaqFromFormData(formData, "anasayfa_faq"),
       urunler: parseUrunlerFromFormData(formData),
       markaTermsAccepted,
+      google_place_id: googlePlaceId,
+      google_reviews_enabled: googleReviewsEnabled,
     },
   };
 }

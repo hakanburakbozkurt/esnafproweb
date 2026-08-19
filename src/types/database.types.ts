@@ -53,6 +53,10 @@ export interface Database {
           terms_accepted_at: string | null;
           aktif: boolean;
           approval_status: ShopApprovalStatus;
+          google_place_id: string | null;
+          google_reviews_enabled: boolean;
+          google_reviews_cache: Json | null;
+          google_reviews_fetched_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -90,6 +94,10 @@ export interface Database {
           terms_accepted_at?: string | null;
           aktif?: boolean;
           approval_status?: ShopApprovalStatus;
+          google_place_id?: string | null;
+          google_reviews_enabled?: boolean;
+          google_reviews_cache?: Json | null;
+          google_reviews_fetched_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -127,6 +135,10 @@ export interface Database {
           terms_accepted_at?: string | null;
           aktif?: boolean;
           approval_status?: ShopApprovalStatus;
+          google_place_id?: string | null;
+          google_reviews_enabled?: boolean;
+          google_reviews_cache?: Json | null;
+          google_reviews_fetched_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

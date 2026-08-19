@@ -15,6 +15,10 @@ import {
 } from "@/lib/dukkan/db-payload";
 import { assertSlugAvailable, SLUG_TAKEN_ERROR } from "@/lib/dukkan/slug-availability";
 import { recordShopSlugHistory } from "@/lib/dukkan/slug-history";
+import {
+  invalidateGoogleReviewsCache,
+  refreshGoogleReviewsCache,
+} from "@/lib/google-reviews/get-google-reviews";
 import { parseDukkanFormData } from "@/lib/dukkan/form-data";
 
 export type DukkanFormState = {
@@ -106,6 +110,10 @@ export async function createDukkan(
 
     const { data: created, warning: dukkanWarning } = insertResult;
 
+    if (payload.google_reviews_enabled && payload.google_place_id) {
+      await refreshGoogleReviewsCache(supabase, created.id, payload.google_place_id);
+    }
+
     const syncResult = await safeSyncDukkanUrunleri(supabase, created.id, urunler);
     if ("error" in syncResult) {
       logDukkanAction("syncUrunler", "insert failed", {
@@ -176,7 +184,7 @@ export async function updateDukkan(
 
     const { data: current } = await supabase
       .from("dukkanlar")
-      .select("slug")
+      .select("slug, google_place_id, google_reviews_enabled")
       .eq("id", dukkanId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -218,6 +226,22 @@ export async function updateDukkan(
     }
 
     const { data, warning: dukkanWarning } = updateResult;
+
+    const googleConfigChanged =
+      current.google_place_id !== payload.google_place_id ||
+      current.google_reviews_enabled !== payload.google_reviews_enabled;
+
+    if (payload.google_reviews_enabled && payload.google_place_id) {
+      if (googleConfigChanged) {
+        await refreshGoogleReviewsCache(supabase, dukkanId, payload.google_place_id);
+      }
+    } else if (
+      googleConfigChanged ||
+      current.google_reviews_enabled ||
+      current.google_place_id
+    ) {
+      await invalidateGoogleReviewsCache(supabase, dukkanId);
+    }
 
     const syncResult = await safeSyncDukkanUrunleri(supabase, data.id, urunler);
     if ("error" in syncResult) {

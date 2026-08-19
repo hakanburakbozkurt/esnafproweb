@@ -35,6 +35,9 @@ import {
 } from "@/lib/dukkan/marka-terms";
 import { slugify, sanitizeSlugInput } from "@/lib/utils/slug";
 import { validateDukkanAdi, validateSlug } from "@/lib/utils/reserved-slugs";
+import { validateGooglePlaceIdInput } from "@/lib/google-reviews/place-id";
+import { GOOGLE_BUSINESS_PROFILE_LABEL } from "@/lib/google-reviews/constants";
+import { GooglePlaceIdInfoHint } from "@/components/dukkan/google-place-id-info-hint";
 import { premiumPanelClassName } from "@/lib/utils/cn";
 import { cn } from "@/lib/utils/cn";
 import type { Dukkan, DukkanUrunu, FaqItem } from "@/types/database.types";
@@ -149,6 +152,12 @@ export function DukkanForm({
   const [markaTermsAccepted, setMarkaTermsAccepted] = useState(
     Boolean(defaultValues?.terms_accepted_at)
   );
+  const [googlePlaceId, setGooglePlaceId] = useState(
+    defaultValues?.google_place_id ?? ""
+  );
+  const [googleReviewsEnabled, setGoogleReviewsEnabled] = useState(
+    defaultValues?.google_reviews_enabled ?? false
+  );
 
   useEffect(() => {
     if (!slugTouched) {
@@ -166,6 +175,14 @@ export function DukkanForm({
     return validateDukkanAdi(dukkanAdi);
   }, [dukkanAdi]);
 
+  const googlePlaceIdValidationError = useMemo(() => {
+    if (!googleReviewsEnabled) return null;
+    if (!googlePlaceId.trim()) {
+      return "Google yorumları için Place ID zorunludur.";
+    }
+    return validateGooglePlaceIdInput(googlePlaceId);
+  }, [googlePlaceId, googleReviewsEnabled]);
+
   const faqPlaceholderSource = useMemo<FaqPlaceholderSource>(
     () => ({
       dukkan_adi: dukkanAdi,
@@ -178,7 +195,10 @@ export function DukkanForm({
   );
 
   const hasBlockingValidationError = Boolean(
-    slugValidationError || dukkanAdiValidationError || !markaTermsAccepted
+    slugValidationError ||
+      dukkanAdiValidationError ||
+      googlePlaceIdValidationError ||
+      !markaTermsAccepted
   );
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -326,6 +346,75 @@ export function DukkanForm({
             maxLength={320}
             className="w-full resize-y"
           />
+        </Field>
+      </div>
+    </FormSection>
+  );
+
+  const googleYorumlari = (
+    <FormSection
+      variant={sectionVariant}
+      title="Google Yorumları"
+      description={`${GOOGLE_BUSINESS_PROFILE_LABEL} yorumlarını vitrinde syndication ilkesiyle gösterin. Her yorum kaynağına linklenir.`}
+    >
+      <div className={fieldStackClass}>
+        <input
+          type="hidden"
+          name="google_reviews_enabled"
+          value={googleReviewsEnabled ? "true" : "false"}
+        />
+        <button
+          type="button"
+          role="switch"
+          aria-checked={googleReviewsEnabled}
+          onClick={() => setGoogleReviewsEnabled((prev) => !prev)}
+          className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-4 text-left transition hover:border-emerald-200 lg:px-6 lg:py-5"
+        >
+          <span>
+            <span className="block text-sm font-semibold text-slate-900 lg:text-base">
+              Google yorum widget&apos;ını vitrinde göster
+            </span>
+            <span className="mt-1 block text-xs text-slate-500 lg:text-sm">
+              Aktifken vitrinde Google kaynaklı yorumlar, atıf metni ve orijinal
+              yorum linkleri görünür.
+            </span>
+          </span>
+          <span
+            className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition ${
+              googleReviewsEnabled ? "bg-emerald-600" : "bg-slate-300"
+            }`}
+            aria-hidden
+          >
+            <span
+              className={`absolute top-0.5 size-6 rounded-full bg-white shadow transition ${
+                googleReviewsEnabled ? "left-[22px]" : "left-0.5"
+              }`}
+            />
+          </span>
+        </button>
+
+        <GooglePlaceIdInfoHint
+          visible={googleReviewsEnabled && !googlePlaceId.trim()}
+        />
+
+        <Field
+          label="Google Place ID"
+          hint="Google İşletme Profili → Paylaş → Place ID değerini yapıştırın."
+        >
+          <Input
+            name="google_place_id"
+            placeholder="ChIJ..."
+            value={googlePlaceId}
+            onChange={(e) => setGooglePlaceId(e.target.value)}
+            disabled={!googleReviewsEnabled}
+            aria-invalid={googlePlaceIdValidationError ? true : undefined}
+            className="w-full font-mono text-sm"
+          />
+          {googlePlaceIdValidationError && (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {googlePlaceIdValidationError}
+            </p>
+          )}
         </Field>
       </div>
     </FormSection>
@@ -755,6 +844,7 @@ export function DukkanForm({
     <>
       {temelBilgiler}
       {showSeoFields && seoAyarlari}
+      {showSeoFields && googleYorumlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}
@@ -772,6 +862,7 @@ export function DukkanForm({
     <>
       {temelBilgiler}
       {showSeoFields && seoAyarlari}
+      {showSeoFields && googleYorumlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}
