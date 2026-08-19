@@ -589,6 +589,35 @@ export interface Database {
         };
         Relationships: [];
       };
+      shop_slug_history: {
+        Row: {
+          id: string;
+          shop_id: string;
+          old_slug: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shop_id: string;
+          old_slug: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          shop_id?: string;
+          old_slug?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_slug_history_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       stores: {
         Row: {
           id: string;
@@ -828,6 +857,12 @@ export interface Database {
       get_my_role: {
         Args: Record<PropertyKey, never>;
         Returns: string;
+      };
+      resolve_shop_slug_redirect: {
+        Args: {
+          p_old_slug: string;
+        };
+        Returns: string | null;
       };
       get_service_device_public: {
         Args: {

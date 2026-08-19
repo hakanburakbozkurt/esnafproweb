@@ -14,6 +14,7 @@ import {
   toDukkanDbPayload,
 } from "@/lib/dukkan/db-payload";
 import { assertSlugAvailable, SLUG_TAKEN_ERROR } from "@/lib/dukkan/slug-availability";
+import { recordShopSlugHistory } from "@/lib/dukkan/slug-history";
 import { parseDukkanFormData } from "@/lib/dukkan/form-data";
 
 export type DukkanFormState = {
@@ -182,6 +183,19 @@ export async function updateDukkan(
 
     if (!current) {
       return { error: "Mağaza kaydı bulunamadı veya yetkiniz yok." };
+    }
+
+    if (current.slug !== payload.slug) {
+      const historyResult = await recordShopSlugHistory(supabase, {
+        shopId: dukkanId,
+        oldSlug: current.slug,
+      });
+      if ("error" in historyResult) {
+        return {
+          error:
+            "Vitrin adresi geçmişi kaydedilemedi. Slug güncellenmedi; lütfen tekrar deneyin.",
+        };
+      }
     }
 
     const updateResult = await safeUpdateDukkan(supabase, {

@@ -10,6 +10,7 @@ import {
   WHOLESALER_ONBOARDING_PATH,
 } from "@/lib/auth/wholesaler";
 import { hasToptanciProfile } from "@/lib/toptanci/get-toptanci";
+import { tryShopSlugRedirect } from "@/lib/dukkan/shop-slug-redirect";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -40,6 +41,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+
+  const slugRedirect = await tryShopSlugRedirect(request, supabase);
+  if (slugRedirect) {
+    return slugRedirect;
+  }
 
   if (user) {
     const wholesaler = await isWholesalerAccount(supabase, user);
