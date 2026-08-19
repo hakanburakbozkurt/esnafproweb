@@ -35,9 +35,13 @@ import {
 } from "@/lib/dukkan/marka-terms";
 import { slugify, sanitizeSlugInput } from "@/lib/utils/slug";
 import { validateDukkanAdi, validateSlug } from "@/lib/utils/reserved-slugs";
-import { validateGooglePlaceIdInput } from "@/lib/google-reviews/place-id";
 import { GOOGLE_BUSINESS_PROFILE_LABEL } from "@/lib/google-reviews/constants";
-import { GooglePlaceIdInfoHint } from "@/components/dukkan/google-place-id-info-hint";
+import { GoogleMapsManualInputHint } from "@/components/dukkan/google-place-id-info-hint";
+import {
+  buildGoogleMapsPlaceUrl,
+  parseGoogleMapsInput,
+  validateGoogleMapsReferenceInput,
+} from "@/lib/google-reviews/place-id";
 import { premiumPanelClassName } from "@/lib/utils/cn";
 import { cn } from "@/lib/utils/cn";
 import type { Dukkan, DukkanUrunu, FaqItem } from "@/types/database.types";
@@ -152,11 +156,19 @@ export function DukkanForm({
   const [markaTermsAccepted, setMarkaTermsAccepted] = useState(
     Boolean(defaultValues?.terms_accepted_at)
   );
-  const [googlePlaceId, setGooglePlaceId] = useState(
-    defaultValues?.google_place_id ?? ""
-  );
+  const [googleMapsReference, setGoogleMapsReference] = useState(() => {
+    if (defaultValues?.google_place_id) {
+      return buildGoogleMapsPlaceUrl(defaultValues.google_place_id);
+    }
+    return "";
+  });
   const [googleReviewsEnabled, setGoogleReviewsEnabled] = useState(
     defaultValues?.google_reviews_enabled ?? false
+  );
+
+  const parsedGooglePlaceId = useMemo(
+    () => parseGoogleMapsInput(googleMapsReference),
+    [googleMapsReference]
   );
 
   useEffect(() => {
@@ -175,13 +187,10 @@ export function DukkanForm({
     return validateDukkanAdi(dukkanAdi);
   }, [dukkanAdi]);
 
-  const googlePlaceIdValidationError = useMemo(() => {
+  const googleMapsReferenceValidationError = useMemo(() => {
     if (!googleReviewsEnabled) return null;
-    if (!googlePlaceId.trim()) {
-      return "Google yorumları için Place ID zorunludur.";
-    }
-    return validateGooglePlaceIdInput(googlePlaceId);
-  }, [googlePlaceId, googleReviewsEnabled]);
+    return validateGoogleMapsReferenceInput(googleMapsReference);
+  }, [googleMapsReference, googleReviewsEnabled]);
 
   const faqPlaceholderSource = useMemo<FaqPlaceholderSource>(
     () => ({
@@ -197,7 +206,7 @@ export function DukkanForm({
   const hasBlockingValidationError = Boolean(
     slugValidationError ||
       dukkanAdiValidationError ||
-      googlePlaceIdValidationError ||
+      googleMapsReferenceValidationError ||
       !markaTermsAccepted
   );
 
@@ -393,29 +402,46 @@ export function DukkanForm({
           </span>
         </button>
 
-        <GooglePlaceIdInfoHint
-          visible={googleReviewsEnabled && !googlePlaceId.trim()}
+        <GoogleMapsManualInputHint
+          visible={googleReviewsEnabled && !parsedGooglePlaceId}
         />
 
+        {parsedGooglePlaceId && googleReviewsEnabled && (
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-700">
+              <span aria-hidden>🟢</span>
+              Google İşletme Profili başarıyla bağlandı
+            </span>
+            <span className="font-mono text-xs text-emerald-800">{parsedGooglePlaceId}</span>
+          </div>
+        )}
+
         <Field
-          label="Google Place ID"
-          hint="Google İşletme Profili → Paylaş → Place ID değerini yapıştırın."
+          label="Google Maps linki veya Place ID"
+          hint="İşletme sayfanızın paylaşım linkini veya ChIJ... Place ID değerini yapıştırın."
         >
-          <Input
-            name="google_place_id"
-            placeholder="ChIJ..."
-            value={googlePlaceId}
-            onChange={(e) => setGooglePlaceId(e.target.value)}
-            disabled={!googleReviewsEnabled}
-            aria-invalid={googlePlaceIdValidationError ? true : undefined}
-            className="w-full font-mono text-sm"
+          <Textarea
+            name="google_maps_reference"
+            rows={3}
+            placeholder="https://maps.google.com/... veya ChIJ..."
+            value={googleMapsReference}
+            onChange={(event) => setGoogleMapsReference(event.target.value)}
+            disabled={!googleReviewsEnabled || isPending}
+            aria-invalid={googleMapsReferenceValidationError ? true : undefined}
+            className="w-full resize-y font-mono text-sm"
           />
-          {googlePlaceIdValidationError && (
+          {googleMapsReferenceValidationError && (
             <p className="mt-2 text-sm text-red-600" role="alert">
-              {googlePlaceIdValidationError}
+              {googleMapsReferenceValidationError}
             </p>
           )}
         </Field>
+
+        <input
+          type="hidden"
+          name="google_place_id"
+          value={parsedGooglePlaceId ?? ""}
+        />
       </div>
     </FormSection>
   );

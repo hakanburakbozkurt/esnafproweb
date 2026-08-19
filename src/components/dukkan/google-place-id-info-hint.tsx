@@ -1,8 +1,10 @@
-type GooglePlaceIdInfoHintProps = {
+type GoogleMapsManualInputHintProps = {
   visible?: boolean;
 };
 
-export function GooglePlaceIdInfoHint({ visible = true }: GooglePlaceIdInfoHintProps) {
+export function GoogleMapsManualInputHint({
+  visible = true,
+}: GoogleMapsManualInputHintProps) {
   if (!visible) return null;
 
   return (
@@ -17,28 +19,19 @@ export function GooglePlaceIdInfoHint({ visible = true }: GooglePlaceIdInfoHintP
         i
       </span>
       <div className="text-sm leading-relaxed text-sky-950/90">
-        <p className="font-semibold text-sky-900">Google Place ID gerekli</p>
-        <p className="mt-1 text-sky-900/85">
-          Vitrinde Google yorumlarını göstermek için İşletme Profilinizin Place ID
-          değerini eklemeniz gerekir.
-        </p>
+        <p className="font-semibold text-sky-900">Google Maps bağlantısı nasıl alınır?</p>
         <ol className="mt-2 list-decimal space-y-1 pl-4 text-sky-900/80">
           <li>Google Maps&apos;te işletmenizi açın.</li>
-          <li>İşletme adına tıklayıp &quot;Paylaş&quot; veya profil detayına girin.</li>
+          <li>&quot;Paylaş&quot; → &quot;Linki kopyala&quot; ile tam URL&apos;yi alın.</li>
           <li>
-            Place ID&apos;yi{" "}
-            <a
-              href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium underline underline-offset-2"
-            >
-              Place ID Finder
-            </a>{" "}
-            aracından veya profil bağlantısından kopyalayın.
+            Alternatif: Place ID&apos;niz varsa doğrudan{" "}
+            <span className="font-mono text-xs">ChIJ...</span> formatında yapıştırın.
           </li>
-          <li>Aşağıdaki alana <span className="font-mono">ChIJ...</span> formatında yapıştırın.</li>
         </ol>
+        <p className="mt-2 text-xs text-sky-800/80">
+          API anahtarı gerekmez; link veya Place ID kaydedilir ve vitrin yorumları için
+          kullanılır.
+        </p>
       </div>
     </div>
   );

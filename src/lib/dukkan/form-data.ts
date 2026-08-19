@@ -21,8 +21,8 @@ import {
   validateWhatsAppNumber,
 } from "@/lib/dukkan/contact";
 import {
-  normalizeGooglePlaceId,
-  validateGooglePlaceIdInput,
+  parseGoogleMapsInput,
+  validateGoogleMapsReferenceInput,
 } from "@/lib/google-reviews/place-id";
 import {
   MAX_GALLERY_PHOTOS,
@@ -161,8 +161,10 @@ export function parseDukkanFormData(formData: FormData):
     String(formData.get("katalog_modu_aktif") ?? "false") === "true";
   const googleReviewsEnabled =
     String(formData.get("google_reviews_enabled") ?? "false") === "true";
-  const googlePlaceIdInput = String(formData.get("google_place_id") ?? "").trim();
-  const googlePlaceId = normalizeGooglePlaceId(googlePlaceIdInput);
+  const googleMapsReference = String(
+    formData.get("google_maps_reference") ?? ""
+  ).trim();
+  const googlePlaceId = parseGoogleMapsInput(googleMapsReference);
   const teknikServisFoto1 = String(
     formData.get("teknik_servis_fotograf_1") ?? ""
   ).trim();
@@ -233,13 +235,17 @@ export function parseDukkanFormData(formData: FormData):
   }
 
   if (googleReviewsEnabled) {
-    if (!googlePlaceIdInput) {
-      return { error: "Google yorumları için Place ID zorunludur." };
+    if (!googleMapsReference) {
+      return {
+        error: "Google yorumları için Google Maps linki veya Place ID girin.",
+      };
     }
 
-    const placeIdError = validateGooglePlaceIdInput(googlePlaceIdInput);
-    if (placeIdError) {
-      return { error: placeIdError };
+    if (!googlePlaceId) {
+      return {
+        error:
+          "Google Maps linki tanınmadı. Lütfen işletme sayfanızın tam linkini veya geçerli bir Place ID (ChIJ...) yapıştırın.",
+      };
     }
   }
 

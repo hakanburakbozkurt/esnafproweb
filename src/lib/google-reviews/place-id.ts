@@ -5,9 +5,11 @@ import {
 } from "@/lib/google-reviews/constants";
 import type { GoogleReviewsAttribution } from "@/lib/google-reviews/types";
 
-const PLACE_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+const PLACE_ID_PATTERN = /^ChIJ[A-Za-z0-9_-]+$/;
 
-export function normalizeGooglePlaceId(value: string | null | undefined): string | null {
+export function normalizeGooglePlaceId(
+  value: string | null | undefined
+): string | null {
   const trimmed = value?.trim();
   if (!trimmed) return null;
 
@@ -17,6 +19,54 @@ export function normalizeGooglePlaceId(value: string | null | undefined): string
   }
 
   return withoutPrefix;
+}
+
+/** Google Maps linki veya ham Place ID metninden place_id çıkarır (API gerekmez) */
+export function parseGoogleMapsInput(raw: string | null | undefined): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+
+  const direct = normalizeGooglePlaceId(trimmed);
+  if (direct) return direct;
+
+  const chijInText = trimmed.match(/(ChIJ[A-Za-z0-9_-]+)/);
+  if (chijInText) {
+    return normalizeGooglePlaceId(chijInText[1]);
+  }
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    try {
+      const url = new URL(trimmed);
+
+      for (const key of ["place_id", "query_place_id"] as const) {
+        const param = url.searchParams.get(key);
+        const parsed = normalizeGooglePlaceId(param);
+        if (parsed) return parsed;
+      }
+
+      const q = url.searchParams.get("q");
+      if (q) {
+        const qMatch = q.match(/place_id:?(ChIJ[A-Za-z0-9_-]+)/i);
+        if (qMatch) {
+          return normalizeGooglePlaceId(qMatch[1]);
+        }
+      }
+    } catch {
+      // URL parse edilemedi — metin içi kalıplara düş
+    }
+  }
+
+  const dataMatch = trimmed.match(/!1s(ChIJ[A-Za-z0-9_-]+)/);
+  if (dataMatch) {
+    return normalizeGooglePlaceId(dataMatch[1]);
+  }
+
+  const paramMatch = trimmed.match(/place_id[=:](ChIJ[A-Za-z0-9_-]+)/i);
+  if (paramMatch) {
+    return normalizeGooglePlaceId(paramMatch[1]);
+  }
+
+  return null;
 }
 
 export function buildGoogleMapsPlaceUrl(placeId: string): string {
@@ -66,10 +116,20 @@ export function buildGooglePublisherSchema() {
   };
 }
 
-export function validateGooglePlaceIdInput(value: string): string | null {
-  const normalized = normalizeGooglePlaceId(value);
-  if (!normalized) {
-    return "Geçerli bir Google Place ID girin (Google İşletme Profili → Paylaş → Place ID).";
+export function validateGoogleMapsReferenceInput(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "Google Maps linki veya Place ID girin.";
   }
+
+  if (!parseGoogleMapsInput(trimmed)) {
+    return "Geçerli bir Google Maps linki veya Place ID (ChIJ...) yapıştırın.";
+  }
+
   return null;
+}
+
+/** @deprecated validateGoogleMapsReferenceInput kullanın */
+export function validateGooglePlaceIdInput(value: string): string | null {
+  return validateGoogleMapsReferenceInput(value);
 }
