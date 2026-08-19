@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
+import { AdminNav } from "@/components/yonetim/admin-nav";
 import {
   approveDukkanForm,
   pendingDukkanForm,
@@ -197,13 +198,8 @@ export function DukkanOnayAdminClient({
           <strong className="font-semibold text-zinc-200">active</strong> statüsündeki
           dükkanlar arama motorlarına indexlenir.
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <a href="/yonetim/admin/fiyatlar" className={btnSecondaryClass}>
-            Fiyat Yönetimi
-          </a>
-          <a href="/yonetim/admin/sss" className={btnSecondaryClass}>
-            SSS Yönetimi
-          </a>
+        <div className="mt-5">
+          <AdminNav current="dukkan-onay" />
         </div>
       </section>
 

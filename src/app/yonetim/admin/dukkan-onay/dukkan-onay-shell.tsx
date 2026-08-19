@@ -11,7 +11,7 @@ export function DukkanOnayAdminShell({
   description?: string;
 }) {
   return (
-    <YonetimDarkShell backHref="/yonetim/admin/fiyatlar" backLabel="Admin">
+    <YonetimDarkShell backHref="/yonetim/admin" backLabel="Admin">
       {title && (
         <div className="mb-10 max-w-3xl lg:mb-12">
           <h1 className="text-3xl font-bold tracking-tight text-zinc-100 lg:text-4xl">

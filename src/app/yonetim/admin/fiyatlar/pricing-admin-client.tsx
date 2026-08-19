@@ -1,6 +1,14 @@
 "use client";
 
 import { useActionState, type ReactNode } from "react";
+import { AdminNav } from "@/components/yonetim/admin-nav";
+import {
+  adminBtnPrimaryClass,
+  adminBtnSecondaryClass,
+  adminCheckboxClass,
+  adminInputClass,
+  adminPanelClass,
+} from "@/components/yonetim/admin-ui";
 import {
   deletePricingPlanForm,
   seedDefaultPricingPlansForm,
@@ -12,20 +20,6 @@ import { PRICING_SEGMENT_LABELS } from "@/lib/pricing/types";
 import { cn } from "@/lib/utils/cn";
 
 const initialState: PricingAdminState = {};
-
-const adminInputClass =
-  "mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
-
-const adminCheckboxClass =
-  "h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:ring-offset-0 focus:ring-offset-zinc-900";
-
-const btnPrimaryClass =
-  "inline-flex min-h-10 items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50";
-
-const btnSecondaryClass =
-  "inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-5 py-2.5 text-sm font-semibold text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50";
-
-const panelClass = "rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6";
 
 function DarkField({
   label,
@@ -56,7 +50,7 @@ function PlanEditorForm({ plan }: { plan: PricingPlan }) {
 
   return (
     <div className="space-y-3">
-      <form action={formAction} className={cn(panelClass, "space-y-4")}>
+      <form action={formAction} className={cn(adminPanelClass, "space-y-4")}>
         <input type="hidden" name="id" value={isDefaultId ? "" : plan.id} />
         <input type="hidden" name="segment" value={plan.segment} />
         <input type="hidden" name="plan_key" value={plan.plan_key} />
@@ -178,7 +172,7 @@ function PlanEditorForm({ plan }: { plan: PricingPlan }) {
           </p>
         )}
 
-        <button type="submit" disabled={isPending} className={btnPrimaryClass}>
+        <button type="submit" disabled={isPending} className={adminBtnPrimaryClass}>
           {isPending ? "Kaydediliyor…" : "Planı Kaydet"}
         </button>
       </form>
@@ -210,7 +204,7 @@ function SeedButton() {
 
   return (
     <form action={formAction}>
-      <button type="submit" disabled={isPending} className={btnSecondaryClass}>
+      <button type="submit" disabled={isPending} className={adminBtnSecondaryClass}>
         {isPending ? "Aktarılıyor…" : "Varsayılan Planları DB'ye Aktar"}
       </button>
       {state.error && (
@@ -229,7 +223,7 @@ export function PricingAdminClient({ plans }: { plans: PricingPlan[] }) {
 
   return (
     <div className="space-y-8">
-      <section className={panelClass}>
+      <section className={adminPanelClass}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-400">
           Super Admin
         </p>
@@ -238,21 +232,16 @@ export function PricingAdminClient({ plans }: { plans: PricingPlan[] }) {
           Landing sayfasındaki paketler buradan dinamik güncellenir. Tablo boşsa ana
           sayfa varsayılan statik planlarla çalışmaya devam eder.
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <SeedButton />
-          <a href="/yonetim/admin/dukkan-onay" className={btnSecondaryClass}>
-            Dükkan Onay
-          </a>
-          <a href="/yonetim/admin/sss" className={btnSecondaryClass}>
-            SSS Yönetimi
-          </a>
+          <AdminNav current="fiyatlar" />
         </div>
       </section>
 
       {(["esnaf", "toptanci"] as const).map((segment) => {
         const segmentPlans = segment === "esnaf" ? esnafPlans : toptanciPlans;
         return (
-          <section key={segment} className={panelClass}>
+          <section key={segment} className={adminPanelClass}>
             <h3 className="mb-5 border-b border-zinc-800 pb-4 text-lg font-bold text-zinc-100">
               {PRICING_SEGMENT_LABELS[segment]} Planları
             </h3>

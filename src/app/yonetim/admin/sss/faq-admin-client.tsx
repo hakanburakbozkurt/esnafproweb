@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, type ReactNode } from "react";
+import { AdminNav } from "@/components/yonetim/admin-nav";
 import {
   deleteFaqForm,
   moveFaqForm,
@@ -273,13 +274,8 @@ export function FaqAdminClient({ faqs }: { faqs: PlatformFaq[] }) {
           Ana sayfa ve fiyatlandırma sayfası için SSS içeriklerini ayrı ayrı yönetin. Tablo
           boşsa her alan kendi varsayılan listesiyle çalışmaya devam eder.
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <a href="/yonetim/admin/dukkan-onay" className={btnSecondaryClass}>
-            Dükkan Onay
-          </a>
-          <a href="/yonetim/admin/fiyatlar" className={btnSecondaryClass}>
-            Fiyat Yönetimi
-          </a>
+        <div className="mt-5">
+          <AdminNav current="sss" />
         </div>
       </section>
 

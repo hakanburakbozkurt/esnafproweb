@@ -41,6 +41,7 @@ function revalidateDukkanApprovalPaths(slug: string) {
   revalidatePath(`/${slug}/katalog`);
   revalidatePath("/dukkan-ayarlari");
   revalidatePath("/esnaflar");
+  revalidatePath("/yonetim/admin");
   revalidatePath("/yonetim/admin/dukkan-onay");
   revalidateSitemap();
 }
