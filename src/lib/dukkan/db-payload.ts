@@ -183,6 +183,21 @@ export async function safeUpdateDukkan(
       .single();
 
     if (!error) {
+      const storeSync = await syncStoreMirror(supabase, {
+        dukkanId: data.id,
+        ownerId: params.userId,
+        slug: data.slug,
+        name: params.payload.dukkan_adi,
+      });
+
+      if ("error" in storeSync) {
+        return {
+          error: storeSync.error,
+          code: storeSync.code,
+          skippedColumns,
+        };
+      }
+
       return {
         data,
         skippedColumns,
@@ -202,7 +217,7 @@ export async function safeUpdateDukkan(
     }
 
     return {
-      error: error.message,
+      error: mapDukkanWriteError(error),
       code: error.code,
       skippedColumns,
     };
@@ -237,6 +252,21 @@ export async function safeInsertDukkan(
       .single();
 
     if (!error) {
+      const storeSync = await syncStoreMirror(supabase, {
+        dukkanId: data.id,
+        ownerId: params.userId,
+        slug: data.slug,
+        name: params.payload.dukkan_adi,
+      });
+
+      if ("error" in storeSync) {
+        return {
+          error: storeSync.error,
+          code: storeSync.code,
+          skippedColumns,
+        };
+      }
+
       return {
         data,
         skippedColumns,
@@ -256,7 +286,7 @@ export async function safeInsertDukkan(
     }
 
     return {
-      error: error.message,
+      error: mapDukkanWriteError(error),
       code: error.code,
       skippedColumns,
     };
@@ -341,4 +371,38 @@ export function mergeWarnings(...warnings: Array<string | undefined>): string | 
   const parts = warnings.filter(Boolean) as string[];
   if (!parts.length) return undefined;
   return parts.join(" ");
+}
+
+function mapDukkanWriteError(error: { code?: string; message?: string }): string {
+  if (error.code === "23503" && error.message?.includes("stores_owner_id_fkey")) {
+    return "Mağaza kaydı oluşturulamadı: oturum kullanıcısı stores.owner_id ile eşleşmiyor. Lütfen tekrar giriş yapın veya destek ile iletişime geçin.";
+  }
+
+  return error.message ?? "Beklenmeyen bir veritabanı hatası oluştu.";
+}
+
+export async function syncStoreMirror(
+  supabase: SupabaseDbClient,
+  params: {
+    dukkanId: string;
+    ownerId: string;
+    slug: string;
+    name: string;
+  }
+): Promise<SafeWriteResult<{ synced: true }>> {
+  const { error } = await supabase.from("stores").upsert(
+    {
+      id: params.dukkanId,
+      owner_id: params.ownerId,
+      slug: params.slug,
+      name: params.name,
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    return { error: mapDukkanWriteError(error), code: error.code };
+  }
+
+  return { data: { synced: true }, skippedColumns: [] };
 }
