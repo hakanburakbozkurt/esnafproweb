@@ -72,10 +72,10 @@ export function BlogPostDetailContent({
             aria-label="İlgili sayfalar"
           >
             <Link
-              href={`/blog/${post.slug}`}
+              href="/blog"
               className="font-medium text-slate-600 hover:text-emerald-700"
             >
-              Esnaf Rehberi&apos;nde oku
+              Esnaf Rehberi
             </Link>
             <Link
               href={`/${shopSlug}`}

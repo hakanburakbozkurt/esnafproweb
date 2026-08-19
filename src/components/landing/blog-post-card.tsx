@@ -13,10 +13,10 @@ export function BlogPostCard({
 }: {
   post: PublicBlogPost;
   className?: string;
-  /** Platform rehber detayı; verilmezse mağaza blog detayına gider */
+  /** Varsayılan: mağaza blog detay URL'si */
   detailHref?: string;
 }) {
-  const href = detailHref ?? `/blog/${post.slug}`;
+  const href = detailHref ?? `/${post.shop_slug}/blog/${post.slug}`;
 
   return (
     <Link

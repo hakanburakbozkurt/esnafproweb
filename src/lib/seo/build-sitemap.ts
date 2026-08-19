@@ -244,10 +244,6 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       sitemapEntry(`/${shopSlug}/blog/${postSlug}`, lastModified, {
         changeFrequency: "monthly",
         priority: 0.5,
-      }),
-      sitemapEntry(`/blog/${postSlug}`, lastModified, {
-        changeFrequency: "monthly",
-        priority: 0.55,
       })
     );
   }
