@@ -43,6 +43,7 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       .from("dukkanlar")
       .select(SHOP_SELECT)
       .eq("aktif", true)
+      .eq("approval_status", "active")
       .in("user_id", userIds);
 
     if (shopsError || !shops?.length) {

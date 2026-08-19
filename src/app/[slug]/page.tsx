@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { data: dukkan } = await supabase
     .from("dukkanlar")
     .select(
-      "dukkan_adi, aciklama, meta_title, meta_description, slug, adres, banner_url, logo_url"
+      "dukkan_adi, aciklama, meta_title, meta_description, slug, adres, banner_url, logo_url, approval_status"
     )
     .eq("slug", slug)
     .eq("aktif", true)

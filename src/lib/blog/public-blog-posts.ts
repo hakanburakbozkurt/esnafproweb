@@ -26,6 +26,7 @@ async function mapPostsWithShops(
     .from("dukkanlar")
     .select("id, slug, dukkan_adi")
     .eq("aktif", true)
+    .eq("approval_status", "active")
     .in("id", dukkanIds);
 
   if (error || !dukkanlar?.length) return [];

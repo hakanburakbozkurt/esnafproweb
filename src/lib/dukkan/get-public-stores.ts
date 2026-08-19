@@ -25,6 +25,7 @@ export async function getFeaturedStoresForLanding(): Promise<{
       .from("dukkanlar")
       .select(STORE_CARD_SELECT)
       .eq("aktif", true)
+      .eq("approval_status", "active")
       .order("created_at", { ascending: false })
       .limit(LANDING_STORES_DESKTOP_LIMIT + 1);
 
@@ -49,6 +50,7 @@ export async function getAllActivePublicStores(): Promise<PublicStoreCard[]> {
       .from("dukkanlar")
       .select(STORE_CARD_SELECT)
       .eq("aktif", true)
+      .eq("approval_status", "active")
       .order("created_at", { ascending: false })
       .limit(200);
 
@@ -69,6 +71,7 @@ export async function getFooterStores(): Promise<{
       .from("dukkanlar")
       .select(STORE_CARD_SELECT)
       .eq("aktif", true)
+      .eq("approval_status", "active")
       .order("created_at", { ascending: false })
       .limit(FOOTER_STORES_LIMIT + 1);
 

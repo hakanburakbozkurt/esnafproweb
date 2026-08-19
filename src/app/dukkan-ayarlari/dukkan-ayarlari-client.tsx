@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { updateDukkan, type DukkanFormState } from "@/lib/dukkan/actions";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
+import {
+  DukkanApprovalSeoNotice,
+  DukkanApprovalStatusBadge,
+} from "@/components/dukkan/dukkan-approval-status";
 import { DukkanForm } from "@/components/dukkan/dukkan-form";
+import { normalizeShopApprovalStatus } from "@/lib/dukkan/approval-status";
 import { VitrinDotGrid } from "@/components/dukkan/vitrin/vitrin-open-section";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
 import type { Dukkan, DukkanUrunu } from "@/types/database.types";
@@ -19,9 +24,20 @@ function DukkanAyarlariForm({
   urunler: DukkanUrunu[];
 }) {
   const [state, formAction, isPending] = useActionState(updateDukkan, initialState);
+  const approvalStatus = normalizeShopApprovalStatus(dukkan.approval_status);
 
   return (
     <div className="space-y-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3">
+        <DukkanApprovalStatusBadge status={approvalStatus} />
+        <p className="text-sm text-slate-500">
+          Vitrin adresi:{" "}
+          <span className="font-medium text-slate-700">/{dukkan.slug}</span>
+        </p>
+      </div>
+
+      <DukkanApprovalSeoNotice status={approvalStatus} />
+
       {state.success && (
         <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 lg:text-base">
           Mağaza bilgileriniz güncellendi.{" "}

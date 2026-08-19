@@ -83,7 +83,8 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         .select(
           "id, slug, user_id, updated_at, created_at, iletisim_sss_goster, teknik_servis_aktif, katalog_modu_aktif"
         )
-        .eq("aktif", true),
+        .eq("aktif", true)
+        .eq("approval_status", "active"),
       supabase
         .from("dukkan_blog_yazilari")
         .select("slug, updated_at, created_at, dukkan_id")

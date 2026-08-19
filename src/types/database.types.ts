@@ -13,6 +13,8 @@ export type FaqItem = {
 
 export type ServiceDeviceStatus = "tamirde" | "hazir" | "teslim_edildi";
 
+export type ShopApprovalStatus = "active" | "pending" | "rejected";
+
 export interface Database {
   public: {
     Tables: {
@@ -50,6 +52,7 @@ export interface Database {
           anasayfa_sss: FaqItem[] | null;
           terms_accepted_at: string | null;
           aktif: boolean;
+          approval_status: ShopApprovalStatus;
           created_at: string;
           updated_at: string;
         };
@@ -86,6 +89,7 @@ export interface Database {
           anasayfa_sss?: FaqItem[] | null;
           terms_accepted_at?: string | null;
           aktif?: boolean;
+          approval_status?: ShopApprovalStatus;
           created_at?: string;
           updated_at?: string;
         };
@@ -122,6 +126,7 @@ export interface Database {
           anasayfa_sss?: FaqItem[] | null;
           terms_accepted_at?: string | null;
           aktif?: boolean;
+          approval_status?: ShopApprovalStatus;
           created_at?: string;
           updated_at?: string;
         };
@@ -879,7 +884,9 @@ export interface Database {
         }[];
       };
     };
-    Enums: Record<string, never>;
+    Enums: {
+      shop_approval_status: ShopApprovalStatus;
+    };
     CompositeTypes: Record<string, never>;
   };
 }

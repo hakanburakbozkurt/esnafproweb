@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, slug, adres, banner_url, logo_url, user_id")
+    .select("dukkan_adi, slug, adres, banner_url, logo_url, user_id, approval_status")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();

@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { parseLocationFromAdres } from "@/lib/dukkan/faq-placeholders";
+import {
+  isShopSeoIndexable,
+  type ShopApprovalStatus,
+} from "@/lib/dukkan/approval-status";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 /** Vitrin sayfaları için SEO metadata — meta_* boşsa dükkan adı/açıklamasına düşer */
@@ -15,7 +19,25 @@ export type DukkanSeoSource = DukkanMetadataSource & {
   adres?: string | null;
   banner_url?: string | null;
   logo_url?: string | null;
+  approval_status?: ShopApprovalStatus | null;
 };
+
+function applyStoreSeoRobots(
+  metadata: Metadata,
+  approvalStatus?: ShopApprovalStatus | null
+): Metadata {
+  if (isShopSeoIndexable(approvalStatus)) {
+    return {
+      ...metadata,
+      robots: { index: true, follow: true },
+    };
+  }
+
+  return {
+    ...metadata,
+    robots: { index: false, follow: false },
+  };
+}
 
 export const NOT_FOUND_STORE_METADATA: Metadata = {
   title: "Mağaza Bulunamadı | EsnafPRO",
@@ -60,12 +82,15 @@ export function buildDukkanPageMetadata(dukkan: DukkanMetadataSource): {
 export function buildStoreHomeSeoMetadata(dukkan: DukkanSeoSource): Metadata {
   const { title, description } = buildDukkanPageMetadata(dukkan);
 
-  return buildPageMetadata({
-    title,
-    description: withLocalAreaSuffix(description, dukkan.adres),
-    path: `/${dukkan.slug}`,
-    image: dukkan.banner_url ?? dukkan.logo_url,
-  });
+  return applyStoreSeoRobots(
+    buildPageMetadata({
+      title,
+      description: withLocalAreaSuffix(description, dukkan.adres),
+      path: `/${dukkan.slug}`,
+      image: dukkan.banner_url ?? dukkan.logo_url,
+    }),
+    dukkan.approval_status
+  );
 }
 
 export function buildStoreSubpageSeoMetadata(
@@ -75,11 +100,14 @@ export function buildStoreSubpageSeoMetadata(
   description: string,
   options?: { image?: string | null; ogType?: "website" | "article" }
 ): Metadata {
-  return buildPageMetadata({
-    title: `${pageLabel} | ${dukkan.dukkan_adi} | EsnafPRO`,
-    description: withLocalAreaSuffix(description, dukkan.adres),
-    path: `/${dukkan.slug}/${segment}`,
-    image: options?.image ?? dukkan.banner_url ?? dukkan.logo_url,
-    ogType: options?.ogType,
-  });
+  return applyStoreSeoRobots(
+    buildPageMetadata({
+      title: `${pageLabel} | ${dukkan.dukkan_adi} | EsnafPRO`,
+      description: withLocalAreaSuffix(description, dukkan.adres),
+      path: `/${dukkan.slug}/${segment}`,
+      image: options?.image ?? dukkan.banner_url ?? dukkan.logo_url,
+      ogType: options?.ogType,
+    }),
+    dukkan.approval_status
+  );
 }

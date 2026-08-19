@@ -239,6 +239,7 @@ export async function safeInsertDukkan(
   let payload: Record<string, unknown> = {
     user_id: params.userId,
     aktif: true,
+    approval_status: "pending",
     ...params.payload,
   };
   const skippedColumns: string[] = [];
