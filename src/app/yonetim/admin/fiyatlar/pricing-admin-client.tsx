@@ -240,6 +240,9 @@ export function PricingAdminClient({ plans }: { plans: PricingPlan[] }) {
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <SeedButton />
+          <a href="/yonetim/admin/dukkan-onay" className={btnSecondaryClass}>
+            Dükkan Onay
+          </a>
           <a href="/yonetim/admin/sss" className={btnSecondaryClass}>
             SSS Yönetimi
           </a>
