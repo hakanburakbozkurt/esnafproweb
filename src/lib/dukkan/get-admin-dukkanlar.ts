@@ -1,15 +1,8 @@
-import type { ShopApprovalStatus } from "@/lib/dukkan/approval-status";
+import type { AdminDukkanListItem } from "@/lib/dukkan/admin-dukkanlar.shared";
 import { createClient } from "@/lib/supabase/server";
 
-export type AdminDukkanListItem = {
-  id: string;
-  dukkan_adi: string;
-  slug: string;
-  approval_status: ShopApprovalStatus;
-  created_at: string;
-  telefon: string | null;
-  aktif: boolean;
-};
+export type { AdminDukkanListItem } from "@/lib/dukkan/admin-dukkanlar.shared";
+export { countDukkanlarByApprovalStatus } from "@/lib/dukkan/admin-dukkanlar.shared";
 
 export async function getAdminDukkanlar(): Promise<AdminDukkanListItem[]> {
   const supabase = await createClient();
@@ -26,21 +19,6 @@ export async function getAdminDukkanlar(): Promise<AdminDukkanListItem[]> {
 
   return (data ?? []).map((row) => ({
     ...row,
-    approval_status: row.approval_status as ShopApprovalStatus,
+    approval_status: row.approval_status as AdminDukkanListItem["approval_status"],
   }));
-}
-
-export function countDukkanlarByApprovalStatus(
-  dukkanlar: AdminDukkanListItem[]
-): Record<ShopApprovalStatus, number> {
-  return dukkanlar.reduce(
-    (counts, dukkan) => {
-      counts[dukkan.approval_status] += 1;
-      return counts;
-    },
-    { active: 0, pending: 0, rejected: 0 } satisfies Record<
-      ShopApprovalStatus,
-      number
-    >
-  );
 }

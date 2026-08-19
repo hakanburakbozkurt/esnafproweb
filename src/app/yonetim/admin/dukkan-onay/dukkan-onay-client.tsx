@@ -16,7 +16,7 @@ import {
 import {
   countDukkanlarByApprovalStatus,
   type AdminDukkanListItem,
-} from "@/lib/dukkan/get-admin-dukkanlar";
+} from "@/lib/dukkan/admin-dukkanlar.shared";
 import { cn } from "@/lib/utils/cn";
 
 const initialState: DukkanApprovalAdminState = {};
