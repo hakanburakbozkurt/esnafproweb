@@ -374,6 +374,10 @@ export function mergeWarnings(...warnings: Array<string | undefined>): string | 
 }
 
 function mapDukkanWriteError(error: { code?: string; message?: string }): string {
+  if (error.code === "42501" && error.message?.includes("stores")) {
+    return "Mağaza servis kaydı oluşturulamadı: yetki politikası engelledi. Oturumunuzun açık olduğundan emin olun.";
+  }
+
   if (error.code === "23503" && error.message?.includes("stores_owner_id_fkey")) {
     return "Mağaza kaydı oluşturulamadı: oturum kullanıcısı stores.owner_id ile eşleşmiyor. Lütfen tekrar giriş yapın veya destek ile iletişime geçin.";
   }
