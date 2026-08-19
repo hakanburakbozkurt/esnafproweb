@@ -5,10 +5,9 @@ import { VitrinPageContent } from "@/components/dukkan/vitrin/vitrin-page-conten
 import { buildDukkanJsonLd, buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
 import {
   loadStoreGoogleReviews,
-  shouldRenderGoogleReviewsWidget,
 } from "@/lib/google-reviews/get-google-reviews";
 import { mergeGoogleReviewsIntoLocalBusiness } from "@/lib/google-reviews/json-ld";
-import { GoogleReviewsWidget } from "@/components/dukkan/vitrin/google-reviews-widget";
+import { GoogleReviewsSection } from "@/components/dukkan/vitrin/google-reviews-section";
 import { normalizeShopApprovalStatus } from "@/lib/dukkan/approval-status";
 import { desktopContainerClass } from "@/lib/utils/layout";
 import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
@@ -123,15 +122,13 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
           faqItems={faqItems}
         />
 
-        {shouldRenderGoogleReviewsWidget(dukkan, googleReviews) && (
-          <div className={`${desktopContainerClass} pb-10 lg:pb-14`}>
-            <GoogleReviewsWidget
-              bundle={googleReviews}
-              shopName={dukkan.dukkan_adi}
-              className="mt-12 lg:mt-16"
-            />
-          </div>
-        )}
+        <div className={`${desktopContainerClass} pb-10 lg:pb-14`}>
+          <GoogleReviewsSection
+            dukkan={dukkan}
+            bundle={googleReviews}
+            className="mt-12 lg:mt-16"
+          />
+        </div>
       </VitrinChrome>
     </>
   );

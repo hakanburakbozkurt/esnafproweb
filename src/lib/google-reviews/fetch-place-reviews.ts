@@ -4,6 +4,7 @@ import {
   normalizeGooglePlaceId,
   resolveGoogleReviewSourceUrl,
 } from "@/lib/google-reviews/place-id";
+import { getGooglePlacesApiKey } from "@/lib/google-reviews/places-api-key";
 import type { GoogleReviewItem, GoogleReviewsBundle } from "@/lib/google-reviews/types";
 
 type PlacesApiReview = {
@@ -65,10 +66,15 @@ function parseReview(
 export async function fetchGooglePlaceReviews(
   placeIdInput: string
 ): Promise<GoogleReviewsBundle | null> {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY?.trim();
+  const apiKey = getGooglePlacesApiKey();
   const placeId = normalizeGooglePlaceId(placeIdInput);
 
   if (!apiKey || !placeId) {
+    if (!apiKey) {
+      console.warn(
+        "[fetchGooglePlaceReviews] API anahtarı yok — GOOGLE_PLACES_API_KEY veya NEXT_PUBLIC_GOOGLE_PLACES_API_KEY tanımlayın."
+      );
+    }
     return null;
   }
 
@@ -87,7 +93,12 @@ export async function fetchGooglePlaceReviews(
     });
 
     if (!response.ok) {
-      console.error("[fetchGooglePlaceReviews] API error", response.status);
+      const errorBody = await response.text().catch(() => "");
+      console.error(
+        "[fetchGooglePlaceReviews] API error",
+        response.status,
+        errorBody.slice(0, 300)
+      );
       return null;
     }
 
