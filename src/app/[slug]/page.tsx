@@ -3,13 +3,6 @@ import { notFound } from "next/navigation";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { VitrinPageContent } from "@/components/dukkan/vitrin/vitrin-page-content";
 import { buildDukkanJsonLd, buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
-import {
-  loadStoreGoogleReviews,
-} from "@/lib/google-reviews/get-google-reviews";
-import { mergeGoogleReviewsIntoLocalBusiness } from "@/lib/google-reviews/json-ld";
-import { GoogleReviewsSection } from "@/components/dukkan/vitrin/google-reviews-section";
-import { normalizeShopApprovalStatus } from "@/lib/dukkan/approval-status";
-import { desktopContainerClass } from "@/lib/utils/layout";
 import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
 import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
@@ -86,16 +79,6 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
   }
 
   const jsonLdSchemas = buildDukkanJsonLd(dukkan);
-  const googleReviews = await loadStoreGoogleReviews(supabase, dukkan);
-  const approvalStatus = normalizeShopApprovalStatus(dukkan.approval_status);
-
-  if (jsonLdSchemas[0] && googleReviews) {
-    jsonLdSchemas[0] = mergeGoogleReviewsIntoLocalBusiness(
-      jsonLdSchemas[0],
-      googleReviews,
-      approvalStatus
-    );
-  }
 
   const faqSchema = buildFaqPageJsonLd(dukkan.anasayfa_sss ?? [], dukkan);
   if (faqSchema) jsonLdSchemas.push(faqSchema);
@@ -121,14 +104,6 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
           qrDevice={qrDevice}
           faqItems={faqItems}
         />
-
-        <div className={`${desktopContainerClass} pb-10 lg:pb-14`}>
-          <GoogleReviewsSection
-            dukkan={dukkan}
-            bundle={googleReviews}
-            className="mt-12 lg:mt-16"
-          />
-        </div>
       </VitrinChrome>
     </>
   );

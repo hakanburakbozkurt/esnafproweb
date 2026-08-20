@@ -35,13 +35,6 @@ import {
 } from "@/lib/dukkan/marka-terms";
 import { slugify, sanitizeSlugInput } from "@/lib/utils/slug";
 import { validateDukkanAdi, validateSlug } from "@/lib/utils/reserved-slugs";
-import { GOOGLE_BUSINESS_PROFILE_LABEL } from "@/lib/google-reviews/constants";
-import { GoogleMapsManualInputHint } from "@/components/dukkan/google-place-id-info-hint";
-import {
-  buildGoogleMapsPlaceUrl,
-  parseGoogleMapsInput,
-  validateGoogleMapsReferenceInput,
-} from "@/lib/google-reviews/place-id";
 import { premiumPanelClassName } from "@/lib/utils/cn";
 import { cn } from "@/lib/utils/cn";
 import type { Dukkan, DukkanUrunu, FaqItem } from "@/types/database.types";
@@ -156,20 +149,6 @@ export function DukkanForm({
   const [markaTermsAccepted, setMarkaTermsAccepted] = useState(
     Boolean(defaultValues?.terms_accepted_at)
   );
-  const [googleMapsReference, setGoogleMapsReference] = useState(() => {
-    if (defaultValues?.google_place_id) {
-      return buildGoogleMapsPlaceUrl(defaultValues.google_place_id);
-    }
-    return "";
-  });
-  const [googleReviewsEnabled, setGoogleReviewsEnabled] = useState(
-    defaultValues?.google_reviews_enabled ?? false
-  );
-
-  const parsedGooglePlaceId = useMemo(
-    () => parseGoogleMapsInput(googleMapsReference),
-    [googleMapsReference]
-  );
 
   useEffect(() => {
     if (!slugTouched) {
@@ -187,10 +166,9 @@ export function DukkanForm({
     return validateDukkanAdi(dukkanAdi);
   }, [dukkanAdi]);
 
-  const googleMapsReferenceValidationError = useMemo(() => {
-    if (!googleReviewsEnabled) return null;
-    return validateGoogleMapsReferenceInput(googleMapsReference);
-  }, [googleMapsReference, googleReviewsEnabled]);
+  const hasBlockingValidationError = Boolean(
+    slugValidationError || dukkanAdiValidationError || !markaTermsAccepted
+  );
 
   const faqPlaceholderSource = useMemo<FaqPlaceholderSource>(
     () => ({
@@ -201,13 +179,6 @@ export function DukkanForm({
       whatsapp,
     }),
     [dukkanAdi, adres, calismaSaatleri, telefon, whatsapp]
-  );
-
-  const hasBlockingValidationError = Boolean(
-    slugValidationError ||
-      dukkanAdiValidationError ||
-      googleMapsReferenceValidationError ||
-      !markaTermsAccepted
   );
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -356,92 +327,6 @@ export function DukkanForm({
             className="w-full resize-y"
           />
         </Field>
-      </div>
-    </FormSection>
-  );
-
-  const googleYorumlari = (
-    <FormSection
-      variant={sectionVariant}
-      title="Google Yorumları"
-      description={`${GOOGLE_BUSINESS_PROFILE_LABEL} yorumlarını vitrinde syndication ilkesiyle gösterin. Her yorum kaynağına linklenir.`}
-    >
-      <div className={fieldStackClass}>
-        <input
-          type="hidden"
-          name="google_reviews_enabled"
-          value={googleReviewsEnabled ? "true" : "false"}
-        />
-        <button
-          type="button"
-          role="switch"
-          aria-checked={googleReviewsEnabled}
-          onClick={() => setGoogleReviewsEnabled((prev) => !prev)}
-          className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-4 text-left transition hover:border-emerald-200 lg:px-6 lg:py-5"
-        >
-          <span>
-            <span className="block text-sm font-semibold text-slate-900 lg:text-base">
-              Google yorum widget&apos;ını vitrinde göster
-            </span>
-            <span className="mt-1 block text-xs text-slate-500 lg:text-sm">
-              Aktifken vitrinde Google kaynaklı yorumlar, atıf metni ve orijinal
-              yorum linkleri görünür.
-            </span>
-          </span>
-          <span
-            className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition ${
-              googleReviewsEnabled ? "bg-emerald-600" : "bg-slate-300"
-            }`}
-            aria-hidden
-          >
-            <span
-              className={`absolute top-0.5 size-6 rounded-full bg-white shadow transition ${
-                googleReviewsEnabled ? "left-[22px]" : "left-0.5"
-              }`}
-            />
-          </span>
-        </button>
-
-        <GoogleMapsManualInputHint
-          visible={googleReviewsEnabled && !parsedGooglePlaceId}
-        />
-
-        {parsedGooglePlaceId && googleReviewsEnabled && (
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-700">
-              <span aria-hidden>🟢</span>
-              Google İşletme Profili başarıyla bağlandı
-            </span>
-            <span className="font-mono text-xs text-emerald-800">{parsedGooglePlaceId}</span>
-          </div>
-        )}
-
-        <Field
-          label="Google Maps linki veya Place ID"
-          hint="İşletme sayfanızın paylaşım linkini veya ChIJ... Place ID değerini yapıştırın."
-        >
-          <Textarea
-            name="google_maps_reference"
-            rows={3}
-            placeholder="https://maps.google.com/... veya ChIJ..."
-            value={googleMapsReference}
-            onChange={(event) => setGoogleMapsReference(event.target.value)}
-            disabled={!googleReviewsEnabled || isPending}
-            aria-invalid={googleMapsReferenceValidationError ? true : undefined}
-            className="w-full resize-y font-mono text-sm"
-          />
-          {googleMapsReferenceValidationError && (
-            <p className="mt-2 text-sm text-red-600" role="alert">
-              {googleMapsReferenceValidationError}
-            </p>
-          )}
-        </Field>
-
-        <input
-          type="hidden"
-          name="google_place_id"
-          value={parsedGooglePlaceId ?? ""}
-        />
       </div>
     </FormSection>
   );
@@ -626,7 +511,7 @@ export function DukkanForm({
 
         <Field
           label="Harita Konumu"
-          hint="Haritaya tıklayarak veya pini sürükleyerek mağaza pinini belirleyin"
+          hint="Haritaya tıklayarak veya pini sürükleyerek mağaza pinini belirleyin. Vitrinde yol tarifi bu koordinatlara göre oluşturulur."
         >
           <LocationMapPicker
             enlem={enlem}
@@ -870,7 +755,6 @@ export function DukkanForm({
     <>
       {temelBilgiler}
       {showSeoFields && seoAyarlari}
-      {showSeoFields && googleYorumlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}
@@ -888,7 +772,6 @@ export function DukkanForm({
     <>
       {temelBilgiler}
       {showSeoFields && seoAyarlari}
-      {showSeoFields && googleYorumlari}
       {markaGorselleri}
       {hakkimizdaSection}
       {hakkimizdaSss}

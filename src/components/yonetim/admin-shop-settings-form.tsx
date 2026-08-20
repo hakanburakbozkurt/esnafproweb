@@ -1,67 +1,57 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useActionState, useMemo, useState } from "react";
-import { GoogleMapsManualInputHint } from "@/components/dukkan/google-place-id-info-hint";
+import { useActionState, useState } from "react";
 import {
   adminBtnPrimaryClass,
-  adminInputClass,
   adminPanelClass,
 } from "@/components/yonetim/admin-ui";
 import {
-  updateAdminShopGoogleReviews,
+  updateAdminShopLocation,
   type AdminShopSettingsState,
 } from "@/lib/dukkan/admin-shop-settings-actions";
-import { GOOGLE_BUSINESS_PROFILE_LABEL } from "@/lib/google-reviews/constants";
-import {
-  buildGoogleMapsPlaceUrl,
-  parseGoogleMapsInput,
-} from "@/lib/google-reviews/place-id";
-import { cn } from "@/lib/utils/cn";
+import { formatCoordinate, readCompleteCoordinates } from "@/lib/dukkan/location";
 
-type AdminShopSettingsFormProps = {
+const LocationMapPicker = dynamic(
+  () =>
+    import("@/components/dukkan/location-map-picker").then(
+      (module) => module.LocationMapPicker
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-72 animate-pulse rounded-2xl border border-zinc-700 bg-zinc-800/60 sm:h-80" />
+    ),
+  }
+);
+
+type AdminShopLocationFormProps = {
   dukkan: {
     dukkan_adi: string;
     slug: string;
-    google_place_id: string | null;
-    google_reviews_enabled: boolean;
+    enlem: number | null;
+    boylam: number | null;
   } | null;
 };
 
 const initialState: AdminShopSettingsState = {};
 
-export function AdminShopSettingsForm({ dukkan }: AdminShopSettingsFormProps) {
+export function AdminShopLocationForm({ dukkan }: AdminShopLocationFormProps) {
   const [state, formAction, isPending] = useActionState(
-    updateAdminShopGoogleReviews,
+    updateAdminShopLocation,
     initialState
   );
 
-  const [googleReviewsEnabled, setGoogleReviewsEnabled] = useState(
-    dukkan?.google_reviews_enabled ?? false
-  );
-  const [googleMapsReference, setGoogleMapsReference] = useState(() => {
-    if (dukkan?.google_place_id) {
-      return buildGoogleMapsPlaceUrl(dukkan.google_place_id);
-    }
-    return "";
-  });
-
-  const parsedGooglePlaceId = useMemo(
-    () => parseGoogleMapsInput(googleMapsReference),
-    [googleMapsReference]
-  );
-
-  const googleMapsReferenceValidationError =
-    googleReviewsEnabled && googleMapsReference.trim() && !parsedGooglePlaceId
-      ? "Geçerli bir Google Maps linki veya Place ID (ChIJ...) girin."
-      : null;
+  const [enlem, setEnlem] = useState<number | null>(dukkan?.enlem ?? null);
+  const [boylam, setBoylam] = useState<number | null>(dukkan?.boylam ?? null);
 
   if (!dukkan) {
     return (
       <section className={adminPanelClass}>
-        <h2 className="text-xl font-bold text-zinc-100">Dükkan Ayarları</h2>
+        <h2 className="text-xl font-bold text-zinc-100">Dükkan Konumu</h2>
         <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          Google yorum ayarlarını buradan yönetmek için önce bir dükkan oluşturmalısınız.
+          Konum ayarlarını buradan yönetmek için önce bir dükkan oluşturmalısınız.
         </p>
         <Link href="/dukkan-ac" className={`${adminBtnPrimaryClass} mt-5`}>
           Dükkan Aç
@@ -75,10 +65,10 @@ export function AdminShopSettingsForm({ dukkan }: AdminShopSettingsFormProps) {
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
         Dükkan Ayarları
       </p>
-      <h2 className="mt-2 text-xl font-bold text-zinc-100">Google Yorumları</h2>
+      <h2 className="mt-2 text-xl font-bold text-zinc-100">Harita Konumu</h2>
       <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-        <span className="font-medium text-zinc-300">{dukkan.dukkan_adi}</span> vitrininde{" "}
-        {GOOGLE_BUSINESS_PROFILE_LABEL} puanı ve yorumlarını gösterin.
+        <span className="font-medium text-zinc-300">{dukkan.dukkan_adi}</span> vitrininde
+        yol tarifi ve harita görünümü bu koordinatlara göre oluşturulur.
       </p>
       <p className="mt-1 text-xs text-zinc-500">
         Vitrin:{" "}
@@ -92,87 +82,34 @@ export function AdminShopSettingsForm({ dukkan }: AdminShopSettingsFormProps) {
       </p>
 
       <form action={formAction} className="mt-6 space-y-5">
-        <input type="hidden" name="google_reviews_enabled" value={googleReviewsEnabled ? "true" : "false"} />
-
-        <button
-          type="button"
-          role="switch"
-          aria-checked={googleReviewsEnabled}
-          onClick={() => setGoogleReviewsEnabled((prev) => !prev)}
-          disabled={isPending}
-          className="flex w-full items-center justify-between gap-4 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-4 text-left transition hover:border-zinc-600 disabled:opacity-60"
-        >
-          <span>
-            <span className="block text-sm font-semibold text-zinc-100">
-              Google yorum widget&apos;ını vitrinde göster
-            </span>
-            <span className="mt-1 block text-xs text-zinc-500">
-              Aktifken vitrinde Google kaynaklı yorumlar ve atıf metni görünür.
-            </span>
-          </span>
-          <span
-            className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition ${
-              googleReviewsEnabled ? "bg-indigo-600" : "bg-zinc-600"
-            }`}
-            aria-hidden
-          >
-            <span
-              className={`absolute top-0.5 size-6 rounded-full bg-white shadow transition ${
-                googleReviewsEnabled ? "left-[22px]" : "left-0.5"
-              }`}
-            />
-          </span>
-        </button>
-
-        <GoogleMapsManualInputHint
-          visible={googleReviewsEnabled && !parsedGooglePlaceId}
-        />
-
-        {parsedGooglePlaceId && googleReviewsEnabled && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/30 px-4 py-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/50 px-3 py-1 text-xs font-semibold text-emerald-300">
-              Bağlandı
-            </span>
-            <span className="font-mono text-xs text-emerald-200">{parsedGooglePlaceId}</span>
-          </div>
-        )}
+        <input type="hidden" name="enlem" value={enlem ?? ""} />
+        <input type="hidden" name="boylam" value={boylam ?? ""} />
 
         <div>
-          <label htmlFor="google_maps_reference" className="text-sm font-medium text-zinc-300">
-            Google Maps linki veya Place ID
-          </label>
-          <textarea
-            id="google_maps_reference"
-            name="google_maps_reference"
-            rows={3}
-            placeholder="https://maps.google.com/... veya ChIJ..."
-            value={googleMapsReference}
-            onChange={(event) => setGoogleMapsReference(event.target.value)}
-            disabled={!googleReviewsEnabled || isPending}
-            aria-invalid={googleMapsReferenceValidationError ? true : undefined}
-            className={cn(adminInputClass, "resize-y font-mono")}
-          />
+          <p className="text-sm font-medium text-zinc-300">Dükkan Konumu</p>
           <p className="mt-1.5 text-xs text-zinc-500">
-            İşletme sayfanızın paylaşım linkini veya ChIJ... Place ID değerini yapıştırın.
+            Haritaya tıklayarak veya pini sürükleyerek işletmenizin tam konumunu işaretleyin.
           </p>
-          {googleMapsReferenceValidationError && (
-            <p className="mt-2 text-sm text-red-400" role="alert">
-              {googleMapsReferenceValidationError}
+          <div className="mt-3">
+            <LocationMapPicker
+              enlem={enlem}
+              boylam={boylam}
+              onChange={(coords) => {
+                setEnlem(coords?.enlem ?? null);
+                setBoylam(coords?.boylam ?? null);
+              }}
+            />
+          </div>
+          {readCompleteCoordinates(enlem, boylam) && (
+            <p className="mt-2 text-xs text-emerald-300">
+              Konum: {formatCoordinate(enlem!)}, {formatCoordinate(boylam!)}
             </p>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
-          <button
-            type="submit"
-            disabled={
-              isPending ||
-              Boolean(googleMapsReferenceValidationError) ||
-              (googleReviewsEnabled && !parsedGooglePlaceId)
-            }
-            className={adminBtnPrimaryClass}
-          >
-            {isPending ? "Kaydediliyor…" : "Google Ayarlarını Kaydet"}
+          <button type="submit" disabled={isPending} className={adminBtnPrimaryClass}>
+            {isPending ? "Kaydediliyor…" : "Konumu Kaydet"}
           </button>
         </div>
 

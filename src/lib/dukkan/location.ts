@@ -37,3 +37,26 @@ export function validateCoordinates(
 export function formatCoordinate(value: number): string {
   return value.toFixed(6);
 }
+
+export function hasCompleteCoordinates(
+  enlem: number | null | undefined,
+  boylam: number | null | undefined
+): boolean {
+  return (
+    enlem != null &&
+    boylam != null &&
+    Number.isFinite(enlem) &&
+    Number.isFinite(boylam)
+  );
+}
+
+export function readCompleteCoordinates(
+  enlem: number | null | undefined,
+  boylam: number | null | undefined
+): { enlem: number; boylam: number } | null {
+  if (!hasCompleteCoordinates(enlem, boylam)) {
+    return null;
+  }
+
+  return { enlem: enlem as number, boylam: boylam as number };
+}

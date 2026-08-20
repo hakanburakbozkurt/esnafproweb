@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AdminNav } from "@/components/yonetim/admin-nav";
-import { AdminShopSettingsForm } from "@/components/yonetim/admin-shop-settings-form";
+import { AdminShopLocationForm } from "@/components/yonetim/admin-shop-settings-form";
 import { adminNavCardClass, adminPanelClass } from "@/components/yonetim/admin-ui";
 import type { ShopApprovalStatus } from "@/lib/dukkan/approval-status";
 
@@ -9,8 +9,8 @@ type AdminDashboardClientProps = {
   dukkan: {
     dukkan_adi: string;
     slug: string;
-    google_place_id: string | null;
-    google_reviews_enabled: boolean;
+    enlem: number | null;
+    boylam: number | null;
   } | null;
 };
 
@@ -49,7 +49,7 @@ export function AdminDashboardClient({
           Admin Paneli
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-          Platform yönetimi, dükkan onayları ve kendi vitrininizin Google yorum ayarları
+          Platform yönetimi, dükkan onayları ve kendi vitrininizin harita konumu
           buradan erişilebilir.
         </p>
         <div className="mt-6">
@@ -102,7 +102,7 @@ export function AdminDashboardClient({
         </div>
       </section>
 
-      <AdminShopSettingsForm dukkan={dukkan} />
+      <AdminShopLocationForm dukkan={dukkan} />
     </div>
   );
 }

@@ -1,12 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { logDukkanAction } from "@/lib/dukkan/logger";
 import {
-  invalidateGoogleReviewsCache,
-  refreshGoogleReviewsCache,
-} from "@/lib/google-reviews/get-google-reviews";
-import { parseGoogleMapsInput } from "@/lib/google-reviews/place-id";
+  parseCoordinateInput,
+  validateCoordinates,
+} from "@/lib/dukkan/location";
+import { logDukkanAction } from "@/lib/dukkan/logger";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminShopSettingsState = {
@@ -14,7 +13,7 @@ export type AdminShopSettingsState = {
   success?: string;
 };
 
-export async function updateAdminShopGoogleReviews(
+export async function updateAdminShopLocation(
   _prev: AdminShopSettingsState,
   formData: FormData
 ): Promise<AdminShopSettingsState> {
@@ -27,28 +26,22 @@ export async function updateAdminShopGoogleReviews(
     return { error: "Bu işlem için giriş yapmalısınız." };
   }
 
-  const googleReviewsEnabled =
-    String(formData.get("google_reviews_enabled") ?? "false") === "true";
-  const googleMapsReference = String(
-    formData.get("google_maps_reference") ?? ""
-  ).trim();
-  const googlePlaceId = parseGoogleMapsInput(googleMapsReference);
+  const enlem = parseCoordinateInput(formData.get("enlem"));
+  const boylam = parseCoordinateInput(formData.get("boylam"));
 
-  if (googleReviewsEnabled && !googlePlaceId) {
-    return {
-      error:
-        "Google yorumları açıkken geçerli bir Google Maps linki veya Place ID (ChIJ...) girmelisiniz.",
-    };
+  const coordinateError = validateCoordinates(enlem, boylam);
+  if (coordinateError) {
+    return { error: coordinateError };
   }
 
   const { data: current, error: fetchError } = await supabase
     .from("dukkanlar")
-    .select("id, slug, google_place_id, google_reviews_enabled")
+    .select("id, slug")
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (fetchError) {
-    logDukkanAction("updateAdminShopGoogleReviews", "fetch failed", {
+    logDukkanAction("updateAdminShopLocation", "fetch failed", {
       err: fetchError.message,
     });
     return { error: "Dükkan bilgisi alınamadı." };
@@ -63,53 +56,24 @@ export async function updateAdminShopGoogleReviews(
   const { error: updateError } = await supabase
     .from("dukkanlar")
     .update({
-      google_place_id: googlePlaceId,
-      google_reviews_enabled: googleReviewsEnabled,
+      enlem,
+      boylam,
       updated_at: new Date().toISOString(),
     })
     .eq("id", current.id)
     .eq("user_id", user.id);
 
   if (updateError) {
-    logDukkanAction("updateAdminShopGoogleReviews", "update failed", {
+    logDukkanAction("updateAdminShopLocation", "update failed", {
       dukkanId: current.id,
       err: updateError.message,
     });
     return { error: `Kayıt güncellenemedi: ${updateError.message}` };
   }
 
-  const googleConfigChanged =
-    current.google_place_id !== googlePlaceId ||
-    current.google_reviews_enabled !== googleReviewsEnabled;
-
-  try {
-    if (googleReviewsEnabled && googlePlaceId) {
-      if (googleConfigChanged) {
-        await refreshGoogleReviewsCache(supabase, current.id, googlePlaceId);
-      }
-    } else if (
-      googleConfigChanged ||
-      current.google_reviews_enabled ||
-      current.google_place_id
-    ) {
-      await invalidateGoogleReviewsCache(supabase, current.id);
-    }
-  } catch (err) {
-    logDukkanAction("updateAdminShopGoogleReviews", "google cache refresh failed", {
-      dukkanId: current.id,
-      err,
-    });
-    revalidatePath("/yonetim/admin");
-    revalidatePath(`/${current.slug}`);
-    return {
-      success: "Google ayarları kaydedildi.",
-      error:
-        "Yorum önbelleği yenilenemedi; vitrin bir süre sonra güncellenecektir.",
-    };
-  }
-
   revalidatePath("/yonetim/admin");
   revalidatePath(`/${current.slug}`);
+  revalidatePath(`/${current.slug}/iletisim`);
 
-  return { success: "Google yorum ayarları kaydedildi." };
+  return { success: "Dükkan konumu kaydedildi." };
 }

@@ -22,7 +22,7 @@ export default async function AdminDashboardPage() {
     getAdminDukkanlar(),
     supabase
       .from("dukkanlar")
-      .select("dukkan_adi, slug, google_place_id, google_reviews_enabled")
+      .select("dukkan_adi, slug, enlem, boylam")
       .eq("user_id", user.id)
       .maybeSingle(),
   ]);

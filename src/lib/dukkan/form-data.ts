@@ -20,10 +20,7 @@ import {
   validateSocialUrl,
   validateWhatsAppNumber,
 } from "@/lib/dukkan/contact";
-import {
-  parseGoogleMapsInput,
-  validateGoogleMapsReferenceInput,
-} from "@/lib/google-reviews/place-id";
+
 import {
   MAX_GALLERY_PHOTOS,
   MAX_PRODUCT_PHOTOS,
@@ -72,8 +69,6 @@ export type ParsedDukkanForm = {
   anasayfa_sss: FaqItem[];
   urunler: ParsedUrun[];
   markaTermsAccepted: boolean;
-  google_place_id: string | null;
-  google_reviews_enabled: boolean;
 };
 
 export function parseFaqFromFormData(
@@ -159,12 +154,6 @@ export function parseDukkanFormData(formData: FormData):
     String(formData.get("teknik_servis_aktif") ?? "false") === "true";
   const katalogModuAktif =
     String(formData.get("katalog_modu_aktif") ?? "false") === "true";
-  const googleReviewsEnabled =
-    String(formData.get("google_reviews_enabled") ?? "false") === "true";
-  const googleMapsReference = String(
-    formData.get("google_maps_reference") ?? ""
-  ).trim();
-  const googlePlaceId = parseGoogleMapsInput(googleMapsReference);
   const teknikServisFoto1 = String(
     formData.get("teknik_servis_fotograf_1") ?? ""
   ).trim();
@@ -234,21 +223,6 @@ export function parseDukkanFormData(formData: FormData):
     calisma_saatleri = serializeCalismaSaatleri(schedule);
   }
 
-  if (googleReviewsEnabled) {
-    if (!googleMapsReference) {
-      return {
-        error: "Google yorumları için Google Maps linki veya Place ID girin.",
-      };
-    }
-
-    if (!googlePlaceId) {
-      return {
-        error:
-          "Google Maps linki tanınmadı. Lütfen işletme sayfanızın tam linkini veya geçerli bir Place ID (ChIJ...) yapıştırın.",
-      };
-    }
-  }
-
   return {
     data: {
       dukkan_adi: dukkanAdi,
@@ -281,8 +255,6 @@ export function parseDukkanFormData(formData: FormData):
       anasayfa_sss: parseFaqFromFormData(formData, "anasayfa_faq"),
       urunler: parseUrunlerFromFormData(formData),
       markaTermsAccepted,
-      google_place_id: googlePlaceId,
-      google_reviews_enabled: googleReviewsEnabled,
     },
   };
 }
