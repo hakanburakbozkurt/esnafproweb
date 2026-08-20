@@ -7,6 +7,8 @@ import { useRef, type ReactNode } from "react";
 import { desktopContainerClass } from "@/lib/utils/layout";
 import { VitrinMobileContactDrawer } from "@/components/dukkan/vitrin/vitrin-mobile-contact-drawer";
 import { VitrinOwnerMenu } from "@/components/dukkan/vitrin/vitrin-owner-menu";
+import { VitrinGoogleBusinessButton } from "@/components/dukkan/vitrin/vitrin-google-business-button";
+import { hasGoogleBusinessUrl } from "@/lib/dukkan/google-business-url";
 import type { Dukkan } from "@/types/database.types";
 
 export function VitrinChrome({
@@ -46,6 +48,7 @@ export function VitrinChrome({
   const isKatalogPage =
     pathname === katalogHref || pathname.startsWith(`${katalogHref}/`);
   const isHakkimizdaPage = pathname === hakkimizdaHref;
+  const showGoogleBusinessButton = hasGoogleBusinessUrl(dukkan.google_business_url);
 
   const headerRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
@@ -116,7 +119,13 @@ export function VitrinChrome({
               )}
             </nav>
 
-            <div className="flex shrink-0 items-center">
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              {showGoogleBusinessButton && (
+                <VitrinGoogleBusinessButton
+                  url={dukkan.google_business_url!}
+                  compact
+                />
+              )}
               <VitrinOwnerMenu
                 blogHref={blogHref}
                 katalogHref={katalogHref}

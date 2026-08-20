@@ -35,6 +35,7 @@ import {
 } from "@/lib/dukkan/marka-terms";
 import { slugify, sanitizeSlugInput } from "@/lib/utils/slug";
 import { validateDukkanAdi, validateSlug } from "@/lib/utils/reserved-slugs";
+import { validateGoogleBusinessUrlInput } from "@/lib/dukkan/google-business-url";
 import { premiumPanelClassName } from "@/lib/utils/cn";
 import { cn } from "@/lib/utils/cn";
 import type { Dukkan, DukkanUrunu, FaqItem } from "@/types/database.types";
@@ -104,6 +105,9 @@ export function DukkanForm({
     defaultValues?.facebook_url ?? ""
   );
   const [adres, setAdres] = useState(defaultValues?.adres ?? "");
+  const [googleBusinessUrl, setGoogleBusinessUrl] = useState(
+    defaultValues?.google_business_url ?? ""
+  );
   const [enlem, setEnlem] = useState<number | null>(defaultValues?.enlem ?? null);
   const [boylam, setBoylam] = useState<number | null>(defaultValues?.boylam ?? null);
   const [aciklama, setAciklama] = useState(defaultValues?.aciklama ?? "");
@@ -166,8 +170,15 @@ export function DukkanForm({
     return validateDukkanAdi(dukkanAdi);
   }, [dukkanAdi]);
 
+  const googleBusinessUrlValidationError = useMemo(() => {
+    return validateGoogleBusinessUrlInput(googleBusinessUrl);
+  }, [googleBusinessUrl]);
+
   const hasBlockingValidationError = Boolean(
-    slugValidationError || dukkanAdiValidationError || !markaTermsAccepted
+    slugValidationError ||
+      dukkanAdiValidationError ||
+      googleBusinessUrlValidationError ||
+      !markaTermsAccepted
   );
 
   const faqPlaceholderSource = useMemo<FaqPlaceholderSource>(
@@ -521,6 +532,30 @@ export function DukkanForm({
               setBoylam(coords?.boylam ?? null);
             }}
           />
+        </Field>
+
+        <Field
+          label="Google İşletme / Harita Linki"
+          hint="Vitrin header'ında 'Google'da İncele' butonu olarak görünür."
+        >
+          <Input
+            name="google_business_url"
+            type="url"
+            value={googleBusinessUrl}
+            onChange={(e) => setGoogleBusinessUrl(e.target.value)}
+            placeholder="https://maps.app.goo.gl/..."
+            aria-invalid={googleBusinessUrlValidationError ? true : undefined}
+            className="w-full"
+          />
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            📍 Google Haritalar&apos;da dükkanınızı bulun, &quot;Paylaş&quot; butonuna
+            basıp bağlantıyı kopyalayın ve buraya yapıştırın.
+          </p>
+          {googleBusinessUrlValidationError && (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {googleBusinessUrlValidationError}
+            </p>
+          )}
         </Field>
 
         <div className="flex gap-3 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/40 px-4 py-4 shadow-sm sm:px-5 sm:py-4">

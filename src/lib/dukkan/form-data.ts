@@ -20,6 +20,10 @@ import {
   validateSocialUrl,
   validateWhatsAppNumber,
 } from "@/lib/dukkan/contact";
+import {
+  normalizeGoogleBusinessUrl,
+  validateGoogleBusinessUrlInput,
+} from "@/lib/dukkan/google-business-url";
 
 import {
   MAX_GALLERY_PHOTOS,
@@ -50,6 +54,7 @@ export type ParsedDukkanForm = {
   adres: string | null;
   enlem: number | null;
   boylam: number | null;
+  google_business_url: string | null;
   aciklama: string | null;
   meta_title: string | null;
   meta_description: string | null;
@@ -143,6 +148,9 @@ export function parseDukkanFormData(formData: FormData):
   const adres = String(formData.get("adres") ?? "").trim();
   const enlem = parseCoordinateInput(formData.get("enlem"));
   const boylam = parseCoordinateInput(formData.get("boylam"));
+  const googleBusinessUrlInput = String(
+    formData.get("google_business_url") ?? ""
+  ).trim();
   const aciklama = String(formData.get("aciklama") ?? "").trim();
   const metaTitle = String(formData.get("meta_title") ?? "").trim();
   const metaDescription = String(formData.get("meta_description") ?? "").trim();
@@ -208,6 +216,15 @@ export function parseDukkanFormData(formData: FormData):
     return { error: coordinateError };
   }
 
+  const googleBusinessUrlError = validateGoogleBusinessUrlInput(
+    googleBusinessUrlInput
+  );
+  if (googleBusinessUrlError) {
+    return { error: googleBusinessUrlError };
+  }
+
+  const googleBusinessUrl = normalizeGoogleBusinessUrl(googleBusinessUrlInput);
+
   let calisma_saatleri: string | null = null;
   if (calismaSaatleriRaw) {
     const schedule = parseCalismaSaatleri(calismaSaatleriRaw);
@@ -236,6 +253,7 @@ export function parseDukkanFormData(formData: FormData):
       adres: adres || null,
       enlem,
       boylam,
+      google_business_url: googleBusinessUrl,
       aciklama: aciklama || null,
       meta_title: metaTitle || null,
       meta_description: metaDescription || null,

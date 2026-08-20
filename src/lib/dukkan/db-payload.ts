@@ -15,6 +15,7 @@ export type DukkanDbPayload = {
   adres: string | null;
   enlem: number | null;
   boylam: number | null;
+  google_business_url: string | null;
   aciklama: string | null;
   meta_title: string | null;
   meta_description: string | null;
@@ -70,6 +71,7 @@ export const DUKKAN_OPTIONAL_PAYLOAD_KEYS = [
   "meta_title",
   "meta_description",
   "terms_accepted_at",
+  "google_business_url",
 ] as const satisfies readonly (keyof DukkanDbPayload)[];
 
 export const DUKKAN_URUN_OPTIONAL_KEYS = [
@@ -103,6 +105,7 @@ export function toDukkanDbPayload(
     adres: data.adres,
     enlem: data.enlem,
     boylam: data.boylam,
+    google_business_url: data.google_business_url,
     aciklama: data.aciklama,
     meta_title: data.meta_title,
     meta_description: data.meta_description,
