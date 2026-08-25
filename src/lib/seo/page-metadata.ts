@@ -25,6 +25,9 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
     description: input.description,
     alternates: {
       canonical: url,
+      languages: {
+        "tr-TR": url,
+      },
     },
     openGraph: {
       title: input.title,
@@ -40,6 +43,9 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
       title: input.title,
       description: input.description,
       ...(image ? { images: [image] } : {}),
+    },
+    other: {
+      "content-language": "tr",
     },
   };
 }

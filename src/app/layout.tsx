@@ -9,15 +9,40 @@ const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
 });
 
+const siteTitle = "EsnafPRO";
 const siteDescription =
-  "Toptancı, esnaf ve son kullanıcılar için dijital yönetim platformu";
+  "Telefon ve teknik servis esnafı için dijital vitrin, servis takibi, 2. el pazaryeri ve işletme yönetimi platformu. Kod bilmeden dakikalar içinde profesyonel mağaza sayfanızı açın.";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+const siteUrl = getPublicSiteUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getPublicSiteUrl()),
-  title: "EsnafPRO",
+  metadataBase: new URL(siteUrl),
+  title: siteTitle,
   description: siteDescription,
+  applicationName: siteTitle,
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: siteUrl,
+    siteName: siteTitle,
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: siteTitle,
+    description: siteDescription,
+  },
+  alternates: {
+    canonical: siteUrl,
+    languages: {
+      "tr-TR": siteUrl,
+    },
+  },
+  other: {
+    "content-language": "tr",
+  },
   ...(googleSiteVerification
     ? {
         verification: {

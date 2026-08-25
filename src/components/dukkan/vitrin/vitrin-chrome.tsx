@@ -72,7 +72,13 @@ export function VitrinChrome({
               href={`/${dukkan.slug}`}
               className="min-w-0 truncate text-base font-bold tracking-tight text-slate-900 lg:text-xl"
             >
-              {shopName}
+              {isMagazamPage ? (
+                <h1 className="truncate text-base font-bold tracking-tight lg:text-xl">
+                  {shopName}
+                </h1>
+              ) : (
+                shopName
+              )}
             </Link>
 
             <nav

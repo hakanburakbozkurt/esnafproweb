@@ -64,7 +64,23 @@ export function withLocalAreaSuffix(
   return `${text} — ${area}`;
 }
 
-export function buildDukkanPageMetadata(dukkan: DukkanMetadataSource): {
+/** meta_description ve aciklama boşsa yerel + sektör sinyalli varsayılan metin */
+export function buildDefaultStoreDescription(
+  dukkan: Pick<DukkanMetadataSource, "dukkan_adi"> & { adres?: string | null }
+): string {
+  const name = dukkan.dukkan_adi.trim();
+  const area = buildLocalAreaLabel(dukkan.adres);
+
+  if (area) {
+    return `${name}, ${area} bölgesinde telefon ve teknik servis sektöründe faaliyet gösteren işletmenin dijital vitrin sayfası. Ürünler, iletişim bilgileri ve hizmet detaylarına buradan ulaşabilirsiniz.`;
+  }
+
+  return `${name} telefon ve teknik servis işletmesinin EsnafPRO dijital vitrin sayfası. Ürünler, iletişim bilgileri ve hizmet detayları tek adreste.`;
+}
+
+export function buildDukkanPageMetadata(
+  dukkan: DukkanMetadataSource & { adres?: string | null }
+): {
   title: string;
   description: string;
 } {
@@ -74,7 +90,7 @@ export function buildDukkanPageMetadata(dukkan: DukkanMetadataSource): {
   const description =
     dukkan.meta_description?.trim() ||
     dukkan.aciklama?.trim() ||
-    `${dukkan.dukkan_adi} dijital vitrin sayfası`;
+    buildDefaultStoreDescription(dukkan);
 
   return { title, description };
 }

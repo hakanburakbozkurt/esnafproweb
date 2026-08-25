@@ -1,12 +1,14 @@
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Hakkımızda | EsnafPRO",
   description:
     "EsnafPRO; esnaf ve küçük işletmeler için dijital vitrin ve işletme yönetim platformudur.",
-};
+  path: "/hakkimizda",
+});
 
 export default async function HakkimizdaPage() {
   return (

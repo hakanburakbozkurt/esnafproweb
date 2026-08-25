@@ -56,9 +56,13 @@ function staticSitemapEntries(now: Date): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.7,
     }),
-    sitemapEntry("/giris", now, {
+    sitemapEntry("/hakkimizda", now, {
       changeFrequency: "monthly",
-      priority: 0.4,
+      priority: 0.6,
+    }),
+    sitemapEntry("/iletisim", now, {
+      changeFrequency: "monthly",
+      priority: 0.6,
     }),
   ];
 }
