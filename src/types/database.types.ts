@@ -236,6 +236,8 @@ export interface Database {
           slug: string;
           icerik: string | null;
           kapak_url: string | null;
+          meta_title: string | null;
+          meta_description: string | null;
           yayinda: boolean;
           created_at: string;
           updated_at: string;
@@ -247,6 +249,8 @@ export interface Database {
           slug: string;
           icerik?: string | null;
           kapak_url?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
           yayinda?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -258,6 +262,8 @@ export interface Database {
           slug?: string;
           icerik?: string | null;
           kapak_url?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
           yayinda?: boolean;
           created_at?: string;
           updated_at?: string;

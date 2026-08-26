@@ -1,4 +1,5 @@
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
+import { stripBlogHtml } from "@/lib/blog/blog-html";
 import {
   parseCalismaSaatleri,
   toSchemaOrgOpeningHours,
@@ -191,7 +192,9 @@ export function buildBlogPostingJsonLd(input: {
     url,
     mainEntityOfPage: url,
     ...(input.post.kapak_url ? { image: input.post.kapak_url } : {}),
-    ...(input.post.icerik ? { articleBody: input.post.icerik } : {}),
+    ...(input.post.icerik
+      ? { articleBody: stripBlogHtml(input.post.icerik) }
+      : {}),
   };
 }
 

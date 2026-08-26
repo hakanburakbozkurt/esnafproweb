@@ -2,13 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sanitizeBlogHtml } from "@/lib/blog/blog-html";
 import { createClient } from "@/lib/supabase/server";
 import { isWholesalerAccount, wholesalerStoreAccessError } from "@/lib/auth/wholesaler";
 import { revalidateSitemap } from "@/lib/seo/sitemap-cache";
-import { slugify } from "@/lib/utils/slug";
+import { isValidSlugFormat, slugify } from "@/lib/utils/slug";
 
 export type BlogFormState = {
   error?: string;
+};
+
+type ParsedBlogForm = {
+  baslik: string;
+  slug: string;
+  icerik: string | null;
+  kapakUrl: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  yayinda: boolean;
+  postId?: string;
 };
 
 async function getOwnerDukkan(userId: string) {
@@ -37,6 +49,54 @@ function revalidateBlogPaths(shopSlug: string, postSlug: string, oldSlug?: strin
   revalidateSitemap();
 }
 
+function parseBlogForm(formData: FormData): ParsedBlogForm | { error: string } {
+  const baslik = String(formData.get("baslik") ?? "").trim();
+  const rawSlug = String(formData.get("slug") ?? "").trim();
+  const rawIcerik = String(formData.get("icerik") ?? "").trim();
+  const kapakUrl = String(formData.get("kapak_url") ?? "").trim();
+  const metaTitle = String(formData.get("meta_title") ?? "").trim();
+  const metaDescription = String(formData.get("meta_description") ?? "").trim();
+  const yayinda = formData.get("yayinda") === "true";
+  const postId = String(formData.get("post_id") ?? "").trim() || undefined;
+
+  if (!baslik) {
+    return { error: "Blog başlığı zorunludur." };
+  }
+
+  const slug = rawSlug ? slugify(rawSlug) : slugify(baslik);
+  if (!slug || !isValidSlugFormat(slug)) {
+    return {
+      error:
+        "Geçerli bir URL slug girin (küçük harf, rakam ve tire; en az 2 karakter).",
+    };
+  }
+
+  const icerik = rawIcerik ? sanitizeBlogHtml(rawIcerik) : null;
+
+  return {
+    baslik,
+    slug,
+    icerik,
+    kapakUrl: kapakUrl || null,
+    metaTitle: metaTitle || null,
+    metaDescription: metaDescription || null,
+    yayinda,
+    postId,
+  };
+}
+
+function blogPayload(parsed: ParsedBlogForm) {
+  return {
+    baslik: parsed.baslik,
+    slug: parsed.slug,
+    icerik: parsed.icerik,
+    kapak_url: parsed.kapakUrl,
+    meta_title: parsed.metaTitle,
+    meta_description: parsed.metaDescription,
+    yayinda: parsed.yayinda,
+  };
+}
+
 export async function createBlogPost(
   _prevState: BlogFormState,
   formData: FormData
@@ -60,37 +120,30 @@ export async function createBlogPost(
     return { error: "Önce mağaza açmalısınız." };
   }
 
-  const baslik = String(formData.get("baslik") ?? "").trim();
-  const icerik = String(formData.get("icerik") ?? "").trim();
-  const kapakUrl = String(formData.get("kapak_url") ?? "").trim();
-
-  if (!baslik) {
-    return { error: "Blog başlığı zorunludur." };
-  }
-
-  const slug = slugify(baslik);
-  if (!slug) {
-    return { error: "Geçerli bir başlık girin." };
+  const parsed = parseBlogForm(formData);
+  if ("error" in parsed) {
+    return { error: parsed.error };
   }
 
   const { error } = await supabase.from("dukkan_blog_yazilari").insert({
     dukkan_id: dukkan.id,
-    baslik,
-    slug,
-    icerik: icerik || null,
-    kapak_url: kapakUrl || null,
-    yayinda: true,
+    ...blogPayload(parsed),
   });
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Bu başlıkla zaten bir yazınız var. Farklı bir başlık deneyin." };
+      return { error: "Bu slug ile zaten bir yazınız var. Farklı bir URL deneyin." };
     }
     return { error: error.message };
   }
 
-  revalidateBlogPaths(dukkan.slug, slug);
-  redirect(`/${dukkan.slug}/blog`);
+  revalidateBlogPaths(dukkan.slug, parsed.slug);
+
+  if (parsed.yayinda) {
+    redirect(`/${dukkan.slug}/blog/${parsed.slug}`);
+  }
+
+  redirect("/yonetim/blog");
 }
 
 export async function updateBlogPost(
@@ -116,29 +169,19 @@ export async function updateBlogPost(
     return { error: "Önce mağaza açmalısınız." };
   }
 
-  const postId = String(formData.get("post_id") ?? "").trim();
-  const baslik = String(formData.get("baslik") ?? "").trim();
-  const icerik = String(formData.get("icerik") ?? "").trim();
-  const kapakUrl = String(formData.get("kapak_url") ?? "").trim();
-  const yayinda = formData.get("yayinda") === "true";
+  const parsed = parseBlogForm(formData);
+  if ("error" in parsed) {
+    return { error: parsed.error };
+  }
 
-  if (!postId) {
+  if (!parsed.postId) {
     return { error: "Yazı kimliği bulunamadı." };
-  }
-
-  if (!baslik) {
-    return { error: "Blog başlığı zorunludur." };
-  }
-
-  const slug = slugify(baslik);
-  if (!slug) {
-    return { error: "Geçerli bir başlık girin." };
   }
 
   const { data: existing } = await supabase
     .from("dukkan_blog_yazilari")
     .select("id, slug")
-    .eq("id", postId)
+    .eq("id", parsed.postId)
     .eq("dukkan_id", dukkan.id)
     .maybeSingle();
 
@@ -149,24 +192,20 @@ export async function updateBlogPost(
   const { error } = await supabase
     .from("dukkan_blog_yazilari")
     .update({
-      baslik,
-      slug,
-      icerik: icerik || null,
-      kapak_url: kapakUrl || null,
-      yayinda,
+      ...blogPayload(parsed),
       updated_at: new Date().toISOString(),
     })
-    .eq("id", postId)
+    .eq("id", parsed.postId)
     .eq("dukkan_id", dukkan.id);
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Bu başlıkla zaten bir yazınız var. Farklı bir başlık deneyin." };
+      return { error: "Bu slug ile zaten bir yazınız var. Farklı bir URL deneyin." };
     }
     return { error: error.message };
   }
 
-  revalidateBlogPaths(dukkan.slug, slug, existing.slug);
+  revalidateBlogPaths(dukkan.slug, parsed.slug, existing.slug);
   redirect("/yonetim/blog");
 }
 

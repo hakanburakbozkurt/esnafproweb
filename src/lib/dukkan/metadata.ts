@@ -4,7 +4,12 @@ import {
   isShopSeoIndexable,
   type ShopApprovalStatus,
 } from "@/lib/dukkan/approval-status";
+import {
+  resolveBlogSeoDescription,
+  resolveBlogSeoTitle,
+} from "@/lib/blog/blog-html";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
+import type { DukkanBlogYazisi } from "@/types/database.types";
 
 /** Vitrin sayfaları için SEO metadata — meta_* boşsa dükkan adı/açıklamasına düşer */
 export type DukkanMetadataSource = {
@@ -123,6 +128,39 @@ export function buildStoreSubpageSeoMetadata(
       path: `/${dukkan.slug}/${segment}`,
       image: options?.image ?? dukkan.banner_url ?? dukkan.logo_url,
       ogType: options?.ogType,
+    }),
+    dukkan.approval_status
+  );
+}
+
+export function buildBlogPostSeoMetadata(
+  dukkan: DukkanSeoSource,
+  post: Pick<
+    DukkanBlogYazisi,
+    "slug" | "baslik" | "meta_title" | "meta_description" | "icerik" | "kapak_url"
+  >
+): Metadata {
+  const title = resolveBlogSeoTitle(
+    post.meta_title,
+    post.baslik,
+    dukkan.dukkan_adi
+  );
+  const description = withLocalAreaSuffix(
+    resolveBlogSeoDescription(
+      post.meta_description,
+      post.icerik,
+      post.baslik
+    ),
+    dukkan.adres
+  );
+
+  return applyStoreSeoRobots(
+    buildPageMetadata({
+      title,
+      description,
+      path: `/${dukkan.slug}/blog/${post.slug}`,
+      image: post.kapak_url ?? dukkan.banner_url ?? dukkan.logo_url,
+      ogType: "article",
     }),
     dukkan.approval_status
   );

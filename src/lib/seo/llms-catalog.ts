@@ -8,6 +8,7 @@ import {
   getSecondHandDeviceHref,
   getSecondHandDeviceTitle,
 } from "@/lib/dukkan/second-hand-devices";
+import { blogExcerptFromHtml } from "@/lib/blog/blog-html";
 import { PLATFORM_STATIC_ROUTES } from "@/lib/seo/llms-route-map";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -152,7 +153,7 @@ function buildStoreCatalog(
   const blogPostLinks: LlmsLink[] = storeBlogPosts.map((post) => ({
     path: `${base}/blog/${post.slug.trim()}`,
     title: post.baslik,
-    note: truncateNote(post.icerik ?? post.baslik),
+    note: blogExcerptFromHtml(post.icerik, 160) || post.baslik,
   }));
 
   const storeDevices = devices.filter((device) => device.user_id === store.user_id);

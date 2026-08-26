@@ -8,6 +8,7 @@ import {
   buildStoreBreadcrumbJsonLd,
 } from "@/lib/dukkan/json-ld";
 import {
+  buildBlogPostSeoMetadata,
   buildStoreSubpageSeoMetadata,
   NOT_FOUND_STORE_METADATA,
 } from "@/lib/dukkan/metadata";
@@ -44,13 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     );
   }
 
-  return buildStoreSubpageSeoMetadata(
-    dukkan,
-    `blog/${post.slug}`,
-    post.baslik,
-    post.icerik?.slice(0, 160) ?? post.baslik,
-    { image: post.kapak_url, ogType: "article" }
-  );
+  return buildBlogPostSeoMetadata(dukkan, post);
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
@@ -113,6 +108,8 @@ export default async function BlogPostPage({ params }: PageProps) {
           shopSlug={dukkan.slug}
           post={post}
           isOwner={isOwner}
+          showPazaryeri={showPazaryeriNav}
+          showKatalog={showKatalogNav}
         />
       </VitrinChrome>
     </>
