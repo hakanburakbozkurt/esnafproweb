@@ -52,7 +52,7 @@ export function BlogPostDetailContent({
               <img
                 src={post.kapak_url}
                 alt={post.baslik}
-                className="aspect-[16/9] w-full object-cover"
+                className="mx-auto block h-auto w-full max-w-full object-contain"
               />
             </div>
           </ScrollReveal>
@@ -60,7 +60,7 @@ export function BlogPostDetailContent({
 
         {post.icerik && (
           <ScrollReveal className="mt-8 max-w-3xl">
-            <div className="whitespace-pre-wrap text-base leading-relaxed text-slate-700 sm:text-lg sm:leading-loose">
+            <div className="whitespace-pre-wrap text-base font-normal leading-[1.75] text-gray-800 sm:text-lg sm:leading-[1.85]">
               {post.icerik}
             </div>
           </ScrollReveal>
