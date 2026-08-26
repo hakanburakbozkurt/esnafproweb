@@ -42,6 +42,15 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  if (
+    pathname === "/llms.txt" ||
+    pathname === "/llms" ||
+    pathname.endsWith("/llms.txt") ||
+    pathname.endsWith("/llms")
+  ) {
+    return NextResponse.next({ request });
+  }
+
   const slugRedirect = await tryShopSlugRedirect(request, supabase);
   if (slugRedirect) {
     return slugRedirect;

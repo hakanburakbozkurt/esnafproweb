@@ -1,5 +1,18 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/llms.txt",
+        destination: "/llms",
+      },
+      {
+        source: "/:slug/llms.txt",
+        destination: "/:slug/llms",
+      },
+    ];
+  },
+};
 
 export default nextConfig;
