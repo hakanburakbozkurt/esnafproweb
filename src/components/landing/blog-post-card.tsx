@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BlogCardCover } from "@/components/landing/blog-card-cover";
 import {
   blogExcerpt,
   formatBlogDate,
@@ -10,11 +11,13 @@ export function BlogPostCard({
   post,
   className,
   detailHref,
+  showShopName = true,
 }: {
   post: PublicBlogPost;
   className?: string;
   /** Varsayılan: mağaza blog detay URL'si */
   detailHref?: string;
+  showShopName?: boolean;
 }) {
   const href = detailHref ?? `/${post.shop_slug}/blog/${post.slug}`;
 
@@ -26,27 +29,20 @@ export function BlogPostCard({
         className
       )}
     >
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-        {post.kapak_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={post.kapak_url}
-            alt={post.baslik}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 to-emerald-50 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Esnaf Rehberi
-          </div>
-        )}
-      </div>
+      <BlogCardCover src={post.kapak_url} alt={post.baslik} />
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
-          {post.shop_name}
-        </p>
-        <time className="mt-2 text-xs font-medium text-slate-400">
+        {showShopName && (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
+            {post.shop_name}
+          </p>
+        )}
+        <time
+          className={cn(
+            "text-xs font-medium text-slate-400",
+            showShopName ? "mt-2" : undefined
+          )}
+        >
           {formatBlogDate(post.created_at)}
         </time>
         <h2 className="mt-2 text-lg font-bold leading-snug text-slate-900 transition group-hover:text-emerald-700 sm:text-xl">

@@ -112,6 +112,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           shopName={dukkan.dukkan_adi}
           shopSlug={dukkan.slug}
           post={post}
+          isOwner={isOwner}
         />
       </VitrinChrome>
     </>

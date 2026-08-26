@@ -65,3 +65,23 @@ export async function getDukkanBlogPostBySlug(
 
   return data;
 }
+
+export async function getDukkanBlogPostByIdForOwner(
+  supabase: SupabaseDbClient,
+  dukkanId: string,
+  postId: string
+): Promise<DukkanBlogYazisi | null> {
+  const { data, error } = await supabase
+    .from("dukkan_blog_yazilari")
+    .select("*")
+    .eq("id", postId)
+    .eq("dukkan_id", dukkanId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("getDukkanBlogPostByIdForOwner", error.message);
+    return null;
+  }
+
+  return data;
+}

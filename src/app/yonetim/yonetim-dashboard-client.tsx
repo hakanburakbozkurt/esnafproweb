@@ -46,6 +46,9 @@ export function YonetimDashboardClient({
         <Link href="/dukkan-ayarlari" className={quickLinkClass}>
           Mağaza Ayarları
         </Link>
+        <Link href="/yonetim/blog" className={quickLinkClass}>
+          Blog Yönetimi
+        </Link>
         <Link href="/yonetim/blog/yeni" className={quickLinkClass}>
           Blog Yazısı Ekle
         </Link>

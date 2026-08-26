@@ -65,10 +65,9 @@ export default async function BlogPage({ params }: PageProps) {
   const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
   const showPazaryeriNav = await hasPublishedSecondHandDevices(supabase, dukkan.user_id);
 
-  const [allPosts, publishedPosts] = await Promise.all([
-    getDukkanBlogPosts(supabase, dukkan.id),
-    getDukkanBlogPosts(supabase, dukkan.id, { publishedOnly: true }),
-  ]);
+  const publishedPosts = await getDukkanBlogPosts(supabase, dukkan.id, {
+    publishedOnly: true,
+  });
 
   return (
     <>
@@ -99,7 +98,7 @@ export default async function BlogPage({ params }: PageProps) {
           shopName={dukkan.dukkan_adi}
           shopSlug={dukkan.slug}
           posts={publishedPosts}
-          isOwner={isOwner && allPosts.length === 0}
+          isOwner={isOwner}
         />
       </VitrinChrome>
     </>

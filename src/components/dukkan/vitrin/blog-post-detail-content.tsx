@@ -16,10 +16,12 @@ export function BlogPostDetailContent({
   shopName,
   shopSlug,
   post,
+  isOwner = false,
 }: {
   shopName: string;
   shopSlug: string;
   post: DukkanBlogYazisi;
+  isOwner?: boolean;
 }) {
   return (
     <div className="relative pb-16 pt-8 lg:pb-24 lg:pt-14">
@@ -33,6 +35,15 @@ export function BlogPostDetailContent({
           >
             ← Blog yazıları
           </Link>
+
+          {isOwner && (
+            <Link
+              href={`/yonetim/blog/${post.id}/duzenle`}
+              className="ml-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300"
+            >
+              Yazıyı Düzenle
+            </Link>
+          )}
 
           <header className="mt-6 max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
