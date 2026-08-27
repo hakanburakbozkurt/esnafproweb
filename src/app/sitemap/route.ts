@@ -8,7 +8,10 @@ import {
 export const revalidate = 600;
 
 export async function GET() {
-  const xml = finalizeSitemapXml(await renderSitemapXml());
+  const rawXml = await renderSitemapXml();
+  const cleanXmlString = finalizeSitemapXml(rawXml);
 
-  return new Response(xml, { headers: SITEMAP_RESPONSE_HEADERS });
+  return new Response(cleanXmlString, {
+    headers: SITEMAP_RESPONSE_HEADERS,
+  });
 }
