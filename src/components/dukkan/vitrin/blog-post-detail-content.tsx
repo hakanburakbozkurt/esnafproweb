@@ -68,12 +68,12 @@ export function BlogPostDetailContent({
 
         {post.kapak_url && (
           <ScrollReveal className="mt-8 max-w-3xl">
-            <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-100 shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 p-3 shadow-sm sm:p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={post.kapak_url}
                 alt={post.baslik}
-                className="mx-auto block h-auto max-h-[28rem] w-full object-cover object-center sm:max-h-[24rem]"
+                className="mx-auto block h-auto max-h-[min(28rem,70vh)] w-full max-w-full object-contain"
               />
             </div>
           </ScrollReveal>
