@@ -78,6 +78,31 @@ body {
   margin-bottom: 0.35rem;
 }
 
+.blog-prose strong,
+.blog-prose b {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.blog-prose em,
+.blog-prose i {
+  font-style: italic;
+}
+
+.blog-prose a {
+  color: #059669;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.blog-prose a:hover {
+  color: #047857;
+}
+
+.blog-prose li p {
+  margin-bottom: 0.35rem;
+}
+
 .blog-prose {
   overflow-wrap: anywhere;
   word-break: break-word;

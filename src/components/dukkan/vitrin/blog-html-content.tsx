@@ -1,4 +1,4 @@
-import { sanitizeBlogHtml } from "@/lib/blog/blog-html";
+import { prepareBlogHtmlForDisplay } from "@/lib/blog/blog-html";
 import { cn } from "@/lib/utils/cn";
 
 export function BlogHtmlContent({
@@ -8,7 +8,7 @@ export function BlogHtmlContent({
   html: string;
   className?: string;
 }) {
-  const safeHtml = sanitizeBlogHtml(html);
+  const safeHtml = prepareBlogHtmlForDisplay(html);
   if (!safeHtml) return null;
 
   return (
