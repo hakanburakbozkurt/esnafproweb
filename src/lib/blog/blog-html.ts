@@ -19,6 +19,7 @@ const BLOG_ALLOWED_TAGS = [
 ] as const;
 
 const BLOCK_TAGS_IN_MARKS = "h2|h3|p|ul|ol|li|div";
+const SPLITTABLE_BLOCK_TAGS = "p|h2|h3";
 
 /** strong/b etiketlerinin blok seviyesinde sarmalamasını kaldırır — kalın stil sızmasını önler */
 export function repairBlogHtmlInlineMarks(html: string): string {
@@ -35,6 +36,58 @@ export function repairBlogHtmlInlineMarks(html: string): string {
     result = result.replace(wrapPattern, "$1");
   }
 
+  return result;
+}
+
+/** Yalnızca blok saran div sarmalayıcılarını kaldırır — TipTap blok sınırlarını korur */
+export function unwrapBlogHtmlDivWrappers(html: string): string {
+  let result = html;
+  let previous = "";
+
+  const wrapPattern =
+    /<div(?:\s[^>]*)?>\s*((?:<(?:p|h2|h3|ul|ol)\b[\s\S]*?<\/(?:p|h2|h3|ul|ol)\s*>\s*)+)<\/div>/gi;
+
+  while (previous !== result) {
+    previous = result;
+    result = result.replace(wrapPattern, "$1");
+  }
+
+  return result;
+}
+
+/**
+ * Tek blok içindeki <br> satır sonlarını ayrı blok etiketlerine böler.
+ * Aksi halde toggleHeading tüm satırları aynı H2 bloğuna çeker.
+ */
+export function splitBlogHtmlBrBlocks(html: string): string {
+  const blockPattern = new RegExp(
+    `<(${SPLITTABLE_BLOCK_TAGS})(\\s[^>]*)?>([\\s\\S]*?)<\\/\\1>`,
+    "gi"
+  );
+
+  return html.replace(blockPattern, (match, tag: string, attrs: string | undefined, inner: string) => {
+    if (!/<br\s*\/?>/i.test(inner)) return match;
+
+    const parts = inner
+      .split(/<br\s*\/?>/i)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    if (parts.length <= 1) return match;
+
+    const attrStr = attrs ?? "";
+    return parts.map((part) => `<${tag}${attrStr}>${part}</${tag}>`).join("");
+  });
+}
+
+/** Editör yükleme / yapıştırma / kayıt öncesi blok yapısını düzeltir */
+export function normalizeBlogEditorHtml(html: string): string {
+  const trimmed = html.trim();
+  if (!trimmed) return "";
+
+  let result = repairBlogHtmlInlineMarks(trimmed);
+  result = unwrapBlogHtmlDivWrappers(result);
+  result = splitBlogHtmlBrBlocks(result);
   return result;
 }
 
@@ -104,7 +157,7 @@ export function sanitizeBlogHtml(html: string): string {
   const trimmed = html.trim();
   if (!trimmed) return "";
 
-  const repaired = repairBlogHtmlInlineMarks(trimmed);
+  const repaired = normalizeBlogEditorHtml(trimmed);
   return sanitizeHtml(repaired, BLOG_SANITIZE_OPTIONS).trim();
 }
 

@@ -7,7 +7,8 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useRef } from "react";
-import { repairBlogHtmlInlineMarks } from "@/lib/blog/blog-html";
+import { applyHeadingToSelection } from "@/lib/blog/blog-editor-commands";
+import { normalizeBlogEditorHtml } from "@/lib/blog/blog-html";
 import { cn } from "@/lib/utils/cn";
 
 const TEXT_COLORS = [
@@ -59,16 +60,22 @@ export function BlogRichTextEditor({
   placeholder = "Blog içeriğinizi yazın…",
 }: BlogRichTextEditorProps) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const initialContent = normalizeBlogEditorHtml(defaultValue?.trim() || "");
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: {
+          levels: [2, 3],
+        },
         bold: {
           HTMLAttributes: {
             class: "blog-mark-bold",
           },
+        },
+        hardBreak: {
+          keepMarks: false,
         },
       }),
       TextStyle,
@@ -77,33 +84,27 @@ export function BlogRichTextEditor({
         types: ["heading", "paragraph"],
       }),
     ],
-    content: defaultValue?.trim() || "",
+    content: initialContent,
     editorProps: {
       attributes: {
         class:
           "blog-editor-content min-h-[280px] max-w-none px-4 py-3 text-base leading-relaxed text-slate-800 focus:outline-none sm:min-h-[320px]",
         "data-placeholder": placeholder,
       },
+      transformPastedHTML(html) {
+        return normalizeBlogEditorHtml(html);
+      },
     },
     onUpdate: ({ editor: currentEditor }) => {
-      const rawHtml = currentEditor.getHTML();
-      const repairedHtml = repairBlogHtmlInlineMarks(rawHtml);
-
-      if (repairedHtml !== rawHtml) {
-        const { from, to } = currentEditor.state.selection;
-        currentEditor.commands.setContent(repairedHtml, { emitUpdate: false });
-        currentEditor.commands.setTextSelection({ from, to });
-      }
-
       if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = repairedHtml;
+        hiddenInputRef.current.value = normalizeBlogEditorHtml(currentEditor.getHTML());
       }
     },
   });
 
   useEffect(() => {
     if (!editor || !hiddenInputRef.current) return;
-    hiddenInputRef.current.value = editor.getHTML();
+    hiddenInputRef.current.value = normalizeBlogEditorHtml(editor.getHTML());
   }, [editor]);
 
   if (!editor) {
@@ -139,14 +140,14 @@ export function BlogRichTextEditor({
         <ToolbarButton
           title="Başlık H2"
           active={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() => applyHeadingToSelection(editor, 2)}
         >
           H2
         </ToolbarButton>
         <ToolbarButton
           title="Başlık H3"
           active={editor.isActive("heading", { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() => applyHeadingToSelection(editor, 3)}
         >
           H3
         </ToolbarButton>
