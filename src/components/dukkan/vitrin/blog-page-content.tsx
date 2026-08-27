@@ -75,10 +75,10 @@ export function BlogPageContent({
             )}
           </ScrollReveal>
         ) : (
-          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:gap-8">
+          <ul className="mt-10 grid items-stretch gap-6 sm:grid-cols-2 lg:gap-8">
             {posts.map((post, index) => (
-              <ScrollReveal key={post.id} delay={index * 0.05}>
-                <li>
+              <li key={post.id} className="flex h-full min-h-0">
+                <ScrollReveal className="flex h-full w-full min-h-0" delay={index * 0.05}>
                   <BlogPostCard
                     post={{
                       ...post,
@@ -86,9 +86,10 @@ export function BlogPageContent({
                       shop_name: shopName,
                     }}
                     showShopName={false}
+                    className="w-full"
                   />
-                </li>
-              </ScrollReveal>
+                </ScrollReveal>
+              </li>
             ))}
           </ul>
         )}

@@ -7,6 +7,7 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useRef } from "react";
+import { repairBlogHtmlInlineMarks } from "@/lib/blog/blog-html";
 import { cn } from "@/lib/utils/cn";
 
 const TEXT_COLORS = [
@@ -64,6 +65,11 @@ export function BlogRichTextEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
+        bold: {
+          HTMLAttributes: {
+            class: "blog-mark-bold",
+          },
+        },
       }),
       TextStyle,
       Color,
@@ -80,8 +86,17 @@ export function BlogRichTextEditor({
       },
     },
     onUpdate: ({ editor: currentEditor }) => {
+      const rawHtml = currentEditor.getHTML();
+      const repairedHtml = repairBlogHtmlInlineMarks(rawHtml);
+
+      if (repairedHtml !== rawHtml) {
+        const { from, to } = currentEditor.state.selection;
+        currentEditor.commands.setContent(repairedHtml, { emitUpdate: false });
+        currentEditor.commands.setTextSelection({ from, to });
+      }
+
       if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = currentEditor.getHTML();
+        hiddenInputRef.current.value = repairedHtml;
       }
     },
   });
@@ -100,7 +115,7 @@ export function BlogRichTextEditor({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <div className="blog-rich-text-editor overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       <input ref={hiddenInputRef} type="hidden" name={name} defaultValue="" />
 
       <div className="flex flex-wrap gap-1.5 border-b border-slate-200/80 bg-slate-50/90 p-2 sm:p-3">

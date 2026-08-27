@@ -31,7 +31,7 @@ export function BlogPostCard({
     >
       <BlogCardCover src={post.kapak_url} alt={post.baslik} />
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
+      <div className="flex min-h-0 flex-1 flex-col p-5 sm:p-6">
         {showShopName && (
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
             {post.shop_name}
@@ -45,14 +45,17 @@ export function BlogPostCard({
         >
           {formatBlogDate(post.created_at)}
         </time>
-        <h2 className="mt-2 text-lg font-bold leading-snug text-slate-900 transition group-hover:text-emerald-700 sm:text-xl">
+        <h2 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-slate-900 transition group-hover:text-emerald-700 sm:text-xl">
           {post.baslik}
         </h2>
-        {post.icerik && (
-          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">
-            {blogExcerpt(post.icerik)}
-          </p>
-        )}
+        <p
+          className={cn(
+            "mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-slate-600",
+            post.icerik ? undefined : "min-h-[4.5rem]"
+          )}
+        >
+          {post.icerik ? blogExcerpt(post.icerik) : "\u00A0"}
+        </p>
       </div>
     </Link>
   );

@@ -18,6 +18,26 @@ const BLOG_ALLOWED_TAGS = [
   "div",
 ] as const;
 
+const BLOCK_TAGS_IN_MARKS = "h2|h3|p|ul|ol|li|div";
+
+/** strong/b etiketlerinin blok seviyesinde sarmalamasını kaldırır — kalın stil sızmasını önler */
+export function repairBlogHtmlInlineMarks(html: string): string {
+  let result = html;
+  let previous = "";
+
+  const wrapPattern = new RegExp(
+    `<(?:strong|b)(?:\\s[^>]*)?>\\s*((?:<(?:${BLOCK_TAGS_IN_MARKS})\\b[\\s\\S]*?</(?:${BLOCK_TAGS_IN_MARKS})>\\s*)+)</(?:strong|b)>`,
+    "gi"
+  );
+
+  while (previous !== result) {
+    previous = result;
+    result = result.replace(wrapPattern, "$1");
+  }
+
+  return result;
+}
+
 const BLOG_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [...BLOG_ALLOWED_TAGS],
   allowedAttributes: {
@@ -84,7 +104,8 @@ export function sanitizeBlogHtml(html: string): string {
   const trimmed = html.trim();
   if (!trimmed) return "";
 
-  return sanitizeHtml(trimmed, BLOG_SANITIZE_OPTIONS).trim();
+  const repaired = repairBlogHtmlInlineMarks(trimmed);
+  return sanitizeHtml(repaired, BLOG_SANITIZE_OPTIONS).trim();
 }
 
 /**

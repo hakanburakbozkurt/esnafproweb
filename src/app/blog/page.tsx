@@ -39,10 +39,10 @@ export default async function BlogIndexPage() {
 
           <div className="mt-10">
             {posts.length > 0 ? (
-              <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+              <ul className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                 {posts.map((post) => (
-                  <li key={post.id}>
-                    <BlogPostCard post={post} />
+                  <li key={post.id} className="flex h-full min-h-0">
+                    <BlogPostCard post={post} className="w-full" />
                   </li>
                 ))}
               </ul>
