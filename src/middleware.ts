@@ -43,6 +43,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (
+    pathname === "/sitemap" ||
+    pathname === "/sitemap.xml" ||
     pathname === "/llms.txt" ||
     pathname === "/llms" ||
     pathname.endsWith("/llms.txt") ||
@@ -95,6 +97,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|PNG)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|PNG)$).*)",
   ],
 };

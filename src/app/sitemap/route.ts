@@ -1,13 +1,14 @@
 import {
+  finalizeSitemapXml,
   renderSitemapXml,
   SITEMAP_RESPONSE_HEADERS,
 } from "@/lib/seo/render-sitemap";
 
-/** Ham XML — layout/RSC katmanı devreye girmez */
+/** Ham XML — root layout / RSC script enjeksiyonundan kaçınmak için /sitemap handler + rewrite kullanılır */
 export const revalidate = 600;
 
 export async function GET() {
-  const xml = await renderSitemapXml();
+  const xml = finalizeSitemapXml(await renderSitemapXml());
 
   return new Response(xml, { headers: SITEMAP_RESPONSE_HEADERS });
 }

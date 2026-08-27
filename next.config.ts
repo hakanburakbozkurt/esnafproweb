@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/sitemap.xml",
+        destination: "/sitemap",
+      },
+      {
         source: "/llms.txt",
         destination: "/llms",
       },

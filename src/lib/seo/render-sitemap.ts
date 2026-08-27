@@ -1,6 +1,10 @@
 import { buildSitemap } from "@/lib/seo/build-sitemap";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
-import { buildSitemapXml } from "@/lib/seo/sitemap-xml";
+import {
+  buildSitemapXml,
+  ensureXmlDeclaration,
+  stripForbiddenMarkup,
+} from "@/lib/seo/sitemap-xml";
 
 function fallbackSitemapXml(): string {
   const now = new Date();
@@ -19,6 +23,21 @@ function fallbackSitemapXml(): string {
       priority: 0.8,
     },
   ]);
+}
+
+/** Yanıt gönderilmeden önce olası layout/RSC script kalıntılarını temizler */
+export function finalizeSitemapXml(xml: string): string {
+  const cleaned = ensureXmlDeclaration(stripForbiddenMarkup(xml));
+
+  if (!cleaned.includes("<urlset")) {
+    throw new Error("[sitemap] Geçersiz sitemap yapısı — urlset bulunamadı.");
+  }
+
+  if (/<\s*script\b/i.test(cleaned)) {
+    throw new Error("[sitemap] Yanıt script etiketi içeriyor.");
+  }
+
+  return cleaned.endsWith("\n") ? cleaned : `${cleaned}\n`;
 }
 
 /** Saf sitemap XML string — App Router / layout katmanından bağımsız */
