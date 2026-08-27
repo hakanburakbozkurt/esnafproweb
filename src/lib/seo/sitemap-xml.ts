@@ -93,37 +93,60 @@ export function stripForbiddenMarkup(xml: string): string {
   return cleaned.trim();
 }
 
-/**
- * Yanıt gövdesini yalnızca geçerli sitemap belgesine indirger.
- * Bildirim öncesi veya <urlset> öncesi enjekte edilmiş HTML/script kalıntılarını atar.
- */
-export function extractPureSitemapDocument(xml: string): string {
-  const stripped = stripForbiddenMarkup(xml.replace(/^\uFEFF/, ""));
-  const urlsetStart = stripped.search(/<urlset\b/i);
+const URLSET_OPEN_TAG = "<urlset";
+const URLSET_CLOSE_TAG = "</urlset";
 
-  if (urlsetStart === -1) {
-    throw new Error("[sitemap-xml] urlset kök öğesi bulunamadı.");
+function indexOfIgnoreCase(source: string, needle: string, fromIndex = 0): number {
+  return source.toLowerCase().indexOf(needle.toLowerCase(), fromIndex);
+}
+
+/** </urlset> veya </urlset ...> kapanışının bitiş indeksini döner */
+function findUrlsetCloseEnd(source: string, urlsetStart: number): number {
+  const closeStart = indexOfIgnoreCase(source, URLSET_CLOSE_TAG, urlsetStart);
+
+  if (closeStart === -1) {
+    return -1;
   }
 
-  const afterUrlset = stripped.slice(urlsetStart);
-  const closeMatch = afterUrlset.match(/<\/urlset\s*>/i);
+  const closeEnd = source.indexOf(">", closeStart);
 
-  if (!closeMatch || closeMatch.index === undefined) {
+  if (closeEnd === -1) {
+    return -1;
+  }
+
+  return closeEnd + 1;
+}
+
+/**
+ * Handler yanıtı için keskin substring temizliği.
+ * <urlset öncesindeki tüm HTML/script kalıntılarını mutlak surette atar.
+ */
+export function cleanSitemapResponseBody(xml: string): string {
+  const source = xml.replace(/^\uFEFF/, "");
+  const urlsetStart = indexOfIgnoreCase(source, URLSET_OPEN_TAG);
+
+  if (urlsetStart === -1) {
+    throw new Error("[sitemap-xml] urlset başlangıcı bulunamadı.");
+  }
+
+  const urlsetEnd = findUrlsetCloseEnd(source, urlsetStart);
+
+  if (urlsetEnd === -1) {
     throw new Error("[sitemap-xml] urlset kapanış etiketi bulunamadı.");
   }
 
-  const urlsetBlock = afterUrlset.slice(
-    0,
-    closeMatch.index + closeMatch[0].length
-  );
+  const urlsetBlock = source.slice(urlsetStart, urlsetEnd).trim();
 
-  const document = `${XML_DECLARATION}\n${urlsetBlock.trim()}`;
-  return assertPureSitemapXml(document);
-}
+  if (!urlsetBlock.toLowerCase().startsWith(URLSET_OPEN_TAG)) {
+    throw new Error("[sitemap-xml] urlset bloğu geçersiz.");
+  }
 
-/** Handler yanıtı için son temizlik — saf XML string döner */
-export function cleanSitemapResponseBody(xml: string): string {
-  return extractPureSitemapDocument(xml);
+  if (indexOfIgnoreCase(urlsetBlock, "<script") !== -1) {
+    throw new Error("[sitemap-xml] urlset bloğu script etiketi içeriyor.");
+  }
+
+  const document = `${urlsetBlock}\n`;
+  return document;
 }
 
 /** Çıktının her zaman XML bildirimi ile başlamasını garanti eder */
