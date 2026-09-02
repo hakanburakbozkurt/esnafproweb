@@ -211,12 +211,53 @@ export async function getServiceApprovalByToken(
 export function formatPhysicalChecks(
   checks: Record<string, unknown>
 ): string[] {
+  return parsePhysicalChecks(checks).map((item) => item.label);
+}
+
+const PHYSICAL_CHECK_LABELS: Record<string, string> = {
+  on_ekran: "Ön Ekran",
+  arka_kasa: "Arka Kasa",
+  cerceve: "Çerçeve",
+  su_hasari: "Su Hasarı",
+  yan_tuslar: "Yan Tuşlar",
+  kamera_cami: "Kamera Camı",
+};
+
+export type PhysicalCheckItem = {
+  key: string;
+  label: string;
+  /** true = hasar/ sorun tespit edildi, false = sorun yok */
+  issueDetected: boolean;
+};
+
+function formatPhysicalCheckLabel(key: string): string {
+  if (PHYSICAL_CHECK_LABELS[key]) {
+    return PHYSICAL_CHECK_LABELS[key];
+  }
+
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function coerceBoolean(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (value === "true" || value === 1 || value === "1") return true;
+  if (value === "false" || value === 0 || value === "0") return false;
+  return null;
+}
+
+export function parsePhysicalChecks(
+  checks: Record<string, unknown>
+): PhysicalCheckItem[] {
   return Object.entries(checks)
     .filter(([, value]) => value !== null && value !== undefined && value !== "")
     .map(([key, value]) => {
-      const label = key
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase());
-      return `${label}: ${String(value)}`;
+      const issueDetected = coerceBoolean(value) ?? false;
+      return {
+        key,
+        label: formatPhysicalCheckLabel(key),
+        issueDetected,
+      };
     });
 }

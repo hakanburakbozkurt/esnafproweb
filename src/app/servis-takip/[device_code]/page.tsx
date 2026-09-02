@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
 import { Card } from "@/components/ui/card";
 import { ServiceTrackingTimeline } from "@/components/servis/service-tracking-timeline";
+import { ServicePointCard } from "@/components/servis/service-point-card";
 import {
   getServiceStatusLabel,
   getServiceStatusStyle,
@@ -72,23 +72,7 @@ export default async function ServisTakipPage({ params }: PageProps) {
 
         <ServiceTrackingTimeline status={device.status} />
 
-        {store && (
-          <Card>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Servis Noktası
-            </h2>
-            <p className="mt-3 font-semibold text-gray-900">{store.dukkan_adi}</p>
-            {store.telefon && (
-              <p className="mt-1 text-sm text-slate-500">{store.telefon}</p>
-            )}
-            <Link
-              href={`/${store.slug}`}
-              className="mt-4 inline-block text-sm font-medium text-emerald-600 hover:text-emerald-700"
-            >
-              Mağaza vitrini →
-            </Link>
-          </Card>
-        )}
+        {store && <ServicePointCard store={store} />}
 
         <p className="text-center text-xs text-slate-400">
           Takip kodu: <span className="font-mono">{device.device_code}</span>

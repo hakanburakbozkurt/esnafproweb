@@ -54,6 +54,7 @@ export type PublicServiceStoreInfo = {
   dukkan_adi: string;
   slug: string;
   telefon: string | null;
+  logo_url: string | null;
 };
 
 /** Servis takip sayfası mağaza kartı — stores → dukkanlar eşlemesi. */
@@ -71,7 +72,7 @@ export async function getPublicServiceStoreInfo(
 
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, slug, telefon")
+    .select("dukkan_adi, slug, telefon, logo_url")
     .eq("slug", store.slug)
     .maybeSingle();
 
@@ -80,6 +81,7 @@ export async function getPublicServiceStoreInfo(
       dukkan_adi: dukkan.dukkan_adi,
       slug: dukkan.slug,
       telefon: dukkan.telefon,
+      logo_url: dukkan.logo_url,
     };
   }
 
@@ -87,5 +89,6 @@ export async function getPublicServiceStoreInfo(
     dukkan_adi: store.name,
     slug: store.slug,
     telefon: null,
+    logo_url: null,
   };
 }

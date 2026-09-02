@@ -9,7 +9,8 @@ import {
 } from "@/lib/constants/service-status";
 import { approveServiceTerms } from "@/lib/servis/service-approval-actions";
 import type { PublicServiceApprovalRecord } from "@/lib/servis/service-approval.types";
-import { formatPhysicalChecks } from "@/lib/servis/service-approval";
+import { parsePhysicalChecks } from "@/lib/servis/service-approval";
+import { PhysicalChecksList } from "@/components/servis/physical-checks-list";
 import {
   SERVICE_TERMS_ITEMS,
   SERVICE_TERMS_TITLE,
@@ -90,7 +91,7 @@ export function ServiceApprovalClient({
     !isApproved && !isRejected && !isPending && !record.token_expired;
   const displayTrackingCode = trackingCode ?? state.trackingCode ?? null;
 
-  const physicalCheckLines = formatPhysicalChecks(record.physical_checks);
+  const physicalChecks = parsePhysicalChecks(record.physical_checks);
   const accessoriesText =
     record.accessories.length > 0
       ? record.accessories.join(", ")
@@ -148,16 +149,10 @@ export function ServiceApprovalClient({
               value={record.fault_description}
             />
           )}
-          {physicalCheckLines.length > 0 && (
+          {physicalChecks.length > 0 && (
             <DetailRow
               label="Fiziksel Kontroller"
-              value={
-                <ul className="list-disc space-y-1 pl-4">
-                  {physicalCheckLines.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              }
+              value={<PhysicalChecksList items={physicalChecks} />}
             />
           )}
         </div>
