@@ -16,10 +16,15 @@ export function ServiceTrackForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const code = deviceCode.trim().toUpperCase();
+    const code = deviceCode.trim();
 
     if (!code) {
       setError("Lütfen takip kodunuzu girin.");
+      return;
+    }
+
+    if (!/^\d{6,10}$/.test(code)) {
+      setError("Takip kodu 6-10 haneli numerik olmalıdır.");
       return;
     }
 
@@ -43,7 +48,9 @@ export function ServiceTrackForm({
           type="text"
           value={deviceCode}
           onChange={(event) => setDeviceCode(event.target.value)}
-          placeholder="Örn. ABC123"
+          placeholder="Örn. 12345678"
+          inputMode="numeric"
+          pattern="[0-9]*"
           autoComplete="off"
           className="min-h-11 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
         />
@@ -67,9 +74,13 @@ export function ServiceTrackForm({
         <button
           type="button"
           onClick={() => {
-            const code = deviceCode.trim().toUpperCase();
+            const code = deviceCode.trim();
             if (!code) {
               setError("Lütfen takip kodunuzu girin.");
+              return;
+            }
+            if (!/^\d{6,10}$/.test(code)) {
+              setError("Takip kodu 6-10 haneli numerik olmalıdır.");
               return;
             }
             setError(null);

@@ -592,6 +592,7 @@ export interface Database {
           issue_description: string | null;
           status: string | null;
           created_at: string;
+          technical_service_id: string | null;
         };
         Insert: {
           id?: string;
@@ -602,6 +603,7 @@ export interface Database {
           issue_description?: string | null;
           status?: string | null;
           created_at?: string;
+          technical_service_id?: string | null;
         };
         Update: {
           id?: string;
@@ -612,6 +614,7 @@ export interface Database {
           issue_description?: string | null;
           status?: string | null;
           created_at?: string;
+          technical_service_id?: string | null;
         };
         Relationships: [];
       };
@@ -903,6 +906,20 @@ export interface Database {
           status: string;
           created_at: string;
         }[];
+      };
+      get_technical_service_public: {
+        Args: {
+          p_token?: string | null;
+          p_service_id?: string | null;
+        };
+        Returns: Json;
+      };
+      respond_technical_service_approval: {
+        Args: {
+          p_token: string;
+          p_decision: string;
+        };
+        Returns: Json;
       };
     };
     Enums: {
