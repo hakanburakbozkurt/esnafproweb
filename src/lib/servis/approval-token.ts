@@ -13,6 +13,14 @@ export function normalizeApprovalToken(raw: string): string {
 
   if (!token) return "";
 
+  try {
+    token = decodeURIComponent(token).trim();
+  } catch {
+    // Olduğu gibi devam et
+  }
+
+  token = token.replace(/\s+/g, "");
+
   if (token.includes("token=") || token.includes("approval_token=")) {
     try {
       const parseTarget = token.startsWith("http")
@@ -22,6 +30,7 @@ export function normalizeApprovalToken(raw: string): string {
       token =
         url.searchParams.get("token") ??
         url.searchParams.get("approval_token") ??
+        url.searchParams.get("service_id") ??
         token;
     } catch {
       // Olduğu gibi devam et
@@ -35,17 +44,19 @@ export function extractApprovalTokenFromSearchParams(params: {
   token?: SearchParamValue;
   approval_token?: SearchParamValue;
   approvalToken?: SearchParamValue;
+  service_id?: SearchParamValue;
 }): string {
   const candidates = [
     firstParam(params.token),
     firstParam(params.approval_token),
     firstParam(params.approvalToken),
+    firstParam(params.service_id),
   ];
 
   for (const candidate of candidates) {
     if (!candidate) continue;
     const normalized = normalizeApprovalToken(candidate);
-    if (normalized.length >= 8) {
+    if (normalized.length >= 6) {
       return normalized;
     }
   }

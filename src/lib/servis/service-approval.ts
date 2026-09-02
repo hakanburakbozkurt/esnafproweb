@@ -114,7 +114,7 @@ export async function lookupServiceApprovalByToken(
 ): Promise<ServiceApprovalLookupResult> {
   const token = normalizeApprovalToken(rawToken);
 
-  if (token.length < 8) {
+  if (token.length < 6) {
     return {
       ok: false,
       reason: "missing_token",
@@ -127,6 +127,7 @@ export async function lookupServiceApprovalByToken(
     const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("get_technical_service_public", {
       p_token: token,
+      p_service_id: token,
     });
 
     if (error) {
@@ -160,7 +161,7 @@ export async function lookupServiceApprovalByToken(
       return {
         ok: false,
         reason: "not_found",
-        message: "technical_service tablosunda eşleşen approval_token bulunamadı.",
+        message: "technical_service tablosunda eşleşen kayıt bulunamadı (approval_token / service_id / tracking_code).",
         debug: { rowCount: 0 },
       };
     }

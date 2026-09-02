@@ -20,6 +20,7 @@ type PageProps = {
     token?: string | string[];
     approval_token?: string | string[];
     approvalToken?: string | string[];
+    service_id?: string | string[];
   }>;
 };
 
