@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
 import { Card } from "@/components/ui/card";
+import { ServiceTrackingTimeline } from "@/components/servis/service-tracking-timeline";
 import {
   getServiceStatusLabel,
   getServiceStatusStyle,
@@ -25,18 +26,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-const TIMELINE_STEPS = [
-  { key: "tamirde", label: "Tamirde" },
-  { key: "hazir", label: "Hazır" },
-  { key: "teslim_edildi", label: "Teslim Edildi" },
-  { key: "İncelemede", label: "İncelemede" },
-] as const;
-
-function getStepIndex(status: string) {
-  const index = TIMELINE_STEPS.findIndex((step) => step.key === status);
-  return index === -1 ? 0 : index;
-}
-
 export default async function ServisTakipPage({ params }: PageProps) {
   const { device_code } = await params;
   const supabase = await createClient();
@@ -48,7 +37,6 @@ export default async function ServisTakipPage({ params }: PageProps) {
   }
 
   const store = await getPublicServiceStoreInfo(supabase, device.store_id);
-  const activeStep = getStepIndex(device.status);
 
   return (
     <SubPageShell
@@ -64,7 +52,7 @@ export default async function ServisTakipPage({ params }: PageProps) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm text-slate-500">Cihaz</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">
+              <p className="mt-1 text-lg font-semibold text-gray-900">
                 {device.device_model?.trim() || "—"}
               </p>
             </div>
@@ -82,45 +70,14 @@ export default async function ServisTakipPage({ params }: PageProps) {
           )}
         </Card>
 
-        <Card>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-            Süreç
-          </h2>
-          <ol className="mt-6 space-y-4">
-            {TIMELINE_STEPS.map((step, index) => {
-              const isComplete = index <= activeStep;
-              const isCurrent = index === activeStep;
-
-              return (
-                <li key={step.key} className="flex items-center gap-4">
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                      isComplete
-                        ? "bg-emerald-600 text-white"
-                        : "bg-slate-100 text-slate-400"
-                    }`}
-                  >
-                    {index + 1}
-                  </span>
-                  <span
-                    className={`text-sm font-medium ${
-                      isCurrent ? "text-emerald-600" : isComplete ? "text-slate-900" : "text-slate-400"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
+        <ServiceTrackingTimeline status={device.status} />
 
         {store && (
           <Card>
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
               Servis Noktası
             </h2>
-            <p className="mt-3 font-semibold text-slate-900">{store.dukkan_adi}</p>
+            <p className="mt-3 font-semibold text-gray-900">{store.dukkan_adi}</p>
             {store.telefon && (
               <p className="mt-1 text-sm text-slate-500">{store.telefon}</p>
             )}
