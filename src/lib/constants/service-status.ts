@@ -50,6 +50,29 @@ export function getServiceTrackingStepIndex(status: string): number {
   return 0;
 }
 
+/** technical_service.status → public takip sayfası service_devices.status eşlemesi */
+export function mapTechnicalServiceStatusToPublic(status: string): string {
+  const normalized = status.trim().toLowerCase();
+
+  switch (normalized) {
+    case "hazir":
+      return "hazir";
+    case "teslim_edildi":
+    case "teslim edildi":
+      return "teslim_edildi";
+    case "tamirde":
+      return "tamirde";
+    case "incelemede":
+    case "beklemede":
+      return "İncelemede";
+    case "parca_bekleniyor":
+    case "parça bekleniyor":
+      return "tamirde";
+    default:
+      return status.trim() || "İncelemede";
+  }
+}
+
 export function getServiceStatusLabel(status: string) {
   return (
     SERVICE_STATUS_LABELS[status as ServiceDeviceStatus] ??

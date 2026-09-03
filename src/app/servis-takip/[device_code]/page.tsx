@@ -1,12 +1,7 @@
 import { notFound } from "next/navigation";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
-import { Card } from "@/components/ui/card";
-import { ServiceTrackingTimeline } from "@/components/servis/service-tracking-timeline";
 import { ServicePointCard } from "@/components/servis/service-point-card";
-import {
-  getServiceStatusLabel,
-  getServiceStatusStyle,
-} from "@/lib/constants/service-status";
+import { ServiceTrackingLiveView } from "@/components/servis/service-tracking-live-view";
 import {
   getPublicServiceDevice,
   getPublicServiceStoreInfo,
@@ -48,29 +43,7 @@ export default async function ServisTakipPage({ params }: PageProps) {
       description="Teknik servise bıraktığınız cihazın güncel durumunu buradan görüntüleyebilirsiniz."
     >
       <div className="mx-auto max-w-xl space-y-6">
-        <Card>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-slate-500">Cihaz</p>
-              <p className="mt-1 text-lg font-semibold text-gray-900">
-                {device.device_model?.trim() || "—"}
-              </p>
-            </div>
-            <span
-              className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${getServiceStatusStyle(device.status)}`}
-            >
-              {getServiceStatusLabel(device.status)}
-            </span>
-          </div>
-
-          {device.issue_description && (
-            <p className="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              {device.issue_description}
-            </p>
-          )}
-        </Card>
-
-        <ServiceTrackingTimeline status={device.status} />
+        <ServiceTrackingLiveView device={device} />
 
         {store && <ServicePointCard store={store} />}
 

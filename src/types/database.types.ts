@@ -905,6 +905,7 @@ export interface Database {
           issue_description: string | null;
           status: string;
           created_at: string;
+          technical_service_id: string | null;
         }[];
       };
       get_public_service_store_info: {
