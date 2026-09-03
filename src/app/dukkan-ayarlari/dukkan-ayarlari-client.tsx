@@ -11,7 +11,7 @@ import {
 import { DukkanForm } from "@/components/dukkan/dukkan-form";
 import { normalizeShopApprovalStatus } from "@/lib/dukkan/approval-status";
 import { VitrinDotGrid } from "@/components/dukkan/vitrin/vitrin-open-section";
-import { SubPageShell } from "@/components/layout/sub-page-shell";
+import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import type { Dukkan, DukkanUrunu } from "@/types/database.types";
 
 const initialState: DukkanFormState = {};
@@ -89,7 +89,8 @@ export default function DukkanAyarlariPage({
   urunler: DukkanUrunu[];
 }) {
   return (
-    <SubPageShell
+    <YonetimPageShell
+      showYonetimNav={!!dukkan}
       title={
         <>
           Mağaza <span className="text-emerald-600">Ayarları</span>
@@ -120,6 +121,6 @@ export default function DukkanAyarlariPage({
       ) : (
         <DukkanAyarlariForm dukkan={dukkan} urunler={urunler} />
       )}
-    </SubPageShell>
+    </YonetimPageShell>
   );
 }

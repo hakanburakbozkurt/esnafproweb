@@ -13,6 +13,7 @@ export function SubPageShell({
   description,
   contentWidth,
   centerHeader = false,
+  subNav,
 }: {
   children: ReactNode;
   title?: ReactNode;
@@ -20,6 +21,8 @@ export function SubPageShell({
   /** Dar sayfalarda başlık + içeriği ortalanmış tek kolonda toplar */
   contentWidth?: SubPageContentWidth;
   centerHeader?: boolean;
+  /** Sayfa başlığının hemen üstünde (site header altında) gösterilir */
+  subNav?: ReactNode;
 }) {
   const centeredContentClass = contentWidth
     ? centeredPageContentClass(contentWidth)
@@ -62,6 +65,7 @@ export function SubPageShell({
 
       <main className="min-w-0 overflow-x-clip py-10 lg:py-16">
         <div className={cn(desktopContainerClass, "min-w-0")}>
+          {subNav}
           {centeredContentClass ? (
             <div className={centeredContentClass}>
               {header}

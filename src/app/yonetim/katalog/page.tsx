@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
-import { SubPageShell } from "@/components/layout/sub-page-shell";
+import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { KatalogBulkUploadPanel } from "@/components/katalog/katalog-bulk-upload-panel";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
 import { createClient } from "@/lib/supabase/server";
@@ -14,9 +14,9 @@ export default async function YonetimKatalogPage() {
 
   if (!user) {
     return (
-      <SubPageShell title="Katalog Yönetimi">
+      <YonetimPageShell showYonetimNav={false} title="Katalog Yönetimi">
         <AuthRequiredCard loginHref="/giris?next=/yonetim/katalog" />
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
@@ -32,7 +32,7 @@ export default async function YonetimKatalogPage() {
 
   if (!dukkan) {
     return (
-      <SubPageShell title="Katalog Yönetimi">
+      <YonetimPageShell showYonetimNav={false} title="Katalog Yönetimi">
         <div className="max-w-lg rounded-2xl border border-slate-200/60 bg-white/80 px-6 py-8 text-center">
           <p className="text-sm text-slate-500">
             Katalog yönetimi için önce mağaza açmanız gerekiyor.
@@ -44,12 +44,12 @@ export default async function YonetimKatalogPage() {
             Mağaza Aç
           </Link>
         </div>
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
   return (
-    <SubPageShell
+    <YonetimPageShell
       title={
         <>
           Katalog <span className="text-emerald-600">Yönetimi</span>
@@ -71,6 +71,6 @@ export default async function YonetimKatalogPage() {
         shopSlug={dukkan.slug}
         katalogHref={`/${dukkan.slug}/katalog`}
       />
-    </SubPageShell>
+    </YonetimPageShell>
   );
 }

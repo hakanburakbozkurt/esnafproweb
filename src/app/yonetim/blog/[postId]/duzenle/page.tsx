@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
-import { SubPageShell } from "@/components/layout/sub-page-shell";
+import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { BlogDuzenleForm } from "@/app/yonetim/blog/[postId]/duzenle/blog-duzenle-client";
 import { getDukkanBlogPostByIdForOwner } from "@/lib/dukkan/blog-posts";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
@@ -19,9 +19,9 @@ export default async function BlogDuzenlePage({ params }: PageProps) {
 
   if (!user) {
     return (
-      <SubPageShell title="Blog Yazısını Düzenle">
+      <YonetimPageShell showYonetimNav={false} title="Blog Yazısını Düzenle">
         <AuthRequiredCard loginHref={`/giris?next=/yonetim/blog/${postId}/duzenle`} />
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
@@ -46,7 +46,7 @@ export default async function BlogDuzenlePage({ params }: PageProps) {
   }
 
   return (
-    <SubPageShell
+    <YonetimPageShell
       title={
         <>
           Blog Yazısını <span className="text-emerald-600">Düzenle</span>
@@ -55,6 +55,6 @@ export default async function BlogDuzenlePage({ params }: PageProps) {
       description="Başlık, kapak görseli, içerik ve yayın durumunu güncelleyin."
     >
       <BlogDuzenleForm storeSlug={dukkan.slug} post={post} />
-    </SubPageShell>
+    </YonetimPageShell>
   );
 }

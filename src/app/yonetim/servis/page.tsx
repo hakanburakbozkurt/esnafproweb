@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
-import { SubPageShell } from "@/components/layout/sub-page-shell";
+import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { ServisYonetimClient } from "@/app/yonetim/servis/servis-yonetim-client";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
 import { searchTechnicalServices } from "@/lib/servis/servis-yonetim-actions";
@@ -15,9 +15,9 @@ export default async function ServisYonetimPage() {
 
   if (!user) {
     return (
-      <SubPageShell title="Servis Yönetimi">
+      <YonetimPageShell showYonetimNav={false} title="Servis Yönetimi">
         <AuthRequiredCard loginHref="/giris?next=/yonetim/servis" />
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
@@ -33,7 +33,7 @@ export default async function ServisYonetimPage() {
 
   if (!dukkan) {
     return (
-      <SubPageShell title="Servis Yönetimi">
+      <YonetimPageShell showYonetimNav={false} title="Servis Yönetimi">
         <div className="max-w-lg rounded-2xl border border-slate-200/60 bg-white/80 px-6 py-8 text-center">
           <p className="text-sm text-slate-500">
             Servis geçmişi için önce mağaza açın.
@@ -45,7 +45,7 @@ export default async function ServisYonetimPage() {
             Mağaza Aç
           </Link>
         </div>
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
@@ -53,7 +53,7 @@ export default async function ServisYonetimPage() {
   const initialRecords = initialResult.ok ? initialResult.records : [];
 
   return (
-    <SubPageShell
+    <YonetimPageShell
       title={
         <>
           Servis <span className="text-emerald-600">Yönetimi</span>
@@ -71,6 +71,6 @@ export default async function ServisYonetimPage() {
         </div>
       )}
       <ServisYonetimClient initialRecords={initialRecords} />
-    </SubPageShell>
+    </YonetimPageShell>
   );
 }

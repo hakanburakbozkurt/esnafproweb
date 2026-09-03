@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
-import { SubPageShell } from "@/components/layout/sub-page-shell";
+import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { YonetimDashboardClient } from "@/app/yonetim/yonetim-dashboard-client";
 import { getDukkanBlogPostCount } from "@/lib/dukkan/blog-posts";
 import type { ProfileHealthInput } from "@/lib/dukkan/profile-health-score";
@@ -69,7 +69,8 @@ export default async function YonetimPage() {
 
   if (!user) {
     return (
-      <SubPageShell
+      <YonetimPageShell
+        showYonetimNav={false}
         title={
           <>
             Yönetim <span className="text-emerald-600">Paneli</span>
@@ -80,7 +81,7 @@ export default async function YonetimPage() {
           description="Yönetim paneline erişmek için giriş yapmalısınız."
           loginHref="/giris?next=/yonetim"
         />
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
@@ -92,7 +93,8 @@ export default async function YonetimPage() {
 
   if (!dukkan) {
     return (
-      <SubPageShell
+      <YonetimPageShell
+        showYonetimNav={false}
         title={
           <>
             Yönetim <span className="text-emerald-600">Paneli</span>
@@ -114,14 +116,14 @@ export default async function YonetimPage() {
             Mağaza Aç
           </Link>
         </div>
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
   const blogPostCount = await getDukkanBlogPostCount(supabase, dukkan.id);
 
   return (
-    <SubPageShell
+    <YonetimPageShell
       title={
         <>
           Yönetim <span className="text-emerald-600">Paneli</span>
@@ -130,12 +132,10 @@ export default async function YonetimPage() {
       description="Mağaza vitrininizi, SEO içeriklerinizi ve profil gücünüzü tek yerden yönetin."
     >
       <YonetimDashboardClient
-        shopName={dukkan.dukkan_adi}
         shopSlug={dukkan.slug}
-        blogPostCount={blogPostCount}
         healthInput={toHealthInput(dukkan)}
         seoInput={toSeoGeoInput(dukkan, blogPostCount)}
       />
-    </SubPageShell>
+    </YonetimPageShell>
   );
 }

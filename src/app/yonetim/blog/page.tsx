@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
-import { SubPageShell } from "@/components/layout/sub-page-shell";
+import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { BlogYonetimClient } from "@/app/yonetim/blog/blog-yonetim-client";
 import { getDukkanBlogPosts } from "@/lib/dukkan/blog-posts";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
@@ -15,9 +15,9 @@ export default async function BlogYonetimPage() {
 
   if (!user) {
     return (
-      <SubPageShell title="Blog Yönetimi">
+      <YonetimPageShell showYonetimNav={false} title="Blog Yönetimi">
         <AuthRequiredCard loginHref="/giris?next=/yonetim/blog" />
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
@@ -33,7 +33,7 @@ export default async function BlogYonetimPage() {
 
   if (!dukkan) {
     return (
-      <SubPageShell title="Blog Yönetimi">
+      <YonetimPageShell showYonetimNav={false} title="Blog Yönetimi">
         <div className="max-w-lg rounded-2xl border border-slate-200/60 bg-white/80 px-6 py-8 text-center">
           <p className="text-sm text-slate-500">Blog yönetimi için önce mağaza açın.</p>
           <Link
@@ -43,14 +43,14 @@ export default async function BlogYonetimPage() {
             Mağaza Aç
           </Link>
         </div>
-      </SubPageShell>
+      </YonetimPageShell>
     );
   }
 
   const posts = await getDukkanBlogPosts(supabase, dukkan.id);
 
   return (
-    <SubPageShell
+    <YonetimPageShell
       title={
         <>
           Blog <span className="text-emerald-600">Yönetimi</span>
@@ -59,6 +59,6 @@ export default async function BlogYonetimPage() {
       description={`${dukkan.dukkan_adi} — yazılarınızı düzenleyin, yayından kaldırın veya silin.`}
     >
       <BlogYonetimClient posts={posts} shopSlug={dukkan.slug} />
-    </SubPageShell>
+    </YonetimPageShell>
   );
 }
