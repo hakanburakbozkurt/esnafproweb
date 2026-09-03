@@ -55,6 +55,9 @@ export function YonetimDashboardClient({
         <Link href="/yonetim/katalog" className={quickLinkClass}>
           Katalog Yönetimi
         </Link>
+        <Link href="/yonetim/servis" className={quickLinkClass}>
+          Servis Yönetimi
+        </Link>
       </div>
 
       <p className="text-center text-xs text-slate-400">
