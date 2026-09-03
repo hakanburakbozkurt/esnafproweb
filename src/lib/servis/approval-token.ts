@@ -16,13 +16,22 @@ function firstParam(value: SearchParamValue): string | undefined {
   return value;
 }
 
+/** apr- formatı — yalnızca DB trigger/RPC tarafından üretilmelidir; client'ta üretmeyin. */
+export function isAprFormatApprovalToken(value: string): boolean {
+  return /^apr-[a-z0-9-]+$/i.test(value.trim());
+}
+
+export function isServiceIdApprovalToken(value: string): boolean {
+  return /^SRV-\d{4}-\d+$/i.test(value.trim());
+}
+
 /** apr-..., SRV-..., UUID veya 8 haneli takip kodu gibi değerleri doğrular. */
 export function isPlausibleApprovalLookupValue(value: string): boolean {
   const trimmed = value.trim();
   if (trimmed.length < 6) return false;
 
-  if (/^apr-[a-z0-9-]+$/i.test(trimmed)) return true;
-  if (/^SRV-\d{4}-\d+$/i.test(trimmed)) return true;
+  if (isAprFormatApprovalToken(trimmed)) return true;
+  if (isServiceIdApprovalToken(trimmed)) return true;
   if (
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       trimmed
@@ -81,18 +90,30 @@ export type ApprovalSearchParams = Partial<
   Record<(typeof APPROVAL_URL_PARAM_KEYS)[number], SearchParamValue>
 >;
 
-export function extractApprovalTokenFromSearchParams(
+/** URL'deki tüm geçerli onay adaylarını öncelik sırasıyla döner (tekrarsız). */
+export function extractApprovalLookupCandidates(
   params: ApprovalSearchParams
-): string {
+): string[] {
+  const seen = new Set<string>();
+  const candidates: string[] = [];
+
   for (const key of APPROVAL_URL_PARAM_KEYS) {
     const candidate = firstParam(params[key]);
     if (!candidate) continue;
 
     const normalized = normalizeApprovalToken(candidate);
-    if (isPlausibleApprovalLookupValue(normalized)) {
-      return normalized;
-    }
+    if (!isPlausibleApprovalLookupValue(normalized)) continue;
+    if (seen.has(normalized)) continue;
+
+    seen.add(normalized);
+    candidates.push(normalized);
   }
 
-  return "";
+  return candidates;
+}
+
+export function extractApprovalTokenFromSearchParams(
+  params: ApprovalSearchParams
+): string {
+  return extractApprovalLookupCandidates(params)[0] ?? "";
 }

@@ -115,7 +115,7 @@ export async function sendServiceApprovalLink(
     }
 
     const payload =
-      buildServiceApprovalPayload(record) ??
+      buildServiceApprovalPayload(record, undefined, "database_rpc") ??
       (record.lookup_token
         ? {
             lookupToken: record.lookup_token,

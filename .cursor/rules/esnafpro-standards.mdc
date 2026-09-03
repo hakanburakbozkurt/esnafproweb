@@ -54,6 +54,13 @@ Kaynak tipler: `src/types/database.types.ts`. Payload map: `toDukkanDbPayload()`
 - Görseller kutuda: `object-cover`, taşma yok.
 - Sabit WhatsApp butonu yalnızca mobil; masaüstünde sidebar CTA.
 
+## Servis onay token'ları (KRİTİK)
+
+- `apr-` token'ları **client'ta ASLA üretilmez** (`Date.now`, `Math.random`, string birleştirme yasak).
+- Onay linki / WhatsApp mesajı için zorunlu kaynak: `get_technical_service_approval_lookup` RPC veya INSERT sonrası dönen `approval_token` / `service_id`.
+- Link üretimi: `src/lib/servis/approval-link.ts` + `sendServiceApprovalLink()`.
+- Lookup: `get_technical_service_public` RPC (public); client-side token mint etme.
+
 ## Hata yönetimi
 
 ```typescript

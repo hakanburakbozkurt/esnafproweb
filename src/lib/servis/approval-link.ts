@@ -1,5 +1,11 @@
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 
+/**
+ * Onay linkleri yalnızca DB kaynağından üretilir.
+ * `apr-` token'ları client'ta ASLA üretilmez — `get_technical_service_approval_lookup` RPC kullanın.
+ */
+export type ApprovalLinkTokenSource = "database_rpc" | "database_row";
+
 export type TechnicalServiceApprovalIdentifiers = {
   id?: string | null;
   approval_token?: string | null;
@@ -61,10 +67,15 @@ export function buildServiceApprovalPayload(
     customer_name?: string | null;
     device_info?: string | null;
   },
-  siteUrl?: string
+  siteUrl?: string,
+  source: ApprovalLinkTokenSource = "database_row"
 ): { lookupToken: string; approvalUrl: string; message: string } | null {
   const lookupToken = resolveApprovalLookupToken(record);
   if (!lookupToken) return null;
+
+  if (process.env.NODE_ENV === "development") {
+    assertApprovalLinkUsesDatabaseToken(lookupToken, source);
+  }
 
   const approvalUrl = buildServiceApprovalUrl(lookupToken, siteUrl);
 
@@ -77,4 +88,19 @@ export function buildServiceApprovalPayload(
       approvalUrl,
     }),
   };
+}
+
+/** Client-side apr- üretimini geliştirme ortamında yakalar. */
+export function assertApprovalLinkUsesDatabaseToken(
+  lookupToken: string,
+  source: ApprovalLinkTokenSource
+): void {
+  if (source === "database_rpc" || source === "database_row") {
+    return;
+  }
+
+  console.error(
+    "[servis-onay] Onay linki DB kaynağı olmadan oluşturulamaz. get_technical_service_approval_lookup RPC kullanın.",
+    { lookupTokenPrefix: lookupToken.slice(0, 16) }
+  );
 }

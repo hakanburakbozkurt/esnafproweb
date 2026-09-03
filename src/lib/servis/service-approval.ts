@@ -1,22 +1,30 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import {
+  isAprFormatApprovalToken,
   isPlausibleApprovalLookupValue,
+  isServiceIdApprovalToken,
   normalizeApprovalToken,
 } from "@/lib/servis/approval-token";
 import type { PublicServiceApprovalRecord } from "@/lib/servis/service-approval.types";
 
+export type ServiceApprovalLookupFailureReason =
+  | "missing_token"
+  | "rpc_error"
+  | "not_found"
+  | "orphan_apr_token"
+  | "orphan_service_id"
+  | "parse_failed"
+  | "unexpected";
+
 export type ServiceApprovalLookupResult =
-  | { ok: true; record: PublicServiceApprovalRecord }
+  | { ok: true; record: PublicServiceApprovalRecord; matchedToken: string }
   | {
       ok: false;
-      reason:
-        | "missing_token"
-        | "rpc_error"
-        | "not_found"
-        | "parse_failed"
-        | "unexpected";
+      reason: ServiceApprovalLookupFailureReason;
       message: string;
+      userMessage: string;
       debug?: Record<string, unknown>;
+      attemptedTokens?: string[];
     };
 
 function parsePublicServiceRecord(
@@ -113,16 +121,77 @@ function parsePublicServiceRecord(
   };
 }
 
+function buildLookupFailureUserMessage(
+  reason: ServiceApprovalLookupFailureReason,
+  primaryToken?: string
+): string {
+  switch (reason) {
+    case "missing_token":
+      return "Onay bağlantısında geçerli bir kod bulunamadı. Size gönderilen orijinal linki kullanın.";
+    case "orphan_apr_token":
+      return "Bu onay kodu sistemde kayıtlı değil. Link, servis kaydı oluşturulmadan paylaşılmış olabilir. Servis noktanızdan güncel onay bağlantısını isteyin.";
+    case "orphan_service_id":
+      return "Bu servis numarasına ait onay kaydı bulunamadı. Servis noktanızla iletişime geçerek güncel bağlantıyı talep edin.";
+    case "rpc_error":
+      return "Onay kaydı şu an sorgulanamıyor. Lütfen birkaç dakika sonra tekrar deneyin.";
+    case "parse_failed":
+      return "Onay kaydı bulundu ancak görüntülenemedi. Servis noktanızla iletişime geçin.";
+    case "unexpected":
+      return "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.";
+    case "not_found":
+    default:
+      if (primaryToken && /^\d{8}$/.test(primaryToken)) {
+        return "Bu takip kodu için onay kaydı bulunamadı. Onay linki yerine servis takip sayfasını deneyebilirsiniz.";
+      }
+      return "Bu onay bağlantısı geçersiz, eksik veya süresi dolmuş olabilir. Size gönderilen orijinal bağlantıyı kullanın veya servis noktanızla iletişime geçin.";
+  }
+}
+
+function refineNotFoundReason(
+  token: string,
+  base: Extract<ServiceApprovalLookupResult, { ok: false }>
+): Extract<ServiceApprovalLookupResult, { ok: false }> {
+  if (base.reason !== "not_found") {
+    return base;
+  }
+
+  if (isAprFormatApprovalToken(token)) {
+    return {
+      ...base,
+      reason: "orphan_apr_token",
+      message:
+        "apr- formatındaki token technical_service tablosunda bulunamadı (client-side üretilmiş olabilir).",
+      userMessage: buildLookupFailureUserMessage("orphan_apr_token", token),
+    };
+  }
+
+  if (isServiceIdApprovalToken(token)) {
+    return {
+      ...base,
+      reason: "orphan_service_id",
+      message: "service_id technical_service tablosunda bulunamadı.",
+      userMessage: buildLookupFailureUserMessage("orphan_service_id", token),
+    };
+  }
+
+  return {
+    ...base,
+    userMessage: buildLookupFailureUserMessage("not_found", token),
+  };
+}
+
 export async function lookupServiceApprovalByToken(
   rawToken: string
 ): Promise<ServiceApprovalLookupResult> {
   const token = normalizeApprovalToken(rawToken);
 
   if (!isPlausibleApprovalLookupValue(token)) {
+    const reason = "missing_token" as const;
     return {
       ok: false,
-      reason: "missing_token",
+      reason,
       message: "Onay bağlantısında geçerli bir token bulunamadı.",
+      userMessage: buildLookupFailureUserMessage(reason),
       debug: { tokenLength: token.length },
     };
   }
@@ -144,10 +213,12 @@ export async function lookupServiceApprovalByToken(
         tokenLength: token.length,
       });
 
+      const reason = "rpc_error" as const;
       return {
         ok: false,
-        reason: "rpc_error",
+        reason,
         message: error.message,
+        userMessage: buildLookupFailureUserMessage(reason),
         debug: {
           code: error.code,
           details: error.details,
@@ -160,14 +231,17 @@ export async function lookupServiceApprovalByToken(
       console.warn("[servis-onay] RPC returned zero rows for token", {
         tokenPrefix: token.slice(0, 12),
         tokenLength: token.length,
+        isAprFormat: isAprFormatApprovalToken(token),
       });
 
-      return {
+      return refineNotFoundReason(token, {
         ok: false,
         reason: "not_found",
-        message: "technical_service tablosunda eşleşen kayıt bulunamadı (approval_token / service_id / tracking_code).",
+        message:
+          "technical_service tablosunda eşleşen kayıt bulunamadı (approval_token / service_id / tracking_code).",
+        userMessage: buildLookupFailureUserMessage("not_found", token),
         debug: { rowCount: 0 },
-      };
+      });
     }
 
     const parsed = parsePublicServiceRecord(data);
@@ -182,27 +256,75 @@ export async function lookupServiceApprovalByToken(
             : [],
       });
 
+      const reason = "parse_failed" as const;
       return {
         ok: false,
-        reason: "parse_failed",
+        reason,
         message: "Servis kaydı bulundu ancak zorunlu alanlar eksik.",
+        userMessage: buildLookupFailureUserMessage(reason),
         debug: parsed.debug,
       };
     }
 
-    return { ok: true, record: parsed.record };
+    return { ok: true, record: parsed.record, matchedToken: token };
   } catch (err) {
     console.error("[servis-onay] lookupServiceApprovalByToken unexpected error", {
       err,
       tokenPrefix: token.slice(0, 12),
     });
 
+    const reason = "unexpected" as const;
     return {
       ok: false,
-      reason: "unexpected",
+      reason,
       message: err instanceof Error ? err.message : "Beklenmeyen hata",
+      userMessage: buildLookupFailureUserMessage(reason),
     };
   }
+}
+
+/** Birincil token başarısız olursa URL'deki diğer adayları dener (token, id, service_id). */
+export async function lookupServiceApprovalByCandidates(
+  candidates: string[]
+): Promise<ServiceApprovalLookupResult> {
+  const normalized = [
+    ...new Set(
+      candidates
+        .map((candidate) => normalizeApprovalToken(candidate))
+        .filter(isPlausibleApprovalLookupValue)
+    ),
+  ];
+
+  if (normalized.length === 0) {
+    const reason = "missing_token" as const;
+    return {
+      ok: false,
+      reason,
+      message: "Onay bağlantısında geçerli bir token bulunamadı.",
+      userMessage: buildLookupFailureUserMessage(reason),
+    };
+  }
+
+  let lastFailure: Extract<ServiceApprovalLookupResult, { ok: false }> | null =
+    null;
+
+  for (const token of normalized) {
+    const result = await lookupServiceApprovalByToken(token);
+    if (result.ok) {
+      return result;
+    }
+    lastFailure = result;
+  }
+
+  return (
+    lastFailure ?? {
+      ok: false,
+      reason: "not_found",
+      message: "Onay kaydı bulunamadı.",
+      userMessage: buildLookupFailureUserMessage("not_found"),
+      attemptedTokens: normalized,
+    }
+  );
 }
 
 export async function getServiceApprovalByToken(
