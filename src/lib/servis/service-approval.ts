@@ -102,6 +102,15 @@ function parsePublicServiceRecord(
         typeof data.fault_description === "string"
           ? data.fault_description
           : null,
+      cosmetic_notes:
+        typeof data.cosmetic_notes === "string" ? data.cosmetic_notes : null,
+      lock_type: typeof data.lock_type === "string" ? data.lock_type : null,
+      device_password:
+        typeof data.device_password === "string" ? data.device_password : null,
+      pattern_lock_data:
+        typeof data.pattern_lock_data === "string"
+          ? data.pattern_lock_data
+          : null,
       physical_checks: physicalChecks,
       accessories,
       approval_sent_at:
@@ -352,8 +361,8 @@ const PHYSICAL_CHECK_LABELS: Record<string, string> = {
 export type PhysicalCheckItem = {
   key: string;
   label: string;
-  /** true = hasar/ sorun tespit edildi, false = sorun yok */
-  issueDetected: boolean;
+  /** true = teknisyen kontrol etti, false = bakılmadı */
+  checked: boolean;
 };
 
 function formatPhysicalCheckLabel(key: string): string {
@@ -376,14 +385,104 @@ function coerceBoolean(value: unknown): boolean | null {
 export function parsePhysicalChecks(
   checks: Record<string, unknown>
 ): PhysicalCheckItem[] {
-  return Object.entries(checks)
-    .filter(([, value]) => value !== null && value !== undefined && value !== "")
-    .map(([key, value]) => {
-      const issueDetected = coerceBoolean(value) ?? false;
-      return {
-        key,
-        label: formatPhysicalCheckLabel(key),
-        issueDetected,
-      };
-    });
+  return Object.keys(PHYSICAL_CHECK_LABELS).map((key) => ({
+    key,
+    label: formatPhysicalCheckLabel(key),
+    checked: coerceBoolean(checks[key]) === true,
+  }));
+}
+
+export type LockDisplayInfo = {
+  label: string;
+  value: string;
+};
+
+const LOCK_TYPE_LABELS: Record<string, string> = {
+  pin: "Kilit / PIN:",
+  password: "Kilit / Şifre:",
+  sifre: "Kilit / Şifre:",
+  pattern: "Kilit / Desen:",
+  desen: "Kilit / Desen:",
+};
+
+export function formatLockDisplay(
+  lockType: string | null | undefined,
+  devicePassword: string | null | undefined,
+  patternLockData: string | null | undefined
+): LockDisplayInfo | null {
+  const normalizedType = lockType?.trim().toLowerCase() ?? "";
+  const password = devicePassword?.trim() ?? "";
+  const pattern = patternLockData?.trim() ?? "";
+
+  if (normalizedType === "pattern" || normalizedType === "desen") {
+    if (!pattern) return null;
+    return {
+      label: LOCK_TYPE_LABELS[normalizedType] ?? "Kilit / Desen:",
+      value: pattern,
+    };
+  }
+
+  if (password) {
+    return {
+      label:
+        LOCK_TYPE_LABELS[normalizedType] ??
+        (normalizedType === "pin" ? "Kilit / PIN:" : "Kilit / Şifre:"),
+      value: password,
+    };
+  }
+
+  return null;
+}
+
+/** fault_description içine gömülü "— Kilit: ..." satırını ayırır */
+export function parseEmbeddedLockFromFaultDescription(
+  faultDescription: string
+): { faultText: string; lock: LockDisplayInfo | null } {
+  const text = faultDescription.trim();
+  if (!text) return { faultText: "", lock: null };
+
+  const match = text.match(
+    /^(.*?)\s*[—–-]\s*Kilit:\s*(PIN|Şifre|Sifre|Desen)\s*:\s*(.+)$/i
+  );
+
+  if (!match) {
+    return { faultText: text, lock: null };
+  }
+
+  const [, faultText, lockKind, lockValue] = match;
+  const normalizedKind = lockKind.toLowerCase();
+
+  let label = "Kilit / Şifre:";
+  if (normalizedKind === "pin") label = "Kilit / PIN:";
+  if (normalizedKind === "desen") label = "Kilit / Desen:";
+
+  return {
+    faultText: faultText.trim(),
+    lock: { label, value: lockValue.trim() },
+  };
+}
+
+/** fault_description içine gömülü "— Kilit: ..." satırını ayırır */
+export function stripEmbeddedLockFromFaultDescription(
+  faultDescription: string,
+  lock: LockDisplayInfo | null
+): string {
+  let text = faultDescription.trim();
+  if (!text) return "";
+
+  const embeddedLockMatch = text.match(/\s*[—–-]\s*Kilit:\s*.+$/i);
+  if (embeddedLockMatch) {
+    text = text.slice(0, embeddedLockMatch.index).trim();
+  }
+
+  if (lock && !embeddedLockMatch) {
+    const lockValuePattern = lock.value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const trailingLock = new RegExp(
+      `\\s*[—–-]\\s*Kilit:\\s*(?:PIN|Şifre|Desen|Sifre)?\\s*:?\\s*${lockValuePattern}\\s*$`,
+      "i"
+    );
+    text = text.replace(trailingLock, "").trim();
+  }
+
+  return text;
 }

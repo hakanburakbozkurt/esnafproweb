@@ -13,6 +13,10 @@ export type PublicServiceApprovalRecord = {
   created_at: string | null;
   completed_at: string | null;
   fault_description: string | null;
+  cosmetic_notes: string | null;
+  lock_type: string | null;
+  device_password: string | null;
+  pattern_lock_data: string | null;
   physical_checks: Record<string, unknown>;
   accessories: string[];
   approval_sent_at: string | null;

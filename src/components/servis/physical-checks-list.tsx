@@ -8,36 +8,36 @@ export function PhysicalChecksList({ items }: { items: PhysicalCheckItem[] }) {
   return (
     <ul className="space-y-2">
       {items.map((item) => {
-        const passed = !item.issueDetected;
+        const checked = item.checked;
 
         return (
           <li
             key={item.key}
             className={cn(
               "flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5",
-              passed
+              checked
                 ? "border-emerald-100 bg-emerald-50/60"
-                : "border-amber-100 bg-amber-50/50"
+                : "border-orange-100 bg-orange-50/50"
             )}
           >
             <span className="text-sm font-bold text-gray-900">{item.label}</span>
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
-                passed
+                checked
                   ? "bg-white text-emerald-700 ring-1 ring-emerald-200"
-                  : "bg-white text-amber-800 ring-1 ring-amber-200"
+                  : "bg-white text-orange-700 ring-1 ring-orange-200"
               )}
             >
-              {passed ? (
+              {checked ? (
                 <>
                   <Check className="size-3.5 stroke-[2.5]" aria-hidden />
-                  Sorun yok
+                  Kontrol edildi
                 </>
               ) : (
                 <>
                   <Minus className="size-3.5 stroke-[2.5]" aria-hidden />
-                  Tespit edildi
+                  Bakılmadı
                 </>
               )}
             </span>

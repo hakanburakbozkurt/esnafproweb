@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useEffect, useState, type ReactNode } from "react";
 import { Card } from "@/components/ui/card";
+import { FaultDescriptionDisplay } from "@/components/servis/fault-description-display";
 import {
   getServiceStatusLabel,
   getServiceStatusStyle,
@@ -11,6 +11,7 @@ import { approveServiceTerms } from "@/lib/servis/service-approval-actions";
 import type { PublicServiceApprovalRecord } from "@/lib/servis/service-approval.types";
 import { parsePhysicalChecks } from "@/lib/servis/service-approval";
 import { PhysicalChecksList } from "@/components/servis/physical-checks-list";
+import { ServiceTrackingLink } from "@/components/servis/service-tracking-link";
 import {
   SERVICE_TERMS_ITEMS,
   SERVICE_TERMS_TITLE,
@@ -92,6 +93,8 @@ export function ServiceApprovalClient({
   const displayTrackingCode = trackingCode ?? state.trackingCode ?? null;
 
   const physicalChecks = parsePhysicalChecks(record.physical_checks);
+  const hasPhysicalChecksData =
+    Object.keys(record.physical_checks).length > 0;
   const accessoriesText =
     record.accessories.length > 0
       ? record.accessories.join(", ")
@@ -146,10 +149,25 @@ export function ServiceApprovalClient({
           {record.fault_description && (
             <DetailRow
               label="Bildirilen Arıza"
-              value={record.fault_description}
+              value={
+                <FaultDescriptionDisplay
+                  faultDescription={record.fault_description}
+                  lockType={record.lock_type}
+                  devicePassword={record.device_password}
+                  patternLockData={record.pattern_lock_data}
+                />
+              }
             />
           )}
-          {physicalChecks.length > 0 && (
+          {record.cosmetic_notes?.trim() && (
+            <DetailRow
+              label="Fiziksel Notlar"
+              value={
+                <p className="whitespace-pre-wrap">{record.cosmetic_notes}</p>
+              }
+            />
+          )}
+          {hasPhysicalChecksData && (
             <DetailRow
               label="Fiziksel Kontroller"
               value={<PhysicalChecksList items={physicalChecks} />}
@@ -181,12 +199,7 @@ export function ServiceApprovalClient({
                 Takip numaranız:{" "}
                 <span className="font-mono text-base">{displayTrackingCode}</span>
               </p>
-              <Link
-                href={`/servis-takip/${encodeURIComponent(displayTrackingCode)}`}
-                className="mt-3 inline-flex text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline"
-              >
-                Cihaz durumunu takip et →
-              </Link>
+              <ServiceTrackingLink trackingCode={displayTrackingCode} />
             </>
           )}
         </div>
@@ -199,14 +212,7 @@ export function ServiceApprovalClient({
         >
           Cihaz takip numaranız:{" "}
           <span className="font-mono font-semibold">{displayTrackingCode}</span>
-          <div className="mt-3">
-            <Link
-              href={`/servis-takip/${encodeURIComponent(displayTrackingCode)}`}
-              className="inline-flex text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline"
-            >
-              Cihaz durumunu takip et →
-            </Link>
-          </div>
+          <ServiceTrackingLink trackingCode={displayTrackingCode} />
         </div>
       )}
 
