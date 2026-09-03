@@ -1,6 +1,11 @@
 import "server-only";
 
 import { normalizeWhatsAppNumber } from "@/lib/dukkan/contact";
+import {
+  buildServiceApprovalMessage,
+  buildServiceApprovalUrl,
+  resolveApprovalLookupToken,
+} from "@/lib/servis/approval-link";
 
 const TRACKING_MESSAGE_TEMPLATE =
   "Servis işleminiz başarıyla onaylanmıştır! Cihaz takip numaranız: {tracking_code}. Cihazınızın durumunu bu numara ile dilediğiniz zaman takip edebilirsiniz.";
@@ -9,7 +14,7 @@ export function buildServiceTrackingMessage(trackingCode: string): string {
   return TRACKING_MESSAGE_TEMPLATE.replace("{tracking_code}", trackingCode);
 }
 
-type WhatsAppSendResult = {
+export type WhatsAppSendResult = {
   sent: boolean;
   skipped?: boolean;
   error?: string;
@@ -57,7 +62,7 @@ async function sendViaWhatsAppCloudApi(
 async function sendViaWebhook(
   phone: string,
   message: string,
-  trackingCode: string
+  metadata: Record<string, string>
 ): Promise<WhatsAppSendResult> {
   const webhookUrl = process.env.WHATSAPP_NOTIFICATION_WEBHOOK_URL?.trim();
 
@@ -71,7 +76,7 @@ async function sendViaWebhook(
     body: JSON.stringify({
       phone,
       message,
-      tracking_code: trackingCode,
+      ...metadata,
     }),
   });
 
@@ -84,6 +89,27 @@ async function sendViaWebhook(
   }
 
   return { sent: true };
+}
+
+async function dispatchWhatsAppMessage(
+  phone: string,
+  message: string,
+  metadata: Record<string, string>
+): Promise<WhatsAppSendResult> {
+  const cloudResult = await sendViaWhatsAppCloudApi(phone, message);
+  if (cloudResult.sent || cloudResult.error) {
+    return cloudResult;
+  }
+
+  const webhookResult = await sendViaWebhook(phone, message, metadata);
+  if (webhookResult.sent || webhookResult.error) {
+    return webhookResult;
+  }
+
+  console.warn(
+    "[servis-onay] WhatsApp bildirimi atlandı: WHATSAPP_CLOUD_API_TOKEN veya WHATSAPP_NOTIFICATION_WEBHOOK_URL tanımlı değil."
+  );
+  return { sent: false, skipped: true };
 }
 
 export async function sendServiceTrackingWhatsApp(
@@ -99,22 +125,86 @@ export async function sendServiceTrackingWhatsApp(
   const message = buildServiceTrackingMessage(trackingCode);
 
   try {
-    const cloudResult = await sendViaWhatsAppCloudApi(phone, message);
-    if (cloudResult.sent || cloudResult.error) {
-      return cloudResult;
-    }
-
-    const webhookResult = await sendViaWebhook(phone, message, trackingCode);
-    if (webhookResult.sent || webhookResult.error) {
-      return webhookResult;
-    }
-
-    console.warn(
-      "[servis-onay] WhatsApp bildirimi atlandı: WHATSAPP_CLOUD_API_TOKEN veya WHATSAPP_NOTIFICATION_WEBHOOK_URL tanımlı değil."
-    );
-    return { sent: false, skipped: true };
+    return await dispatchWhatsAppMessage(phone, message, {
+      tracking_code: trackingCode,
+    });
   } catch (err) {
     console.error("[servis-onay] sendServiceTrackingWhatsApp unexpected error", {
+      err,
+    });
+    return {
+      sent: false,
+      error: err instanceof Error ? err.message : "WhatsApp gönderimi başarısız.",
+    };
+  }
+}
+
+export type ServiceApprovalWhatsAppRecord = {
+  id?: string | null;
+  approval_token?: string | null;
+  service_id?: string | null;
+  customer_name?: string | null;
+  device_info?: string | null;
+};
+
+export function buildServiceApprovalWhatsAppMessage(
+  record: ServiceApprovalWhatsAppRecord
+): { lookupToken: string; approvalUrl: string; message: string } | null {
+  const lookupToken = resolveApprovalLookupToken(record);
+  if (!lookupToken) return null;
+
+  const approvalUrl = buildServiceApprovalUrl(lookupToken);
+
+  return {
+    lookupToken,
+    approvalUrl,
+    message: buildServiceApprovalMessage({
+      customerName: record.customer_name,
+      deviceInfo: record.device_info,
+      approvalUrl,
+    }),
+  };
+}
+
+export async function sendServiceApprovalWhatsApp(
+  rawPhone: string,
+  record: ServiceApprovalWhatsAppRecord
+): Promise<
+  WhatsAppSendResult & {
+    lookupToken?: string;
+    approvalUrl?: string;
+  }
+> {
+  const phone = normalizeWhatsAppNumber(rawPhone);
+
+  if (!phone) {
+    return { sent: false, error: "Geçersiz müşteri telefon numarası." };
+  }
+
+  const payload = buildServiceApprovalWhatsAppMessage(record);
+  if (!payload) {
+    return {
+      sent: false,
+      error:
+        "Onay bağlantısı oluşturulamadı. Servis kaydında approval_token veya service_id bulunamadı.",
+    };
+  }
+
+  try {
+    const result = await dispatchWhatsAppMessage(phone, payload.message, {
+      lookup_token: payload.lookupToken,
+      approval_url: payload.approvalUrl,
+      service_id: record.service_id?.trim() ?? "",
+      approval_token: record.approval_token?.trim() ?? "",
+    });
+
+    return {
+      ...result,
+      lookupToken: payload.lookupToken,
+      approvalUrl: payload.approvalUrl,
+    };
+  } catch (err) {
+    console.error("[servis-onay] sendServiceApprovalWhatsApp unexpected error", {
       err,
     });
     return {

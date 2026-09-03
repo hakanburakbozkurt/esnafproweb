@@ -913,6 +913,13 @@ export interface Database {
         };
         Returns: Json;
       };
+      get_technical_service_approval_lookup: {
+        Args: {
+          p_technical_service_id: string;
+          p_mark_sent?: boolean;
+        };
+        Returns: Json;
+      };
       get_technical_service_public: {
         Args: {
           p_token?: string | null;
