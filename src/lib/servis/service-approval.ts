@@ -1,5 +1,8 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import { normalizeApprovalToken } from "@/lib/servis/approval-token";
+import {
+  isPlausibleApprovalLookupValue,
+  normalizeApprovalToken,
+} from "@/lib/servis/approval-token";
 import type { PublicServiceApprovalRecord } from "@/lib/servis/service-approval.types";
 
 export type ServiceApprovalLookupResult =
@@ -74,9 +77,10 @@ function parsePublicServiceRecord(
   return {
     record: {
       id,
-      service_id:
-        typeof data.service_id === "string" ? data.service_id : null,
-      customer_name: customerName,
+    service_id:
+      typeof data.service_id === "string" ? data.service_id : null,
+    store_id: typeof data.store_id === "string" ? data.store_id : null,
+    customer_name: customerName,
       device_info: deviceInfo,
       device_imei:
         typeof data.device_imei === "string" ? data.device_imei : null,
@@ -114,7 +118,7 @@ export async function lookupServiceApprovalByToken(
 ): Promise<ServiceApprovalLookupResult> {
   const token = normalizeApprovalToken(rawToken);
 
-  if (token.length < 6) {
+  if (!isPlausibleApprovalLookupValue(token)) {
     return {
       ok: false,
       reason: "missing_token",

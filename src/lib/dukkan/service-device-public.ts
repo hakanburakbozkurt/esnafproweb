@@ -57,15 +57,54 @@ export type PublicServiceStoreInfo = {
   logo_url: string | null;
 };
 
-/** Servis takip sayfası mağaza kartı — stores → dukkanlar eşlemesi. */
+function parsePublicServiceStoreInfo(raw: unknown): PublicServiceStoreInfo | null {
+  if (!raw || typeof raw !== "object") return null;
+
+  const data = raw as Record<string, unknown>;
+  const dukkanAdi =
+    typeof data.dukkan_adi === "string" ? data.dukkan_adi.trim() : "";
+  const slug = typeof data.slug === "string" ? data.slug.trim() : "";
+
+  if (!dukkanAdi || !slug) return null;
+
+  const logoUrl =
+    typeof data.logo_url === "string" && data.logo_url.trim()
+      ? data.logo_url.trim()
+      : null;
+
+  return {
+    dukkan_adi: dukkanAdi,
+    slug,
+    telefon: typeof data.telefon === "string" ? data.telefon : null,
+    logo_url: logoUrl,
+  };
+}
+
+/** Servis takip/onay sayfası mağaza kartı — RPC ile logo_url dahil. */
 export async function getPublicServiceStoreInfo(
   supabase: RpcClient,
   storeId: string
 ): Promise<PublicServiceStoreInfo | null> {
+  const trimmedId = storeId.trim();
+  if (!trimmedId) return null;
+
+  const { data, error } = await supabase.rpc("get_public_service_store_info", {
+    p_store_id: trimmedId,
+  });
+
+  if (!error && data) {
+    const parsed = parsePublicServiceStoreInfo(data);
+    if (parsed) return parsed;
+  }
+
+  if (error) {
+    console.error("[servis] get_public_service_store_info RPC:", error.message);
+  }
+
   const { data: store } = await supabase
     .from("stores")
     .select("name, slug, owner_id")
-    .eq("id", storeId)
+    .eq("id", trimmedId)
     .maybeSingle();
 
   if (!store) return null;
@@ -73,7 +112,7 @@ export async function getPublicServiceStoreInfo(
   const { data: dukkan } = await supabase
     .from("dukkanlar")
     .select("dukkan_adi, slug, telefon, logo_url")
-    .eq("slug", store.slug)
+    .eq("user_id", store.owner_id)
     .maybeSingle();
 
   if (dukkan) {
@@ -81,7 +120,7 @@ export async function getPublicServiceStoreInfo(
       dukkan_adi: dukkan.dukkan_adi,
       slug: dukkan.slug,
       telefon: dukkan.telefon,
-      logo_url: dukkan.logo_url,
+      logo_url: dukkan.logo_url?.trim() ? dukkan.logo_url.trim() : null,
     };
   }
 

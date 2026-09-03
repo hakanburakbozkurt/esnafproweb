@@ -1,6 +1,9 @@
 "use server";
 
-import { normalizeApprovalToken } from "@/lib/servis/approval-token";
+import {
+  isPlausibleApprovalLookupValue,
+  normalizeApprovalToken,
+} from "@/lib/servis/approval-token";
 import { createPublicClient } from "@/lib/supabase/public";
 import type {
   ServiceApprovalActionState,
@@ -14,7 +17,7 @@ export async function approveServiceTerms(
 ): Promise<ServiceApprovalActionState> {
   const token = normalizeApprovalToken(String(formData.get("token") ?? ""));
 
-  if (token.length < 8) {
+  if (!isPlausibleApprovalLookupValue(token)) {
     return { error: "Geçersiz onay bağlantısı. Lütfen size gönderilen linki kullanın." };
   }
 

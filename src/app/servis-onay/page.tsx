@@ -1,8 +1,11 @@
 import { ServiceApprovalClient } from "@/components/servis/service-approval-client";
+import { ServicePointCard } from "@/components/servis/service-point-card";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
 import { Card } from "@/components/ui/card";
+import { getPublicServiceStoreInfo } from "@/lib/dukkan/service-device-public";
 import { extractApprovalTokenFromSearchParams } from "@/lib/servis/approval-token";
 import { lookupServiceApprovalByToken } from "@/lib/servis/service-approval";
+import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -16,12 +19,9 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{
-    token?: string | string[];
-    approval_token?: string | string[];
-    approvalToken?: string | string[];
-    service_id?: string | string[];
-  }>;
+  searchParams: Promise<
+    import("@/lib/servis/approval-token").ApprovalSearchParams
+  >;
 };
 
 function InvalidTokenMessage({
@@ -73,7 +73,7 @@ export default async function ServisOnayPage({ searchParams }: PageProps) {
         contentWidth="2xl"
         centerHeader
       >
-        <InvalidTokenMessage detail="URL'de token parametresi yok (?token=... veya ?approval_token=...)." />
+        <InvalidTokenMessage detail="URL'de onay parametresi yok (?token=..., ?approval_token=... veya ?id=...)." />
       </SubPageShell>
     );
   }
@@ -100,6 +100,10 @@ export default async function ServisOnayPage({ searchParams }: PageProps) {
   }
 
   const record = lookup.record;
+  const supabase = await createClient();
+  const store = record.store_id
+    ? await getPublicServiceStoreInfo(supabase, record.store_id)
+    : null;
 
   return (
     <SubPageShell
@@ -112,7 +116,10 @@ export default async function ServisOnayPage({ searchParams }: PageProps) {
       contentWidth="2xl"
       centerHeader
     >
-      <ServiceApprovalClient token={trimmedToken} record={record} />
+      <div className="mx-auto max-w-2xl space-y-6">
+        <ServiceApprovalClient token={trimmedToken} record={record} />
+        {store && <ServicePointCard store={store} />}
+      </div>
     </SubPageShell>
   );
 }

@@ -4,6 +4,7 @@ export type ServiceApprovalStatus = "beklemede" | "onaylandi" | "reddedildi";
 export type PublicServiceApprovalRecord = {
   id: string;
   service_id: string | null;
+  store_id: string | null;
   customer_name: string;
   device_info: string;
   device_imei: string | null;

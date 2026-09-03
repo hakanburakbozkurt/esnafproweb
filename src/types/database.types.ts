@@ -907,6 +907,12 @@ export interface Database {
           created_at: string;
         }[];
       };
+      get_public_service_store_info: {
+        Args: {
+          p_store_id: string;
+        };
+        Returns: Json;
+      };
       get_technical_service_public: {
         Args: {
           p_token?: string | null;

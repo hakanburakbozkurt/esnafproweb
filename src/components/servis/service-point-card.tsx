@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Phone, Store } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -29,7 +28,8 @@ function StoreAvatar({
   logoUrl: string | null;
 }) {
   const initial = name.trim().charAt(0).toUpperCase() || "S";
-  const hasLogo = Boolean(logoUrl?.trim());
+  const resolvedLogo = logoUrl?.trim() ?? "";
+  const hasLogo = resolvedLogo.length > 0;
 
   return (
     <div
@@ -39,12 +39,13 @@ function StoreAvatar({
       )}
     >
       {hasLogo ? (
-        <Image
-          src={logoUrl!}
-          alt=""
-          width={64}
-          height={64}
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={resolvedLogo}
+          alt={`${name} logosu`}
           className="size-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
       ) : (
         <span className="flex size-full items-center justify-center">
