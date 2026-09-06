@@ -21,6 +21,23 @@ export const metadata: Metadata = {
   title: siteTitle,
   description: siteDescription,
   applicationName: siteTitle,
+  icons: {
+    icon: [
+      {
+        url: "/favicon.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+    shortcut: "/favicon.png",
+    apple: [
+      {
+        url: "/favicon.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+  },
   openGraph: {
     title: siteTitle,
     description: siteDescription,
