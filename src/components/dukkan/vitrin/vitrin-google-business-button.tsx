@@ -21,16 +21,18 @@ export function VitrinGoogleBusinessButton({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-slate-200/90 bg-white font-semibold text-slate-800 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/80 hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500",
+        "inline-flex items-center justify-center rounded-full border border-slate-200/90 bg-white font-semibold text-slate-800 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/80 hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500",
         compact
-          ? "min-h-9 px-3 py-2 text-xs sm:min-h-10 sm:px-4 sm:text-sm"
-          : "min-h-10 px-4 py-2.5 text-sm",
+          ? "size-9 min-h-9 min-w-9 p-0 sm:min-h-10 sm:w-auto sm:min-w-0 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
+          : "min-h-10 gap-2 px-4 py-2.5 text-sm",
         className
       )}
-      aria-label="Google'da işletmeyi incele"
+      aria-label="Google'da İncele"
     >
       <GoogleMarkIcon />
-      <span className="whitespace-nowrap">Google&apos;da İncele</span>
+      <span className="hidden whitespace-nowrap sm:inline">
+        Google&apos;da İncele
+      </span>
     </a>
   );
 }

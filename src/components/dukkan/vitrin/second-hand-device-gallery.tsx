@@ -41,7 +41,7 @@ export function SecondHandDeviceGallery({
     return (
       <div
         className={cn(
-          "flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-400",
+          "flex aspect-[4/3] items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-400",
           className
         )}
       >
@@ -56,16 +56,19 @@ export function SecondHandDeviceGallery({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="relative overflow-hidden rounded-xl bg-slate-100">
-        <div className="aspect-square overflow-hidden" ref={emblaRef}>
+      <div className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100">
+        <div className="aspect-[4/3] overflow-hidden" ref={emblaRef}>
           <div className="flex h-full">
             {images.map((url, index) => (
-              <div key={`${url}-${index}`} className="min-w-0 shrink-0 grow-0 basis-full">
+              <div
+                key={`${url}-${index}`}
+                className="flex min-w-0 shrink-0 grow-0 basis-full items-center justify-center bg-slate-100 p-3 sm:p-4"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={url}
                   alt={`${altPrefix} ${index + 1}`}
-                  className="h-full w-full object-cover object-center"
+                  className="max-h-full max-w-full object-contain"
                   draggable={false}
                 />
               </div>
@@ -118,7 +121,7 @@ export function SecondHandDeviceGallery({
               onClick={() => scrollTo(index)}
               aria-label={`${altPrefix} küçük görsel ${index + 1}`}
               className={cn(
-                "relative size-16 shrink-0 overflow-hidden rounded-xl ring-2 transition sm:size-20",
+                "relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 ring-2 transition sm:size-20",
                 selectedIndex === index
                   ? "ring-emerald-500"
                   : "ring-transparent hover:ring-slate-200"
@@ -128,7 +131,7 @@ export function SecondHandDeviceGallery({
               <img
                 src={url}
                 alt=""
-                className="h-full w-full object-cover"
+                className="max-h-full max-w-full object-contain p-1"
                 draggable={false}
               />
             </button>

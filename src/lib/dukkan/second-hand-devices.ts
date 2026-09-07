@@ -9,7 +9,7 @@ const UUID_REGEX =
 
 /** Liste kartları için güvenli alanlar. */
 export const PUBLIC_SECOND_HAND_DEVICE_SELECT =
-  "id, brand, model, condition, sale_price, image_urls, web_title, web_description, web_slug, color, device_category, created_at, web_published, web_published_at" as const;
+  "id, brand, model, condition, sale_price, image_urls, web_title, web_description, web_slug, color, device_category, listing_type, created_at, web_published, web_published_at" as const;
 
 /** Detay sayfası için ek teknik ve ekspertiz alanları (hassas veri yok). */
 export const PUBLIC_SECOND_HAND_DEVICE_DETAIL_SELECT =
@@ -28,6 +28,7 @@ type PublicDeviceListRow = Pick<
   | "web_slug"
   | "color"
   | "device_category"
+  | "listing_type"
   | "created_at"
   | "web_published"
   | "web_published_at"
@@ -262,6 +263,37 @@ export function formatSecondHandCondition(condition: string | null | undefined):
   return labels[normalized] ?? condition.trim();
 }
 
+const DEVICE_CATEGORY_LABELS: Record<string, string> = {
+  phone: "Telefon",
+  tablet: "Tablet",
+  computer: "Bilgisayar",
+  watch: "Akıllı Saat",
+  console: "Konsol",
+};
+
+export function getDeviceCategoryLabel(
+  deviceCategory: string | null | undefined
+): string | null {
+  if (!deviceCategory?.trim()) return null;
+  return DEVICE_CATEGORY_LABELS[deviceCategory.trim()] ?? null;
+}
+
+export function getListingTypeBadge(listingType: string | null | undefined): {
+  label: string;
+  tone: "new" | "used";
+} {
+  if (listingType?.trim() === "new") {
+    return { label: "Sıfır", tone: "new" };
+  }
+  return { label: "İkinci El", tone: "used" };
+}
+
+export function formatListingTypeLabel(
+  listingType: string | null | undefined
+): string {
+  return getListingTypeBadge(listingType).label;
+}
+
 function formatBooleanDetail(value: boolean | null | undefined, yes: string): string | null {
   if (value == null) return null;
   return value ? yes : null;
@@ -271,7 +303,7 @@ export function getSecondHandDeviceSpecRows(
   device: PublicDeviceDetailRow
 ): DeviceSpecRow[] {
   const rows: Array<{ label: string; value: string | null | undefined }> = [
-    { label: "Kategori", value: device.device_category },
+    { label: "Kategori", value: getDeviceCategoryLabel(device.device_category) },
     { label: "Marka", value: device.brand },
     { label: "Model", value: device.model },
     { label: "Durum", value: formatSecondHandCondition(device.condition) },

@@ -19,6 +19,8 @@ export type MarketplaceListing = {
   locationLabel: string | null;
 };
 
+export type MarketplaceListingTypeId = "all" | "new" | "used";
+
 export type MarketplaceCategoryId =
   | "all"
   | "telefon"

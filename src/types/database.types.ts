@@ -1022,6 +1022,7 @@ export interface Database {
           condition: string | null;
           created_at: string | null;
           device_category: string | null;
+          listing_type: string | null;
           drive_type: string | null;
           gpu: string | null;
           has_box: boolean | null;

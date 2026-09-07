@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { DeviceListingBadges } from "@/components/marketplace/device-listing-badges";
+import { DeviceListingImage } from "@/components/marketplace/device-listing-image";
 import {
   formatSecondHandCondition,
   formatSecondHandPrice,
@@ -15,8 +17,7 @@ import {
 import type { MarketplaceListing } from "@/lib/marketplace/public-listing.types";
 import { cn } from "@/lib/utils/cn";
 
-const WHATSAPP_MESSAGE_PREFIX =
-  "Merhaba, Esnaf Pro üzerindeki";
+const WHATSAPP_MESSAGE_PREFIX = "Merhaba, Esnaf Pro üzerindeki";
 
 export function MarketplaceDeviceCard({
   listing,
@@ -49,106 +50,100 @@ export function MarketplaceDeviceCard({
   return (
     <article
       className={cn(
-        "flex h-full min-w-0 w-full flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md sm:rounded-2xl",
+        "overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:border-emerald-200 hover:shadow-md sm:rounded-2xl",
         className
       )}
     >
-      <Link href={detailHref} className="group block min-w-0">
-        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+      <div className="flex min-w-0 flex-col sm:h-full">
+        <div className="flex min-w-0 gap-3 p-3 sm:block sm:p-0">
+          <Link
+            href={detailHref}
+            className="group relative block w-28 shrink-0 overflow-hidden rounded-lg sm:w-full sm:rounded-none"
+          >
+            <DeviceListingImage
               src={imageUrl}
               alt={title}
-              className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
-              loading="lazy"
+              aspect="4/3"
+              className="rounded-lg sm:rounded-none"
+              imgClassName="transition duration-500 group-hover:scale-[1.02]"
             />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-slate-400 sm:text-sm">
-              Görsel yok
+            <div className="absolute left-1.5 top-1.5 sm:left-2.5 sm:top-2.5">
+              <DeviceListingBadges
+                condition={condition}
+                deviceCategory={device.device_category}
+                listingType={device.listing_type}
+                locationBadge={locationBadge}
+              />
             </div>
-          )}
+          </Link>
 
-          <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1.5 sm:left-3 sm:top-3">
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 shadow-sm backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
-              {condition}
-            </span>
-            {locationBadge && (
-              <span className="max-w-full truncate rounded-full bg-slate-900/75 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
-                {locationBadge}
+          <div className="flex min-w-0 flex-1 flex-col py-0.5 sm:border-t sm:border-slate-100 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <Link
+                  href={`/${shop.slug}`}
+                  className="truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-600 hover:text-emerald-700 sm:text-[11px]"
+                >
+                  {shop.dukkan_adi}
+                </Link>
+                {showLocationSubtitle && listing.locationLabel && (
+                  <p className="mt-0.5 truncate text-[11px] text-slate-400 sm:text-xs">
+                    {listing.locationLabel}
+                  </p>
+                )}
+              </div>
+              <span
+                className="hidden shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 sm:inline"
+                aria-label="Esnaf Pro üyesi"
+              >
+                Esnaf Pro
               </span>
-            )}
-          </div>
-        </div>
-      </Link>
+            </div>
 
-      <div className="flex min-w-0 flex-1 flex-col border-t border-slate-100 px-3 py-3 sm:px-4 sm:py-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <Link
-              href={`/${shop.slug}`}
-              className="truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-600 hover:text-emerald-700"
-            >
-              {shop.dukkan_adi}
+            <Link href={detailHref} className="mt-1 block min-w-0 sm:mt-2">
+              <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition hover:text-emerald-700 sm:text-base">
+                {title}
+              </h3>
             </Link>
-            {showLocationSubtitle && listing.locationLabel && (
-              <p className="mt-1 truncate text-xs text-slate-400">
-                {listing.locationLabel}
+
+            {(device.brand || device.model) && (
+              <p className="mt-1 hidden truncate text-[11px] font-medium uppercase tracking-[0.1em] text-slate-400 sm:block">
+                {[device.brand, device.model].filter(Boolean).join(" · ")}
               </p>
             )}
-          </div>
-          <div
-            className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
-            aria-label="Esnaf Pro üyesi"
-          >
-            Esnaf Pro Üyesi
+
+            <p className="mt-2 text-lg font-bold tracking-tight text-emerald-700 sm:mt-3 sm:text-xl">
+              {price}
+            </p>
           </div>
         </div>
 
-        <Link href={detailHref} className="mt-2 block min-w-0">
-          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition hover:text-emerald-700 sm:text-base">
-            {title}
-          </h3>
-        </Link>
+        <div className="flex gap-2 border-t border-slate-100 px-3 pb-3 pt-2 sm:flex-col sm:gap-2 sm:px-4 sm:pb-4">
+          <Link
+            href={detailHref}
+            className="inline-flex min-h-9 flex-1 items-center justify-center rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600 sm:min-h-11 sm:w-full sm:text-sm"
+          >
+            Detay
+          </Link>
 
-        {(device.brand || device.model) && (
-          <p className="mt-1 truncate text-[11px] font-medium uppercase tracking-[0.1em] text-slate-400">
-            {[device.brand, device.model].filter(Boolean).join(" · ")}
-          </p>
-        )}
-
-        <div className="mt-auto space-y-2.5 pt-3 sm:space-y-3 sm:pt-4">
-          <p className="text-lg font-bold tracking-tight text-emerald-700 sm:text-xl">
-            {price}
-          </p>
-
-          <div className="flex flex-col gap-1.5 sm:gap-2">
-            <Link
-              href={detailHref}
-              className="inline-flex min-h-9 w-full items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600 sm:min-h-11 sm:text-sm"
+          {whatsappHref ? (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#20bd5a] sm:min-h-11 sm:w-full sm:text-sm"
             >
-              Detayları Gör
+              <WhatsAppIcon />
+              <span className="truncate">WhatsApp</span>
+            </a>
+          ) : (
+            <Link
+              href={`/${shop.slug}/iletisim`}
+              className="inline-flex min-h-9 flex-1 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 sm:min-h-11 sm:w-full sm:text-sm"
+            >
+              İletişim
             </Link>
-
-            {whatsappHref ? (
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#20bd5a] sm:min-h-11 sm:gap-2 sm:text-sm"
-              >
-                <WhatsAppIcon />
-                <span className="truncate">WhatsApp ile Bilgi Al</span>
-              </a>
-            ) : (
-              <Link
-                href={`/${shop.slug}/iletisim`}
-                className="inline-flex min-h-9 w-full items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 sm:min-h-11 sm:text-sm"
-              >
-                Mağaza İletişim
-              </Link>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </article>

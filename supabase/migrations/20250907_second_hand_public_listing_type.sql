@@ -1,0 +1,46 @@
+-- Expose listing_type (new | used) on the public marketplace view.
+DROP VIEW IF EXISTS public.second_hand_devices_public;
+
+CREATE VIEW public.second_hand_devices_public AS
+SELECT
+  id,
+  user_id,
+  brand,
+  model,
+  capacity,
+  color,
+  condition,
+  sale_price,
+  device_category,
+  listing_type,
+  image_urls,
+  notes,
+  battery_health,
+  battery_cycle_count,
+  changed_parts,
+  non_working_features,
+  has_warranty,
+  warranty_type,
+  has_box,
+  has_invoice,
+  processor,
+  ram,
+  hdd,
+  ssd,
+  gpu,
+  screen_size,
+  resolution,
+  sim_support,
+  operating_system,
+  case_material,
+  has_sapphire_glass,
+  casing_type,
+  drive_type,
+  web_published,
+  web_published_at,
+  web_slug,
+  web_title,
+  web_description,
+  created_at
+FROM public.second_hand_devices
+WHERE web_published = true AND status = 'available';

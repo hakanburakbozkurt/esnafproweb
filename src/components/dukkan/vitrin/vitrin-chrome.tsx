@@ -11,7 +11,7 @@ import { hasGoogleBusinessUrl } from "@/lib/dukkan/google-business-url";
 import type { Dukkan } from "@/types/database.types";
 
 const ownerPanelButtonClass =
-  "inline-flex min-h-9 items-center rounded-full border border-emerald-600/20 bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 sm:min-h-10 sm:px-4 sm:text-sm";
+  "inline-flex min-h-9 shrink-0 items-center rounded-full border border-emerald-600/20 bg-emerald-600 px-2.5 py-2 text-xs font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 sm:min-h-10 sm:px-4 sm:text-sm";
 
 export function VitrinChrome({
   shopName,
@@ -70,7 +70,7 @@ export function VitrinChrome({
           <div className="flex h-16 items-center justify-between gap-4 lg:h-[4.75rem]">
             <Link
               href={magazamHref}
-              className="min-w-0 truncate text-base font-bold tracking-tight text-slate-900 lg:text-xl"
+              className="min-w-0 flex-1 truncate pr-2 text-base font-bold tracking-tight text-slate-900 lg:text-xl"
             >
               {isMagazamPage ? (
                 <h1 className="truncate text-base font-bold tracking-tight lg:text-xl">
@@ -134,7 +134,8 @@ export function VitrinChrome({
               )}
               {isOwner && (
                 <Link href="/yonetim" className={ownerPanelButtonClass}>
-                  Yönetim Paneline Git
+                  <span className="sm:hidden">Panel</span>
+                  <span className="hidden sm:inline">Yönetim Paneline Git</span>
                 </Link>
               )}
             </div>

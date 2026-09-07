@@ -2,19 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { MarketplaceDeviceCard } from "@/components/marketplace/marketplace-device-card";
+import { MarketplaceListingToolbar } from "@/components/marketplace/marketplace-listing-toolbar";
 import {
   buildLocationOptions,
   filterMarketplaceListings,
-  MARKETPLACE_CATEGORIES,
-  MARKETPLACE_SORT_OPTIONS,
 } from "@/lib/marketplace/marketplace-filters";
 import { useUserGeolocation } from "@/lib/marketplace/use-user-geolocation";
 import type {
   MarketplaceCategoryId,
   MarketplaceListing,
+  MarketplaceListingTypeId,
   MarketplaceSortId,
 } from "@/lib/marketplace/public-listing.types";
-import { cn } from "@/lib/utils/cn";
 
 export function MarketplacePageContent({
   listings,
@@ -24,6 +23,8 @@ export function MarketplacePageContent({
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<MarketplaceSortId>("newest");
   const [category, setCategory] = useState<MarketplaceCategoryId>("all");
+  const [listingType, setListingType] =
+    useState<MarketplaceListingTypeId>("all");
   const [location, setLocation] = useState("");
   const { coords: userCoords } = useUserGeolocation();
 
@@ -38,9 +39,10 @@ export function MarketplacePageContent({
         query,
         category,
         location,
+        listingType,
         sort,
       }),
-    [listings, query, category, location, sort]
+    [listings, query, category, location, listingType, sort]
   );
 
   return (
@@ -53,95 +55,30 @@ export function MarketplacePageContent({
           Esnaf Pro Pazaryeri
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-          Esnaf Pro üyesi mağazaların yayınladığı ikinci el telefon ve cihaz
+          Esnaf Pro üyesi mağazaların yayınladığı sıfır ve ikinci el cihaz
           ilanlarını tek yerden keşfedin.
         </p>
       </header>
 
-      <div className="mt-8 space-y-4 rounded-3xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <label className="min-w-0 flex-1">
-            <span className="sr-only">Marka veya model ara</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Marka, model veya mağaza ara..."
-              className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
-            />
-          </label>
-
-          <label className="lg:w-52">
-            <span className="sr-only">Sıralama</span>
-            <select
-              value={sort}
-              onChange={(event) => setSort(event.target.value as MarketplaceSortId)}
-              className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
-            >
-              {MARKETPLACE_SORT_OPTIONS.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <nav
-          aria-label="Kategori filtreleri"
-          className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {MARKETPLACE_CATEGORIES.map((item) => {
-            const active = category === item.id;
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setCategory(item.id)}
-                className={cn(
-                  "inline-flex shrink-0 items-center rounded-full border px-4 py-2 text-xs font-semibold transition sm:text-sm",
-                  active
-                    ? "border-emerald-600 bg-emerald-600 text-white shadow-sm"
-                    : "border-slate-200/80 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600"
-                )}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <label className="sm:min-w-[14rem] sm:max-w-xs">
-            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-              Konum
-            </span>
-            <select
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="">Tüm Konumlar</option>
-              {locationOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <p className="text-sm text-slate-500">
-            <span className="font-semibold text-slate-700">
-              {filteredListings.length}
-            </span>{" "}
-            ilan listeleniyor
-          </p>
-        </div>
+      <div className="mt-8">
+        <MarketplaceListingToolbar
+          query={query}
+          onQueryChange={setQuery}
+          sort={sort}
+          onSortChange={setSort}
+          category={category}
+          onCategoryChange={setCategory}
+          listingType={listingType}
+          onListingTypeChange={setListingType}
+          location={location}
+          onLocationChange={setLocation}
+          locationOptions={locationOptions}
+          resultCount={filteredListings.length}
+        />
       </div>
 
       {filteredListings.length > 0 ? (
-        <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        <ul className="mt-6 space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0 lg:grid-cols-3 lg:gap-6">
           {filteredListings.map((listing) => (
             <li key={listing.device.id}>
               <MarketplaceDeviceCard

@@ -8,6 +8,7 @@ import { buildWhatsAppUrl, normalizeWhatsAppNumber } from "@/lib/dukkan/contact"
 import {
   formatSecondHandCondition,
   formatSecondHandPrice,
+  getListingTypeBadge,
   getSecondHandDeviceImages,
   getSecondHandDeviceSpecRows,
   getSecondHandDeviceTitle,
@@ -30,6 +31,7 @@ export function SecondHandDeviceDetailContent({
   const images = getSecondHandDeviceImages(device);
   const price = formatSecondHandPrice(device.sale_price);
   const condition = formatSecondHandCondition(device.condition);
+  const listingBadge = getListingTypeBadge(device.listing_type);
   const specRows = getSecondHandDeviceSpecRows(device);
   const normalizedWhatsApp = dukkan.whatsapp
     ? normalizeWhatsAppNumber(dukkan.whatsapp)
@@ -62,7 +64,7 @@ export function SecondHandDeviceDetailContent({
         <ScrollReveal delay={0.04}>
           <div className="flex h-full flex-col">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-              İkinci El Cihaz
+              {listingBadge.label}
             </p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-emerald-700 lg:text-4xl">
               {title}
@@ -75,6 +77,15 @@ export function SecondHandDeviceDetailContent({
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
+                  listingBadge.tone === "new"
+                    ? "bg-sky-50 text-sky-700 ring-sky-100"
+                    : "bg-amber-50 text-amber-800 ring-amber-100"
+                }`}
+              >
+                {listingBadge.label}
+              </span>
               <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
                 {condition}
               </span>
