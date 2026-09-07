@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { desktopContainerClass } from "@/lib/utils/layout";
 import { VitrinMobileContactDrawer } from "@/components/dukkan/vitrin/vitrin-mobile-contact-drawer";
-import { VitrinOwnerMenu } from "@/components/dukkan/vitrin/vitrin-owner-menu";
 import { VitrinGoogleBusinessButton } from "@/components/dukkan/vitrin/vitrin-google-business-button";
 import { hasGoogleBusinessUrl } from "@/lib/dukkan/google-business-url";
 import type { Dukkan } from "@/types/database.types";
+
+const ownerPanelButtonClass =
+  "inline-flex min-h-9 items-center rounded-full border border-emerald-600/20 bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 sm:min-h-10 sm:px-4 sm:text-sm";
 
 export function VitrinChrome({
   shopName,
@@ -50,7 +52,6 @@ export function VitrinChrome({
   const isHakkimizdaPage = pathname === hakkimizdaHref;
   const showGoogleBusinessButton = hasGoogleBusinessUrl(dukkan.google_business_url);
 
-  const headerRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const headerShadow = useTransform(
@@ -62,14 +63,13 @@ export function VitrinChrome({
   return (
     <div className="relative min-h-screen bg-[radial-gradient(circle_at_top,_#ecfdf5_0%,_#f8fafc_38%,_#ffffff_100%)] text-slate-900">
       <motion.header
-        ref={headerRef}
         style={reduceMotion ? undefined : { boxShadow: headerShadow }}
         className="sticky top-0 z-40 border-b border-white/60 bg-white/85 backdrop-blur-xl"
       >
         <div className={desktopContainerClass}>
           <div className="flex h-16 items-center justify-between gap-4 lg:h-[4.75rem]">
             <Link
-              href={`/${dukkan.slug}`}
+              href={magazamHref}
               className="min-w-0 truncate text-base font-bold tracking-tight text-slate-900 lg:text-xl"
             >
               {isMagazamPage ? (
@@ -116,11 +116,11 @@ export function VitrinChrome({
                 href={blogHref}
                 active={isBlogPage}
               />
-              {isOwner && (
+              {showKatalogNav && (
                 <NavRouteLink
-                  label="Mağazam"
-                  href={magazamHref}
-                  active={isMagazamPage}
+                  label="Katalog"
+                  href={katalogHref}
+                  active={isKatalogPage}
                 />
               )}
             </nav>
@@ -132,15 +132,11 @@ export function VitrinChrome({
                   compact
                 />
               )}
-              <VitrinOwnerMenu
-                blogHref={blogHref}
-                katalogHref={katalogHref}
-                showKatalogNav={showKatalogNav}
-                isOwner={Boolean(isOwner)}
-                isBlogPage={isBlogPage}
-                isKatalogPage={isKatalogPage}
-                headerRef={headerRef}
-              />
+              {isOwner && (
+                <Link href="/yonetim" className={ownerPanelButtonClass}>
+                  Yönetim Paneline Git
+                </Link>
+              )}
             </div>
           </div>
 
@@ -179,11 +175,11 @@ export function VitrinChrome({
               href={blogHref}
               active={isBlogPage}
             />
-            {isOwner && (
+            {showKatalogNav && (
               <NavRoutePill
-                label="Mağazam"
-                href={magazamHref}
-                active={isMagazamPage}
+                label="Katalog"
+                href={katalogHref}
+                active={isKatalogPage}
               />
             )}
           </nav>
@@ -194,19 +190,19 @@ export function VitrinChrome({
 
       <main className="flex min-w-0 flex-col overflow-x-clip pb-10 lg:pb-20">{children}</main>
 
-      <footer className="mt-auto border-t border-slate-200/70 bg-white/80 py-10 backdrop-blur-sm lg:py-12">
-        <div className={`${desktopContainerClass} text-center`}>
-          <p className="text-sm text-slate-400">
-            Bu sayfa{" "}
+      <footer className="mt-auto border-t border-slate-200/60 bg-white/70 py-8 backdrop-blur-sm lg:py-10">
+        <div className={`${desktopContainerClass} flex justify-center`}>
+          <p className="text-center text-xs leading-relaxed tracking-wide text-slate-400 sm:text-[13px]">
+            <span className="font-normal">Altyapı:</span>{" "}
             <a
               href="https://esnafpro.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition hover:text-emerald-600"
+              className="font-semibold text-slate-500 transition hover:text-emerald-600"
             >
-              esnafpro.app
+              EsnafPro
             </a>{" "}
-            yapısı altındadır
+            <span className="font-normal">Dijital Ticaret Platformu</span>
           </p>
         </div>
       </footer>
