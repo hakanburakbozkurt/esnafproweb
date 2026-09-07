@@ -9,6 +9,7 @@ import {
   getSecondHandDeviceTitle,
 } from "@/lib/dukkan/second-hand-devices";
 import { blogExcerptFromHtml } from "@/lib/blog/blog-html";
+import { isBlogPostScoreEligible } from "@/lib/blog/blog-publish-rules";
 import { PLATFORM_STATIC_ROUTES } from "@/lib/seo/llms-route-map";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -230,7 +231,7 @@ async function fetchPublicCatalogData(): Promise<{
         .order("dukkan_adi", { ascending: true }),
       supabase
         .from("dukkan_blog_yazilari")
-        .select("slug, baslik, icerik, dukkan_id")
+        .select("slug, baslik, icerik, kapak_url, yayinda, dukkan_id")
         .eq("yayinda", true)
         .order("created_at", { ascending: false }),
       supabase
@@ -248,7 +249,7 @@ async function fetchPublicCatalogData(): Promise<{
 
   return {
     stores: (stores ?? []).filter((store) => store.slug?.trim()),
-    blogPosts: blogPosts ?? [],
+    blogPosts: (blogPosts ?? []).filter((post) => isBlogPostScoreEligible(post)),
     devices: devices ?? [],
   };
 }

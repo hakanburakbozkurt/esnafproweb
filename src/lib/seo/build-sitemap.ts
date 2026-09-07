@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSecondHandDeviceHref } from "@/lib/dukkan/second-hand-devices";
+import { isBlogPostScoreEligible } from "@/lib/blog/blog-publish-rules";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -91,7 +92,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         .eq("approval_status", "active"),
       supabase
         .from("dukkan_blog_yazilari")
-        .select("slug, updated_at, created_at, dukkan_id")
+        .select("slug, updated_at, created_at, dukkan_id, icerik, kapak_url, yayinda")
         .eq("yayinda", true),
       supabase
         .from("second_hand_devices_public")
@@ -106,10 +107,13 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
   const stores = dukkanlar ?? [];
   const slugByDukkanId = new Map(stores.map((dukkan) => [dukkan.id, dukkan.slug]));
+  const eligibleBlogPosts = (blogPosts ?? []).filter((post) =>
+    isBlogPostScoreEligible(post)
+  );
 
-  const blogPostsByDukkanId = new Map<string, NonNullable<typeof blogPosts>>();
+  const blogPostsByDukkanId = new Map<string, typeof eligibleBlogPosts>();
 
-  for (const post of blogPosts ?? []) {
+  for (const post of eligibleBlogPosts) {
     const posts = blogPostsByDukkanId.get(post.dukkan_id) ?? [];
     posts.push(post);
     blogPostsByDukkanId.set(post.dukkan_id, posts);
@@ -238,7 +242,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  for (const post of blogPosts ?? []) {
+  for (const post of eligibleBlogPosts) {
     const shopSlug = slugByDukkanId.get(post.dukkan_id);
     if (!shopSlug || !post.slug?.trim()) continue;
 

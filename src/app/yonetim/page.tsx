@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
 import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { YonetimDashboardClient } from "@/app/yonetim/yonetim-dashboard-client";
-import { getDukkanBlogPostCount } from "@/lib/dukkan/blog-posts";
+import { getDukkanScoreEligibleBlogPostCount } from "@/lib/dukkan/blog-posts";
 import type { ProfileHealthInput } from "@/lib/dukkan/profile-health-score";
 import { countDukkanFaqQuestions } from "@/lib/dukkan/shop-score-data";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
@@ -105,7 +105,7 @@ export default async function YonetimPage() {
     );
   }
 
-  const blogPostCount = await getDukkanBlogPostCount(supabase, dukkan.id);
+  const blogPostCount = await getDukkanScoreEligibleBlogPostCount(supabase, dukkan.id);
 
   return (
     <YonetimPageShell

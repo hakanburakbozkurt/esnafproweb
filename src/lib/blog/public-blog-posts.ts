@@ -3,6 +3,7 @@ import {
   LANDING_BLOG_POST_LIMIT,
   type PublicBlogPost,
 } from "@/lib/blog/public-blog-post.types";
+import { filterScoreEligibleBlogPosts } from "@/lib/dukkan/blog-posts";
 import { createClient } from "@/lib/supabase/server";
 import type { DukkanBlogYazisi } from "@/types/database.types";
 
@@ -63,7 +64,8 @@ export async function getLatestPublicBlogPosts(
 
     if (error || !data?.length) return [];
 
-    const mapped = await mapPostsWithShops(data);
+    const eligible = filterScoreEligibleBlogPosts(data);
+    const mapped = await mapPostsWithShops(eligible);
     return mapped.slice(0, limit);
   } catch {
     return [];
@@ -91,7 +93,8 @@ export async function getPublicBlogPostBySlug(
 
     if (error || !data?.length) return null;
 
-    const mapped = await mapPostsWithShops(data);
+    const eligible = filterScoreEligibleBlogPosts(data);
+    const mapped = await mapPostsWithShops(eligible);
     return mapped[0] ?? null;
   } catch {
     return null;

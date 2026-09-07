@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { ImageUploadBox } from "@/components/dukkan/image-upload-box";
 import { BlogRichTextEditor } from "@/components/yonetim/blog-rich-text-editor";
 import { VitrinDotGrid } from "@/components/dukkan/vitrin/vitrin-open-section";
@@ -10,6 +10,10 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { BlogFormState } from "@/lib/dukkan/blog-actions";
+import {
+  BLOG_PUBLISH_INFO_BANNER,
+  validateBlogPublishRequirements,
+} from "@/lib/blog/blog-publish-rules";
 import { slugify } from "@/lib/utils/slug";
 import type { DukkanBlogYazisi } from "@/types/database.types";
 
@@ -55,6 +59,7 @@ export function BlogForm({
     initialPost?.meta_description ?? ""
   );
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
+  const [clientError, setClientError] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === "create" && !slugTouched && baslik.trim()) {
@@ -62,12 +67,39 @@ export function BlogForm({
     }
   }, [baslik, mode, slugTouched]);
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    setClientError(null);
+
+    const formData = new FormData(event.currentTarget);
+    const yayinda = formData.get("yayinda") === "true";
+
+    if (!yayinda) return;
+
+    const publishCheck = validateBlogPublishRequirements({
+      kapak_url: String(formData.get("kapak_url") ?? ""),
+      icerik: String(formData.get("icerik") ?? ""),
+    });
+
+    if (!publishCheck.ok) {
+      event.preventDefault();
+      setClientError(publishCheck.error);
+    }
+  }
+
   return (
     <div className="relative mx-auto w-full max-w-3xl">
       <VitrinDotGrid />
 
+      <div
+        role="status"
+        className="mb-6 rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3.5 text-sm leading-relaxed text-sky-900 sm:px-5"
+      >
+        {BLOG_PUBLISH_INFO_BANNER}
+      </div>
+
       <form
         action={formAction}
+        onSubmit={handleSubmit}
         className="space-y-8 rounded-3xl border border-slate-200/60 bg-white/90 p-6 shadow-sm sm:p-8"
       >
         {mode === "edit" && initialPost && (
@@ -187,23 +219,23 @@ export function BlogForm({
                 type="checkbox"
                 name="yayinda"
                 value="true"
-                defaultChecked={initialPost?.yayinda ?? mode === "create"}
+                defaultChecked={initialPost?.yayinda ?? false}
                 className="mt-0.5 size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
               <span className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-900">Yayında</span>
                 <span className="mt-0.5 block text-slate-500">
-                  İşaretli değilse yazı taslak olarak kaydedilir; vitrin ve arama
-                  sonuçlarında görünmez.
+                  Kapak görseli ve en az 200 karakter içerik olmadan yayınlanamaz.
+                  İşaretli değilse yazı taslak olarak kaydedilir.
                 </span>
               </span>
             </label>
           </Field>
         </section>
 
-        {state.error && (
+        {(clientError || state.error) && (
           <p className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {state.error}
+            {clientError ?? state.error}
           </p>
         )}
 

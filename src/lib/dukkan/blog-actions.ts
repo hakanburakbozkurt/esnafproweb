@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sanitizeBlogHtml } from "@/lib/blog/blog-html";
+import { validateBlogPublishRequirements } from "@/lib/blog/blog-publish-rules";
 import { createClient } from "@/lib/supabase/server";
 import { isWholesalerAccount, wholesalerStoreAccessError } from "@/lib/auth/wholesaler";
 import { revalidateSitemap } from "@/lib/seo/sitemap-cache";
@@ -125,6 +126,16 @@ export async function createBlogPost(
     return { error: parsed.error };
   }
 
+  if (parsed.yayinda) {
+    const publishCheck = validateBlogPublishRequirements({
+      kapak_url: parsed.kapakUrl,
+      icerik: parsed.icerik,
+    });
+    if (!publishCheck.ok) {
+      return { error: publishCheck.error };
+    }
+  }
+
   const { error } = await supabase.from("dukkan_blog_yazilari").insert({
     dukkan_id: dukkan.id,
     ...blogPayload(parsed),
@@ -172,6 +183,16 @@ export async function updateBlogPost(
   const parsed = parseBlogForm(formData);
   if ("error" in parsed) {
     return { error: parsed.error };
+  }
+
+  if (parsed.yayinda) {
+    const publishCheck = validateBlogPublishRequirements({
+      kapak_url: parsed.kapakUrl,
+      icerik: parsed.icerik,
+    });
+    if (!publishCheck.ok) {
+      return { error: publishCheck.error };
+    }
   }
 
   if (!parsed.postId) {
