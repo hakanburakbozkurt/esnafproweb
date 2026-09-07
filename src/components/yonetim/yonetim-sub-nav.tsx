@@ -15,7 +15,7 @@ export function YonetimSubNav() {
   return (
     <nav
       aria-label="Yönetim bölümleri"
-      className="sticky top-16 z-40 -mx-4 mb-8 border-b border-slate-200/80 bg-white/90 backdrop-blur-md sm:-mx-6 sm:mb-10 lg:-mx-8"
+      className="sticky top-16 z-40 -mx-4 border-b border-slate-200/80 bg-white/90 backdrop-blur-md sm:-mx-6 lg:-mx-8 lg:top-[4.5rem]"
     >
       <div className="overflow-x-auto px-4 sm:px-6 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <ul className="flex min-w-max gap-1 py-2">

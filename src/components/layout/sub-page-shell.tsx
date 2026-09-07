@@ -31,10 +31,12 @@ export function SubPageShell({
     ? centeredPageContentClass(contentWidth)
     : null;
 
+  const hasSubNav = Boolean(subNav);
+
   const pageHeader = title ? (
     <div
       className={cn(
-        "mb-10 lg:mb-12",
+        hasSubNav ? "mb-6 pt-4 lg:mb-8 lg:pt-5" : "mb-10 lg:mb-12",
         !centeredContentClass && "max-w-3xl",
         centerHeader && "text-center"
       )}
@@ -66,7 +68,12 @@ export function SubPageShell({
       </div>
       {siteHeader ?? <SubPageHeader />}
 
-      <main className="min-w-0 overflow-x-clip py-10 lg:py-16">
+      <main
+        className={cn(
+          "min-w-0 overflow-x-clip",
+          hasSubNav ? "pb-8 pt-0 lg:pb-12" : "py-10 lg:py-16"
+        )}
+      >
         <div className={cn(desktopContainerClass, "min-w-0")}>
           {subNav}
           {centeredContentClass ? (
