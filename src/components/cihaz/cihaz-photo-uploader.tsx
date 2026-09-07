@@ -2,10 +2,7 @@
 
 import {
   Camera,
-  ChevronLeft,
-  ChevronRight,
   Images,
-  Star,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -15,7 +12,6 @@ import {
   appendFilesToPhotoQueue,
   getPhotoQueueRemainingCapacity,
   MAX_PHOTO_QUEUE,
-  movePhotoInQueue,
   normalizePhotoQueue,
   removePhotoAtIndex,
   setCoverPhotoIndex,
@@ -175,20 +171,9 @@ export function CihazPhotoUploader({
     emitQueue(removePhotoAtIndex(queue, index));
   }
 
-  function handleMoveLeft(index: number) {
-    if (index <= 0) return;
-    emitQueue(movePhotoInQueue(queue, index, index - 1));
-  }
-
-  function handleMoveRight(index: number) {
-    if (index >= queue.length - 1) return;
-    emitQueue(movePhotoInQueue(queue, index, index + 1));
-  }
-
   function handleSetCover(index: number) {
     if (index === 0) return;
     emitQueue(setCoverPhotoIndex(queue, index));
-    scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" });
   }
 
   return (
@@ -282,8 +267,8 @@ export function CihazPhotoUploader({
         ) : (
           queue.map((uri, index) => (
             <div
-              key={`${uri}-${index}`}
-              className="group relative w-32 shrink-0 sm:w-36"
+              key={uri}
+              className="flex w-28 shrink-0 flex-col sm:w-32"
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm">
                 <Image
@@ -292,7 +277,7 @@ export function CihazPhotoUploader({
                   fill
                   unoptimized
                   className="object-contain p-1.5"
-                  sizes="144px"
+                  sizes="128px"
                 />
 
                 {index === 0 && (
@@ -305,7 +290,7 @@ export function CihazPhotoUploader({
                   <button
                     type="button"
                     onClick={() => handleRemove(index)}
-                    className="absolute right-1.5 top-1.5 inline-flex size-7 items-center justify-center rounded-full bg-black/55 text-white opacity-100 transition hover:bg-black/75 sm:opacity-90"
+                    className="absolute right-1.5 top-1.5 inline-flex size-7 items-center justify-center rounded-full bg-black/55 text-white transition hover:bg-black/75"
                     aria-label={`Fotoğraf ${index + 1} kaldır`}
                   >
                     <X className="size-3.5" />
@@ -313,56 +298,34 @@ export function CihazPhotoUploader({
                 )}
               </div>
 
-              {!disabled && (
-                <div className="mt-1.5 flex items-center justify-between gap-1">
-                  <div className="flex gap-0.5">
-                    <button
-                      type="button"
-                      disabled={index === 0}
-                      onClick={() => handleMoveLeft(index)}
-                      className="inline-flex size-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 disabled:opacity-30"
-                      aria-label="Sola taşı"
-                    >
-                      <ChevronLeft className="size-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={index === queue.length - 1}
-                      onClick={() => handleMoveRight(index)}
-                      className="inline-flex size-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 disabled:opacity-30"
-                      aria-label="Sağa taşı"
-                    >
-                      <ChevronRight className="size-3.5" />
-                    </button>
-                  </div>
-
-                  {index !== 0 && (
-                    <button
-                      type="button"
-                      onClick={() => handleSetCover(index)}
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-emerald-700 transition hover:bg-emerald-50"
-                      title="Kapak fotoğrafı yap"
-                    >
-                      <Star className="size-3" aria-hidden />
-                      Kapak yap
-                    </button>
-                  )}
-                </div>
-              )}
+              <div className="mt-1.5 flex h-7 items-center justify-center">
+                {!disabled && index !== 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleSetCover(index)}
+                    className="w-full rounded-lg py-1 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-emerald-700"
+                  >
+                    Kapak yap
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}
 
         {!disabled && canAddMore && queue.length > 0 && (
-          <button
-            type="button"
-            onClick={() => bulkInputRef.current?.click()}
-            className="flex h-[calc(9rem+1.875rem)] w-28 shrink-0 flex-col items-center justify-center gap-2 self-start rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-700 sm:h-[calc(6.75rem+1.875rem)] sm:w-32"
-            aria-label="Daha fazla fotoğraf ekle"
-          >
-            <Images className="size-6" aria-hidden />
-            <span className="text-[11px] font-semibold">Ekle</span>
-          </button>
+          <div className="flex w-28 shrink-0 flex-col sm:w-32">
+            <button
+              type="button"
+              onClick={() => bulkInputRef.current?.click()}
+              className="flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-700"
+              aria-label="Daha fazla fotoğraf ekle"
+            >
+              <Images className="size-5" aria-hidden />
+              <span className="text-[11px] font-semibold">Ekle</span>
+            </button>
+            <div className="mt-1.5 h-7" aria-hidden />
+          </div>
         )}
       </div>
 
