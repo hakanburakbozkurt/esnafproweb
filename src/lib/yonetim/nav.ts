@@ -4,6 +4,7 @@ import {
   LayoutGrid,
   Newspaper,
   Settings,
+  Smartphone,
   Wrench,
 } from "lucide-react";
 
@@ -57,6 +58,14 @@ export function getYonetimNavItems(): YonetimNavItem[] {
       icon: Wrench,
     },
     {
+      id: "cihazlar",
+      label: "Cihaz Yönetimi",
+      shortLabel: "Cihazlar",
+      href: "/yonetim/cihazlar",
+      match: (pathname) => pathname.startsWith("/yonetim/cihazlar"),
+      icon: Smartphone,
+    },
+    {
       id: "blog",
       label: "Blog Yönetimi",
       shortLabel: "Blog",
@@ -94,12 +103,20 @@ export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
       accent: "emerald",
     },
     {
+      id: "cihazlar",
+      title: "Cihaz Yönetimi",
+      description: "Envanter ve pazaryeri",
+      href: "/yonetim/cihazlar",
+      icon: Smartphone,
+      accent: "teal",
+    },
+    {
       id: "settings",
       title: "Mağaza Ayarları",
       description: "Logo, vitrin ve iletişim",
       href: "/dukkan-ayarlari",
       icon: Settings,
-      accent: "teal",
+      accent: "slate",
     },
     {
       id: "blog",
