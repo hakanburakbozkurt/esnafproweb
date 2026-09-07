@@ -128,6 +128,11 @@ export function IletisimPageContent({
                 boylam={dukkan.boylam}
                 adres={dukkan.adres}
                 label={dukkan.dukkan_adi}
+                googleBusinessUrl={dukkan.google_business_url}
+                googlePlaceId={dukkan.google_place_id}
+                googleMapsEmbedApiKey={
+                  process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY
+                }
               />
             </div>
           </div>

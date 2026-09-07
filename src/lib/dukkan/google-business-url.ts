@@ -83,3 +83,83 @@ export function hasGoogleBusinessUrl(
 ): url is string {
   return Boolean(normalizeGoogleBusinessUrl(url));
 }
+
+type GoogleBusinessEmbedInput = {
+  googleBusinessUrl?: string | null;
+  googlePlaceId?: string | null;
+  apiKey?: string | null;
+};
+
+function extractPlaceQueryFromGoogleMapsUrl(url: URL): string | null {
+  const placeMatch = url.pathname.match(/\/maps\/place\/([^/]+)/i);
+  if (placeMatch?.[1]) {
+    const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, " ").trim();
+    if (placeName) return placeName;
+  }
+
+  const query =
+    url.searchParams.get("q") ??
+    url.searchParams.get("query") ??
+    url.searchParams.get("destination");
+
+  return query?.trim() || null;
+}
+
+/**
+ * Google işletme kaydı için iframe URL'si üretir.
+ *
+ * Öncelik:
+ * 1. Ayarlara doğrudan yapıştırılmış resmi /maps/embed URL'si
+ * 2. Place ID + Maps Embed API anahtarı
+ * 3. Uzun /maps/place/... URL'sindeki işletme adı
+ *
+ * Kısa maps.app.goo.gl linkleri tarayıcıda güvenilir şekilde çözümlenemediği
+ * için null döner; harita bileşeni koordinat/adres fallback'ini kullanır.
+ */
+export function buildGoogleBusinessEmbedUrl({
+  googleBusinessUrl,
+  googlePlaceId,
+  apiKey,
+}: GoogleBusinessEmbedInput): string | null {
+  const placeId = googlePlaceId?.trim();
+  const embedApiKey = apiKey?.trim();
+
+  if (placeId && embedApiKey) {
+    const params = new URLSearchParams({
+      key: embedApiKey,
+      q: `place_id:${placeId}`,
+    });
+    return `https://www.google.com/maps/embed/v1/place?${params.toString()}`;
+  }
+
+  const normalizedUrl = normalizeGoogleBusinessUrl(googleBusinessUrl);
+  if (!normalizedUrl) return null;
+
+  try {
+    const parsed = new URL(normalizedUrl);
+    const host = parsed.hostname.toLowerCase();
+    const isGoogleHost =
+      host === "google.com" ||
+      host === "www.google.com" ||
+      host === "maps.google.com" ||
+      host.endsWith(".google.com");
+
+    if (isGoogleHost && parsed.pathname.toLowerCase().startsWith("/maps/embed")) {
+      parsed.protocol = "https:";
+      return parsed.toString();
+    }
+
+    if (!isGoogleHost) return null;
+
+    const placeQuery = extractPlaceQueryFromGoogleMapsUrl(parsed);
+    if (!placeQuery) return null;
+
+    const params = new URLSearchParams({
+      q: placeQuery,
+      output: "embed",
+    });
+    return `https://www.google.com/maps?${params.toString()}`;
+  } catch {
+    return null;
+  }
+}

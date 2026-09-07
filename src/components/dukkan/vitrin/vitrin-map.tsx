@@ -7,9 +7,16 @@ import {
   openMapNavigation,
   type MapLocation,
 } from "@/lib/dukkan/map-navigation";
+import {
+  buildGoogleBusinessEmbedUrl,
+  normalizeGoogleBusinessUrl,
+} from "@/lib/dukkan/google-business-url";
 import { cn } from "@/lib/utils/cn";
 
 type VitrinMapProps = MapLocation & {
+  googleBusinessUrl?: string | null;
+  googlePlaceId?: string | null;
+  googleMapsEmbedApiKey?: string | null;
   className?: string;
   interactive?: boolean;
 };
@@ -19,13 +26,23 @@ export function VitrinMap({
   boylam,
   adres,
   label,
+  googleBusinessUrl,
+  googlePlaceId,
+  googleMapsEmbedApiKey,
   className,
   interactive = true,
 }: VitrinMapProps) {
   const location: MapLocation = { enlem, boylam, adres, label };
-  const embedUrl = buildMapEmbedUrl(location);
+  const businessEmbedUrl = buildGoogleBusinessEmbedUrl({
+    googleBusinessUrl,
+    googlePlaceId,
+    apiKey: googleMapsEmbedApiKey,
+  });
+  const businessProfileUrl = normalizeGoogleBusinessUrl(googleBusinessUrl);
+  const embedUrl = businessEmbedUrl ?? buildMapEmbedUrl(location);
+  const hasBusinessEmbed = Boolean(businessEmbedUrl);
 
-  if (!hasMapLocation(location)) {
+  if (!hasBusinessEmbed && !hasMapLocation(location)) {
     return (
       <div
         className={cn(
@@ -40,11 +57,24 @@ export function VitrinMap({
 
   function handleNavigate() {
     if (!interactive) return;
-    openMapNavigation(location);
+
+    if (hasMapLocation(location)) {
+      openMapNavigation(location);
+      return;
+    }
+
+    if (businessProfileUrl) {
+      window.open(businessProfileUrl, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  function handleMapClick() {
+    if (hasBusinessEmbed) return;
+    handleNavigate();
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (!interactive) return;
+    if (!interactive || hasBusinessEmbed) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       openMapNavigation(location);
@@ -54,30 +84,41 @@ export function VitrinMap({
   return (
     <div className={cn("group relative", className)}>
       <div
-        role={interactive ? "button" : undefined}
-        tabIndex={interactive ? 0 : undefined}
+        role={interactive && !hasBusinessEmbed ? "button" : undefined}
+        tabIndex={interactive && !hasBusinessEmbed ? 0 : undefined}
         aria-label={
-          interactive ? "Konumu haritada aç ve yol tarifi al" : undefined
+          interactive && !hasBusinessEmbed
+            ? "Konumu haritada aç ve yol tarifi al"
+            : undefined
         }
-        onClick={handleNavigate}
+        onClick={handleMapClick}
         onKeyDown={handleKeyDown}
         className={cn(
           "relative aspect-[4/3] min-h-[280px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:min-h-[360px]",
           interactive &&
+            !hasBusinessEmbed &&
             "cursor-pointer transition-shadow duration-300 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
         )}
       >
         {embedUrl && (
           <iframe
-            title="Konum haritası önizlemesi"
-            className="pointer-events-none absolute inset-0 h-full w-full border-0"
+            title={
+              hasBusinessEmbed
+                ? `${label?.trim() || "İşletme"} Google Haritalar profili`
+                : "Konum haritası önizlemesi"
+            }
+            className={cn(
+              "absolute inset-0 h-full w-full border-0",
+              !hasBusinessEmbed && "pointer-events-none"
+            )}
             loading="lazy"
+            allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
             src={embedUrl}
           />
         )}
 
-        {interactive && (
+        {interactive && !hasBusinessEmbed && (
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100" />
         )}
       </div>
