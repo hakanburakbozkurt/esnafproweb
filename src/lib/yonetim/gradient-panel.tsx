@@ -35,11 +35,23 @@ export function YonetimGradientGlow() {
 export const yonetimGradientShellClass = yonetimPanelClass;
 export const yonetimGradientPanelClass = cn(yonetimPanelClass, yonetimPanelPaddingClass);
 
-export function scoreBarFillClass(filled: boolean) {
+/** @param progressPercent Satır puanının maksimuma oranı (0–100) */
+export function scoreBarFillClass(progressPercent: number) {
+  const pct = Math.min(100, Math.max(0, progressPercent));
+
   return cn(
     "h-full rounded-full transition-all duration-500",
-    filled ? "bg-emerald-500/75" : "bg-slate-200"
+    pct >= 100
+      ? "bg-emerald-500"
+      : pct > 0
+        ? "bg-emerald-400/90"
+        : "bg-transparent"
   );
+}
+
+export function scoreBarProgressPercent(points: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.min(100, Math.max(0, (points / max) * 100));
 }
 
 export function scoreBarTrackClass() {

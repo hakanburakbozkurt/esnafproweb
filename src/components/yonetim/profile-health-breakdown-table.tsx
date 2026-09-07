@@ -6,6 +6,7 @@ import {
 } from "@/lib/dukkan/profile-health-score";
 import {
   scoreBarFillClass,
+  scoreBarProgressPercent,
   scoreBarTrackClass,
   yonetimBreakdownRowClass,
   yonetimPanelAccentLabelClass,
@@ -36,7 +37,7 @@ export function ProfileHealthBreakdownTable({
 
         <ul className="mt-6 space-y-3">
           {breakdown.map((item) => {
-            const pct = item.max > 0 ? (item.points / item.max) * 100 : 0;
+            const progressPercent = scoreBarProgressPercent(item.points, item.max);
 
             return (
               <li key={item.label} className={yonetimBreakdownRowClass}>
@@ -46,10 +47,17 @@ export function ProfileHealthBreakdownTable({
                     {item.points}/{item.max}
                   </span>
                 </div>
-                <div className={scoreBarTrackClass()}>
+                <div
+                  className={scoreBarTrackClass()}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={item.max}
+                  aria-valuenow={item.points}
+                  aria-label={`${item.label}: ${item.points} / ${item.max}`}
+                >
                   <div
-                    className={scoreBarFillClass(item.filled)}
-                    style={{ width: `${pct}%` }}
+                    className={scoreBarFillClass(progressPercent)}
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </li>
