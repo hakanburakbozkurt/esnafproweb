@@ -4,13 +4,14 @@ import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { YonetimDashboardClient } from "@/app/yonetim/yonetim-dashboard-client";
 import { getDukkanBlogPostCount } from "@/lib/dukkan/blog-posts";
 import type { ProfileHealthInput } from "@/lib/dukkan/profile-health-score";
-import type { SeoGeoScoreInput } from "@/lib/dukkan/seo-geo-score";
+import { countDukkanFaqQuestions } from "@/lib/dukkan/shop-score-data";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 function toHealthInput(
-  dukkan: NonNullable<Awaited<ReturnType<typeof loadDukkan>>>
+  dukkan: NonNullable<Awaited<ReturnType<typeof loadDukkan>>>,
+  blogPostCount: number
 ): ProfileHealthInput {
   return {
     logo_url: dukkan.logo_url,
@@ -24,29 +25,13 @@ function toHealthInput(
     adres: dukkan.adres,
     enlem: dukkan.enlem,
     boylam: dukkan.boylam,
-    dukkan_fotograflari: dukkan.dukkan_fotograflari,
-    anasayfa_sss: dukkan.anasayfa_sss,
-    iletisim_sss: dukkan.sss,
-    hakkimizda_sss: dukkan.hakkimizda_sss,
-    teknik_servis_sss: dukkan.teknik_servis_sss,
-  };
-}
-
-function toSeoGeoInput(
-  dukkan: NonNullable<Awaited<ReturnType<typeof loadDukkan>>>,
-  blogPostCount: number
-): SeoGeoScoreInput {
-  return {
-    adres: dukkan.adres,
-    enlem: dukkan.enlem,
-    boylam: dukkan.boylam,
-    aciklama: dukkan.aciklama,
-    anasayfa_sss: dukkan.anasayfa_sss,
-    iletisim_sss: dukkan.sss,
-    hakkimizda_sss: dukkan.hakkimizda_sss,
-    teknik_servis_sss: dukkan.teknik_servis_sss,
-    calisma_saatleri: dukkan.calisma_saatleri,
-    whatsapp: dukkan.whatsapp,
+    google_business_url: dukkan.google_business_url,
+    faqQuestionCount: countDukkanFaqQuestions({
+      anasayfa_sss: dukkan.anasayfa_sss,
+      sss: dukkan.sss,
+      hakkimizda_sss: dukkan.hakkimizda_sss,
+      teknik_servis_sss: dukkan.teknik_servis_sss,
+    }),
     blogPostCount,
   };
 }
@@ -133,8 +118,7 @@ export default async function YonetimPage() {
     >
       <YonetimDashboardClient
         shopSlug={dukkan.slug}
-        healthInput={toHealthInput(dukkan)}
-        seoInput={toSeoGeoInput(dukkan, blogPostCount)}
+        healthInput={toHealthInput(dukkan, blogPostCount)}
       />
     </YonetimPageShell>
   );

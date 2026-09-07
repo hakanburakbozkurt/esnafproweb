@@ -25,9 +25,9 @@ export function ProfileHealthBreakdownTable({
   return (
     <div className={yonetimPanelClass}>
       <div className={yonetimPanelPaddingClass}>
-        <p className={yonetimPanelAccentLabelClass}>Profil Skor Tablosu</p>
+        <p className={yonetimPanelAccentLabelClass}>Skor Tablosu</p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-          <h2 className={yonetimPanelTitleClass}>Vitrin gücü detayı</h2>
+          <h2 className={yonetimPanelTitleClass}>Profil & SEO detayı</h2>
           <p className={yonetimPanelScoreClass}>
             {score}
             <span className="text-lg font-semibold text-slate-400">/100</span>

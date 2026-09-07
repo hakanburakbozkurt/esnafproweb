@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { FaqEditor } from "@/components/dukkan/faq-editor";
 import { ProfileHealthScore } from "@/components/dukkan/profile-health-score";
+import { countDukkanFaqQuestions } from "@/lib/dukkan/shop-score-data";
 import { FormSection } from "@/components/dukkan/form-section";
 import { GalleryUpload } from "@/components/dukkan/gallery-upload";
 import { ImageUploadBox } from "@/components/dukkan/image-upload-box";
@@ -68,6 +69,8 @@ type DukkanFormProps = {
   showSeoFields?: boolean;
   /** Yalnızca /dukkan-ayarlari — vitrin logo bilgilendirme kutusu */
   showVitrinLogoHint?: boolean;
+  /** Canlı skor önizlemesi için mevcut blog yazısı sayısı */
+  scoreBlogPostCount?: number;
 };
 
 export function DukkanForm({
@@ -83,6 +86,7 @@ export function DukkanForm({
   layout = "default",
   showSeoFields = false,
   showVitrinLogoHint = false,
+  scoreBlogPostCount = 0,
 }: DukkanFormProps) {
   const [dukkanAdi, setDukkanAdi] = useState(defaultValues?.dukkan_adi ?? "");
   const [slug, setSlug] = useState(defaultValues?.slug ?? "");
@@ -223,11 +227,14 @@ export function DukkanForm({
       adres,
       enlem,
       boylam,
-      dukkan_fotograflari: gallery,
-      anasayfa_sss: anasayfaFaqItems,
-      iletisim_sss: iletisimFaqItems,
-      hakkimizda_sss: hakkimizdaFaqItems,
-      teknik_servis_sss: servisFaqItems,
+      google_business_url: googleBusinessUrl,
+      faqQuestionCount: countDukkanFaqQuestions({
+        anasayfa_sss: anasayfaFaqItems,
+        sss: iletisimFaqItems,
+        hakkimizda_sss: hakkimizdaFaqItems,
+        teknik_servis_sss: servisFaqItems,
+      }),
+      blogPostCount: scoreBlogPostCount,
     }),
     [
       logoUrl,
@@ -241,11 +248,12 @@ export function DukkanForm({
       adres,
       enlem,
       boylam,
-      gallery,
+      googleBusinessUrl,
       anasayfaFaqItems,
       iletisimFaqItems,
       hakkimizdaFaqItems,
       servisFaqItems,
+      scoreBlogPostCount,
     ]
   );
 

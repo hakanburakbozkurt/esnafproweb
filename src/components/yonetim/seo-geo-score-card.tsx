@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  calculateSeoGeoScore,
-  type SeoGeoScoreInput,
-} from "@/lib/dukkan/seo-geo-score";
+  calculateProfileHealthScore,
+  type ProfileHealthInput,
+} from "@/lib/dukkan/profile-health-score";
 import { yonetimPanelClass } from "@/lib/yonetim/gradient-panel";
 import { cn } from "@/lib/utils/cn";
 
@@ -12,14 +12,15 @@ const STROKE = 6;
 const RADIUS = (RING_SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+/** @deprecated Yönetim panelinde `ProfileHealthScore` kullanın. */
 export function SeoGeoScoreCard({
   input,
   className,
 }: {
-  input: SeoGeoScoreInput;
+  input: ProfileHealthInput;
   className?: string;
 }) {
-  const { score, breakdown } = calculateSeoGeoScore(input);
+  const { score, breakdown } = calculateProfileHealthScore(input);
   const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
 
   const ringColor =
@@ -68,7 +69,7 @@ export function SeoGeoScoreCard({
 
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
-            SEO & GEO Görünürlük Skoru
+            Profil & SEO Skoru
           </p>
           <ul className="mt-2 space-y-1">
             {breakdown.map((item) => (

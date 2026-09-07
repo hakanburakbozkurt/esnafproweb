@@ -76,7 +76,7 @@ export function ProfileHealthScore({
 
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
-            Profil Gücü
+            Profil & SEO Skoru
           </p>
           <p className="mt-2 text-xs leading-relaxed text-slate-600">{message}</p>
         </div>

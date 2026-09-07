@@ -1,5 +1,9 @@
-import { getVisibleFaqItems } from "@/lib/dukkan/faq";
-import type { FaqItem } from "@/types/database.types";
+export type ProfileHealthBreakdownItem = {
+  label: string;
+  points: number;
+  max: number;
+  filled: boolean;
+};
 
 export type ProfileHealthInput = {
   logo_url?: string | null;
@@ -13,28 +17,31 @@ export type ProfileHealthInput = {
   adres?: string | null;
   enlem?: number | null;
   boylam?: number | null;
-  dukkan_fotograflari?: string[] | null;
-  anasayfa_sss?: FaqItem[] | null;
-  iletisim_sss?: FaqItem[] | null;
-  hakkimizda_sss?: FaqItem[] | null;
-  teknik_servis_sss?: FaqItem[] | null;
+  google_business_url?: string | null;
+  /** Tüm vitrin SSS havuzlarındaki toplam soru sayısı */
+  faqQuestionCount?: number;
+  /** dukkan_blog_yazilari kayıt sayısı */
+  blogPostCount?: number;
 };
 
 export type ProfileHealthResult = {
   score: number;
   message: string;
-  breakdown: { label: string; points: number; max: number; filled: boolean }[];
+  breakdown: ProfileHealthBreakdownItem[];
 };
 
-const WEIGHTS = {
-  logo: 15,
-  banner: 15,
-  aciklama: 15,
-  social: 10,
-  contact: 10,
+export const SCORE_WEIGHTS = {
+  logo: 5,
+  banner: 5,
+  about: 10,
+  contactSocial: 10,
   location: 15,
-  faq: 10,
-  gallery: 10,
+  faqPerQuestion: 2,
+  faqMaxQuestions: 15,
+  faqMax: 30,
+  blogPerPost: 5,
+  blogMaxPosts: 5,
+  blogMax: 25,
 } as const;
 
 function hasText(value: string | null | undefined): boolean {
@@ -53,78 +60,82 @@ function hasContact(input: ProfileHealthInput): boolean {
   return hasText(input.telefon) || hasText(input.whatsapp);
 }
 
-function hasLocation(input: ProfileHealthInput): boolean {
+function hasContactAndSocial(input: ProfileHealthInput): boolean {
+  return hasContact(input) && hasAnySocial(input);
+}
+
+function hasLocationAndMap(input: ProfileHealthInput): boolean {
   const hasAddress = hasText(input.adres);
   const hasCoords = input.enlem != null && input.boylam != null;
-  return hasAddress && hasCoords;
+  const hasGoogleBusiness = hasText(input.google_business_url);
+  return hasAddress && (hasCoords || hasGoogleBusiness);
 }
 
-function hasAnyFaq(input: ProfileHealthInput): boolean {
-  const pools = [
-    input.anasayfa_sss,
-    input.iletisim_sss,
-    input.hakkimizda_sss,
-    input.teknik_servis_sss,
-  ];
-
-  return pools.some((pool) => getVisibleFaqItems(pool).length > 0);
+function scoreFaq(questionCount: number): number {
+  const capped = Math.min(
+    Math.max(questionCount, 0),
+    SCORE_WEIGHTS.faqMaxQuestions
+  );
+  return capped * SCORE_WEIGHTS.faqPerQuestion;
 }
 
-function hasGallery(input: ProfileHealthInput): boolean {
-  return (input.dukkan_fotograflari?.filter(Boolean).length ?? 0) > 0;
+function scoreBlog(postCount: number): number {
+  const capped = Math.min(Math.max(postCount, 0), SCORE_WEIGHTS.blogMaxPosts);
+  return capped * SCORE_WEIGHTS.blogPerPost;
 }
 
 export function calculateProfileHealthScore(
   input: ProfileHealthInput
 ): ProfileHealthResult {
-  const breakdown = [
+  const faqCount = Math.max(input.faqQuestionCount ?? 0, 0);
+  const blogCount = Math.max(input.blogPostCount ?? 0, 0);
+  const faqPoints = scoreFaq(faqCount);
+  const blogPoints = scoreBlog(blogCount);
+  const faqCappedCount = Math.min(faqCount, SCORE_WEIGHTS.faqMaxQuestions);
+  const blogCappedCount = Math.min(blogCount, SCORE_WEIGHTS.blogMaxPosts);
+
+  const breakdown: ProfileHealthBreakdownItem[] = [
     {
       label: "Logo",
-      points: hasText(input.logo_url) ? WEIGHTS.logo : 0,
-      max: WEIGHTS.logo,
+      points: hasText(input.logo_url) ? SCORE_WEIGHTS.logo : 0,
+      max: SCORE_WEIGHTS.logo,
       filled: hasText(input.logo_url),
     },
     {
       label: "Kapak fotoğrafı",
-      points: hasText(input.banner_url) ? WEIGHTS.banner : 0,
-      max: WEIGHTS.banner,
+      points: hasText(input.banner_url) ? SCORE_WEIGHTS.banner : 0,
+      max: SCORE_WEIGHTS.banner,
       filled: hasText(input.banner_url),
     },
     {
       label: "Hakkımızda metni",
-      points: hasText(input.aciklama) ? WEIGHTS.aciklama : 0,
-      max: WEIGHTS.aciklama,
+      points: hasText(input.aciklama) ? SCORE_WEIGHTS.about : 0,
+      max: SCORE_WEIGHTS.about,
       filled: hasText(input.aciklama),
     },
     {
-      label: "Sosyal medya",
-      points: hasAnySocial(input) ? WEIGHTS.social : 0,
-      max: WEIGHTS.social,
-      filled: hasAnySocial(input),
+      label: "İletişim / sosyal medya",
+      points: hasContactAndSocial(input) ? SCORE_WEIGHTS.contactSocial : 0,
+      max: SCORE_WEIGHTS.contactSocial,
+      filled: hasContactAndSocial(input),
     },
     {
-      label: "Telefon / WhatsApp",
-      points: hasContact(input) ? WEIGHTS.contact : 0,
-      max: WEIGHTS.contact,
-      filled: hasContact(input),
+      label: "Konum & harita",
+      points: hasLocationAndMap(input) ? SCORE_WEIGHTS.location : 0,
+      max: SCORE_WEIGHTS.location,
+      filled: hasLocationAndMap(input),
     },
     {
-      label: "Konum bilgisi",
-      points: hasLocation(input) ? WEIGHTS.location : 0,
-      max: WEIGHTS.location,
-      filled: hasLocation(input),
+      label: `SSS (${faqCappedCount}/${SCORE_WEIGHTS.faqMaxQuestions} soru)`,
+      points: faqPoints,
+      max: SCORE_WEIGHTS.faqMax,
+      filled: faqCount >= SCORE_WEIGHTS.faqMaxQuestions,
     },
     {
-      label: "SSS içeriği",
-      points: hasAnyFaq(input) ? WEIGHTS.faq : 0,
-      max: WEIGHTS.faq,
-      filled: hasAnyFaq(input),
-    },
-    {
-      label: "Mağaza galerisi",
-      points: hasGallery(input) ? WEIGHTS.gallery : 0,
-      max: WEIGHTS.gallery,
-      filled: hasGallery(input),
+      label: `Yerel blog / duyuru (${blogCappedCount}/${SCORE_WEIGHTS.blogMaxPosts} yazı)`,
+      points: blogPoints,
+      max: SCORE_WEIGHTS.blogMax,
+      filled: blogCount >= SCORE_WEIGHTS.blogMaxPosts,
     },
   ];
 
@@ -139,16 +150,88 @@ export function calculateProfileHealthScore(
 
 export function getProfileHealthMessage(score: number): string {
   if (score >= 100) {
-    return "👑 Tebrikler, profilin %100! Artık Google algoritmasının gözdesisin, bölendeki aramalarda en önde çıkmayı garantiledin.";
+    return "Tebrikler — vitrinin tam puan. Yerel aramalarda güçlü bir görünürlük için tüm temel alanları tamamladın.";
   }
 
   if (score >= 80) {
-    return "🔥 Harika gidiyorsun! Profil gücün %80'in üzerinde. Şu an yerel aramalarda (SEO konusunda) diğer esnaf arkadaşlarından çok daha ileridesin!";
+    return "Harika gidiyorsun. Profilin güçlü; birkaç küçük ekleme ile tam puana ulaşabilirsin.";
   }
 
   if (score < 50) {
-    return "⚠️ Profil gücün düşük. Bölendeki diğer esnaf seni aramalarda geçiyor, vitrinini güçlendir.";
+    return "Profil gücün düşük. SSS, blog ve iletişim alanlarını doldurarak yerel görünürlüğünü artır.";
   }
 
-  return "Vitrinini biraz daha doldurarak yerel aramalardaki görünürlüğünü artırabilirsin.";
+  return "Vitrinini adım adım doldurarak yerel aramalardaki görünürlüğünü yükseltebilirsin.";
+}
+
+export type EsnafKocuTip = {
+  message: string;
+  href?: string;
+  cta?: string;
+};
+
+export function buildEsnafKocuTips(result: ProfileHealthResult): EsnafKocuTip[] {
+  const tips: EsnafKocuTip[] = [];
+  const { score, breakdown } = result;
+
+  const faqItem = breakdown.find((item) => item.label.startsWith("SSS"));
+  const blogItem = breakdown.find((item) => item.label.startsWith("Yerel blog"));
+  const locationItem = breakdown.find((item) => item.label === "Konum & harita");
+  const contactItem = breakdown.find((item) => item.label === "İletişim / sosyal medya");
+  const aboutItem = breakdown.find((item) => item.label === "Hakkımızda metni");
+
+  if (faqItem && faqItem.points < SCORE_WEIGHTS.faqMax) {
+    const currentQuestions = faqItem.points / SCORE_WEIGHTS.faqPerQuestion;
+    const needed = Math.min(
+      SCORE_WEIGHTS.faqMaxQuestions - currentQuestions,
+      3
+    );
+    tips.push({
+      message: `Profil skorun ${score}/100. Yapay zeka aramalarında öne çıkmak için ${Math.max(1, Math.ceil(needed))} SSS sorusu daha ekle.`,
+      href: "/dukkan-ayarlari",
+      cta: "SSS Ekle",
+    });
+  }
+
+  if (locationItem && !locationItem.filled) {
+    tips.push({
+      message: `Profil skorun ${score}/100. Google Haritalar ve yerel aramalarda görünmek için adres ve harita pinini tamamla.`,
+      href: "/dukkan-ayarlari",
+      cta: "Konumu Güncelle",
+    });
+  }
+
+  if (aboutItem && !aboutItem.filled) {
+    tips.push({
+      message: `Profil skorun ${score}/100. Hakkımızda metnini doldur; ilçe ve hizmet anahtar kelimelerini doğal şekilde ekle.`,
+      href: "/dukkan-ayarlari",
+      cta: "Metni Güçlendir",
+    });
+  }
+
+  if (blogItem && blogItem.points < SCORE_WEIGHTS.blogMax) {
+    tips.push({
+      message: `Profil skorun ${score}/100. Bölgenizdeki müşteriler seni daha kolay bulsun diye yerel blog yazısı ekle.`,
+      href: "/yonetim/blog/yeni",
+      cta: "Blog Yazısı Ekle",
+    });
+  }
+
+  if (contactItem && !contactItem.filled) {
+    tips.push({
+      message: `Profil skorun ${score}/100. Telefon veya WhatsApp ile en az bir sosyal medya bağlantısını birlikte ekle.`,
+      href: "/dukkan-ayarlari",
+      cta: "İletişimi Tamamla",
+    });
+  }
+
+  if (score >= 80) {
+    return [
+      {
+        message: `Profil skorun ${score}/100. Harika gidiyorsun — yerel aramalarda rakiplerinin önündesin!`,
+      },
+    ];
+  }
+
+  return tips.slice(0, 2);
 }

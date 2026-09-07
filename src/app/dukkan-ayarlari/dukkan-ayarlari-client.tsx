@@ -19,9 +19,11 @@ const initialState: DukkanFormState = {};
 function DukkanAyarlariForm({
   dukkan,
   urunler,
+  blogPostCount,
 }: {
   dukkan: Dukkan;
   urunler: DukkanUrunu[];
+  blogPostCount: number;
 }) {
   const [state, formAction, isPending] = useActionState(updateDukkan, initialState);
   const approvalStatus = normalizeShopApprovalStatus(dukkan.approval_status);
@@ -73,6 +75,7 @@ function DukkanAyarlariForm({
           layout="wide"
           showSeoFields
           showVitrinLogoHint
+          scoreBlogPostCount={blogPostCount}
         />
       </div>
     </div>
@@ -83,10 +86,12 @@ export default function DukkanAyarlariPage({
   authenticated,
   dukkan,
   urunler,
+  blogPostCount = 0,
 }: {
   authenticated: boolean;
   dukkan: Dukkan | null;
   urunler: DukkanUrunu[];
+  blogPostCount?: number;
 }) {
   return (
     <YonetimPageShell
@@ -119,7 +124,11 @@ export default function DukkanAyarlariPage({
           </Link>
         </div>
       ) : (
-        <DukkanAyarlariForm dukkan={dukkan} urunler={urunler} />
+        <DukkanAyarlariForm
+          dukkan={dukkan}
+          urunler={urunler}
+          blogPostCount={blogPostCount}
+        />
       )}
     </YonetimPageShell>
   );

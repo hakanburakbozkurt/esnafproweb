@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { isWholesalerAccount, WHOLESALER_ONBOARDING_PATH } from "@/lib/auth/wholesaler";
 import { createClient } from "@/lib/supabase/server";
 import DukkanAyarlariPage from "@/app/dukkan-ayarlari/dukkan-ayarlari-client";
+import { getDukkanBlogPostCount } from "@/lib/dukkan/blog-posts";
 import type { DukkanUrunu } from "@/types/database.types";
 
 export default async function Page() {
@@ -16,6 +17,7 @@ export default async function Page() {
 
   let dukkan = null;
   let urunler: DukkanUrunu[] = [];
+  let blogPostCount = 0;
 
   if (user) {
     const { data } = await supabase
@@ -35,6 +37,8 @@ export default async function Page() {
         .order("sira", { ascending: true });
 
       urunler = urunData ?? [];
+
+      blogPostCount = await getDukkanBlogPostCount(supabase, dukkan.id);
     }
   }
 
@@ -43,6 +47,7 @@ export default async function Page() {
       authenticated={!!user}
       dukkan={dukkan}
       urunler={urunler}
+      blogPostCount={blogPostCount}
     />
   );
 }

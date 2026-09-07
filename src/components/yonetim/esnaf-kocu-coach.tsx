@@ -2,14 +2,10 @@
 
 import Link from "next/link";
 import {
+  buildEsnafKocuTips,
   calculateProfileHealthScore,
   type ProfileHealthInput,
 } from "@/lib/dukkan/profile-health-score";
-import {
-  buildEsnafKocuTips,
-  calculateSeoGeoScore,
-  type SeoGeoScoreInput,
-} from "@/lib/dukkan/seo-geo-score";
 import {
   yonetimCoachPanelClass,
   yonetimPanelAccentLabelClass,
@@ -19,14 +15,11 @@ import {
 
 export function EsnafKocuCoach({
   healthInput,
-  seoInput,
 }: {
   healthInput: ProfileHealthInput;
-  seoInput: SeoGeoScoreInput;
 }) {
-  const profileScore = calculateProfileHealthScore(healthInput).score;
-  const seoResult = calculateSeoGeoScore(seoInput);
-  const tips = buildEsnafKocuTips(seoResult, profileScore);
+  const result = calculateProfileHealthScore(healthInput);
+  const tips = buildEsnafKocuTips(result);
 
   if (!tips.length) return null;
 
@@ -40,14 +33,13 @@ export function EsnafKocuCoach({
           <div className="min-w-0 flex-1">
             <p className={yonetimPanelAccentLabelClass}>Esnaf Koçu</p>
             <p className="mt-2 text-base leading-relaxed text-slate-700 sm:text-lg">
-              💡{" "}
               <span className="font-semibold text-slate-900">Esnaf Koçu:</span> {primary.message}
             </p>
             {secondary && (
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{secondary.message}</p>
             )}
             <p className="mt-3 text-xs font-medium text-emerald-700/80">
-              Profil Gücü: {profileScore}/100 · SEO & GEO: {seoResult.score}/100
+              Profil & SEO Skoru: {result.score}/100
             </p>
           </div>
 
