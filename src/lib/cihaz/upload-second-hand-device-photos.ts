@@ -89,18 +89,19 @@ export async function uploadSecondHandDeviceFile(
   }
 }
 
-/** Slot sırasına göre (0..8): dolu olanları Storage'a yükler. Boş slotlar atlanır. */
+/** Sıralı kuyruk (0 = kapak): dolu URI'ları Storage'a yükler. */
 export async function uploadSecondHandDevicePhotos(
   userId: string,
   photoUris: readonly string[]
 ): Promise<{ ok: true; imageUrls: string[] } | { ok: false; error: string }> {
   const imageUrls: string[] = [];
-  const len = Math.min(photoUris.length, MAX_PHOTO_SLOTS);
+  const ordered = photoUris
+    .map((raw) => (typeof raw === "string" ? raw.trim() : ""))
+    .filter(Boolean)
+    .slice(0, MAX_PHOTO_SLOTS);
 
-  for (let i = 0; i < len; i++) {
-    const raw = photoUris[i];
-    const u = typeof raw === "string" ? raw.trim() : "";
-    if (!u) continue;
+  for (let i = 0; i < ordered.length; i++) {
+    const u = ordered[i];
 
     if (u.startsWith("http://") || u.startsWith("https://")) {
       imageUrls.push(u);
@@ -132,12 +133,13 @@ export async function resolveSecondHandPhotoUrls(
   photoUris: readonly string[]
 ): Promise<{ ok: true; imageUrls: string[] } | { ok: false; error: string }> {
   const imageUrls: string[] = [];
-  const len = Math.min(photoUris.length, MAX_PHOTO_SLOTS);
+  const ordered = photoUris
+    .map((raw) => (typeof raw === "string" ? raw.trim() : ""))
+    .filter(Boolean)
+    .slice(0, MAX_PHOTO_SLOTS);
 
-  for (let i = 0; i < len; i++) {
-    const raw = photoUris[i];
-    const u = typeof raw === "string" ? raw.trim() : "";
-    if (!u) continue;
+  for (let i = 0; i < ordered.length; i++) {
+    const u = ordered[i];
 
     if (u.startsWith("http://") || u.startsWith("https://")) {
       imageUrls.push(u);

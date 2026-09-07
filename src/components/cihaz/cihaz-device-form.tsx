@@ -305,7 +305,6 @@ export function CihazDeviceForm({ vitrini, onSaved }: CihazDeviceFormProps) {
           <div className="mt-4">
             <CihazPhotoUploader
               photoUris={activePhotos}
-              listingType={shared.listing_type}
               onChange={setActivePhotos}
               disabled={saving}
             />

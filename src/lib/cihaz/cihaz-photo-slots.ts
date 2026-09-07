@@ -1,95 +1,88 @@
-/** Cihaz Al — fotoğraf slot indeksleri */
+/** Cihaz fotoğraf kuyruğu — sıralı dizi, ilk öğe kapak görseli. */
 
-export const PHOTO_LABELS = [
-  "Cihaz Ön",
-  "Cihaz Arka",
-  "Ekran",
-  "Kimlik Ön",
-  "Kimlik Arka",
-  "Fatura",
-  "Hasar 1",
-  "Hasar 2",
-  "Diğer",
-] as const;
+export const MAX_PHOTO_QUEUE = 10;
 
-/** Vitrin / sıfır ürün görselleri */
-export const PRODUCT_PHOTO_INDICES = [0, 1, 2, 8] as const;
-
-/** Kimlik & fatura — ikinci el belge kasası */
-export const DOCUMENT_PHOTO_INDICES = [3, 4, 5] as const;
-
-/** İkinci el ek görseller (hasar vb.) */
-export const DAMAGE_PHOTO_INDICES = [6, 7] as const;
-
-export const USED_MODE_PHOTO_INDICES = [
-  ...PRODUCT_PHOTO_INDICES,
-  ...DAMAGE_PHOTO_INDICES,
-] as const;
-
-export const MAX_PHOTO_SLOTS = 9;
+/** @deprecated Eski slot tabanlı upload limiti; kuyruk ile aynı. */
+export const MAX_PHOTO_SLOTS = MAX_PHOTO_QUEUE;
 
 export const ACCEPTED_PHOTO_TYPES =
   "image/jpeg,image/png,image/webp,image/gif" as const;
 
-export function getVisiblePhotoIndices(
-  listingType: "new" | "used"
-): readonly number[] {
-  return listingType === "new" ? PRODUCT_PHOTO_INDICES : USED_MODE_PHOTO_INDICES;
+/** Boş girdileri atar, sırayı korur, üst sınır uygular. */
+export function normalizePhotoQueue(photoUris: readonly string[]): string[] {
+  return photoUris
+    .map((u) => (typeof u === "string" ? u.trim() : ""))
+    .filter(Boolean)
+    .slice(0, MAX_PHOTO_QUEUE);
 }
 
-export function getEmptyVisibleSlotIndices(
-  photoUris: readonly string[],
-  visibleIndices: readonly number[]
-): number[] {
-  return visibleIndices.filter((index) => !photoUris[index]?.trim());
+export function getPhotoQueueRemainingCapacity(
+  photoUris: readonly string[]
+): number {
+  return Math.max(0, MAX_PHOTO_QUEUE - normalizePhotoQueue(photoUris).length);
 }
 
-/** Dosyaları boş slotlara sırayla yerleştirir; en fazla visible boş slot kadar. */
-export function fillPhotoSlotsFromFiles(
+/** Kuyruğun sonuna dosya ekler. */
+export function appendFilesToPhotoQueue(
   photoUris: readonly string[],
-  visibleIndices: readonly number[],
-  files: readonly File[],
-  options?: { startAtIndex?: number }
+  files: readonly File[]
 ): { next: string[]; assigned: number; skipped: number } {
-  const next = [...photoUris];
-  while (next.length < MAX_PHOTO_SLOTS) next.push("");
-
-  let emptySlots = getEmptyVisibleSlotIndices(next, visibleIndices);
-  const startAt = options?.startAtIndex;
-
-  if (startAt !== undefined && emptySlots.includes(startAt)) {
-    emptySlots = [startAt, ...emptySlots.filter((i) => i !== startAt)];
-  }
-
-  const limit = Math.min(files.length, emptySlots.length);
-  let assigned = 0;
+  const current = normalizePhotoQueue(photoUris);
+  const remaining = MAX_PHOTO_QUEUE - current.length;
+  const limit = Math.min(files.length, remaining);
+  const next = [...current];
 
   for (let i = 0; i < limit; i++) {
-    next[emptySlots[i]] = URL.createObjectURL(files[i]);
-    assigned += 1;
+    next.push(URL.createObjectURL(files[i]));
   }
 
   return {
     next,
-    assigned,
-    skipped: Math.max(0, files.length - assigned),
+    assigned: limit,
+    skipped: Math.max(0, files.length - limit),
   };
 }
 
-export function clearPhotoSlot(
+export function removePhotoAtIndex(
   photoUris: readonly string[],
   index: number
 ): string[] {
-  const next = [...photoUris];
-  while (next.length < MAX_PHOTO_SLOTS) next.push("");
+  const current = normalizePhotoQueue(photoUris);
+  const uri = current[index];
+  if (uri?.startsWith("blob:")) {
+    URL.revokeObjectURL(uri);
+  }
+  return current.filter((_, i) => i !== index);
+}
 
-  const existing = next[index]?.trim();
-  if (existing?.startsWith("blob:")) {
-    URL.revokeObjectURL(existing);
+export function movePhotoInQueue(
+  photoUris: readonly string[],
+  fromIndex: number,
+  toIndex: number
+): string[] {
+  const current = normalizePhotoQueue(photoUris);
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= current.length ||
+    toIndex >= current.length ||
+    fromIndex === toIndex
+  ) {
+    return current;
   }
 
-  next[index] = "";
+  const next = [...current];
+  const [item] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, item);
   return next;
+}
+
+/** Seçilen fotoğrafı kapak (index 0) yapar. */
+export function setCoverPhotoIndex(
+  photoUris: readonly string[],
+  index: number
+): string[] {
+  return movePhotoInQueue(photoUris, index, 0);
 }
 
 export function revokeBlobPhotoUrls(photoUris: readonly string[]) {
