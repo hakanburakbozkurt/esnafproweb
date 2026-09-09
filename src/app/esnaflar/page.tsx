@@ -2,13 +2,12 @@ import { FeaturedStoreCard } from "@/components/landing/featured-store-card";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { getAllActivePublicStores } from "@/lib/dukkan/get-public-stores";
+import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Dijital Dükkanını Açan Esnaflar | EsnafPRO",
-  description:
-    "EsnafPRO ile dijital vitrinini açan esnaf ve işletmelerin listesi.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePlatformPageMetadata("/esnaflar");
+}
 
 export default async function EsnaflarPage() {
   const stores = await getAllActivePublicStores();

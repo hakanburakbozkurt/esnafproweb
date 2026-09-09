@@ -1,14 +1,11 @@
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
-import { buildPageMetadata } from "@/lib/seo/page-metadata";
+import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "İletişim | EsnafPRO",
-  description:
-    "EsnafPRO hakkında sorularınız, iş birliği teklifleriniz ve destek talepleriniz için bizimle iletişime geçin.",
-  path: "/iletisim",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePlatformPageMetadata("/iletisim");
+}
 
 export default async function IletisimPage() {
   return (

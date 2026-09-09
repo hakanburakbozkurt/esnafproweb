@@ -13,7 +13,7 @@ export async function getPhoneModels(): Promise<PhoneModel[]> {
       .from("phone_models")
       .select("*")
       .order("brand", { ascending: true })
-      .order("model_name", { ascending: true });
+      .order("name", { ascending: true });
 
     if (error || !data) return [];
     return data;

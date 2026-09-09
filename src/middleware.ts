@@ -11,6 +11,10 @@ import {
 } from "@/lib/auth/wholesaler";
 import { hasToptanciProfile } from "@/lib/toptanci/get-toptanci";
 import { tryShopSlugRedirect } from "@/lib/dukkan/shop-slug-redirect";
+import {
+  isLocalYonetimAccessAllowed,
+  LOCAL_YONETIM_PATH_PREFIX,
+} from "@/lib/local-yonetim/access";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -41,6 +45,13 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith(LOCAL_YONETIM_PATH_PREFIX)) {
+    const host = request.nextUrl.hostname;
+    if (!isLocalYonetimAccessAllowed(host)) {
+      return new NextResponse(null, { status: 404 });
+    }
+  }
 
   if (
     pathname === "/sitemap" ||

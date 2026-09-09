@@ -43,6 +43,7 @@ function revalidateDukkanApprovalPaths(slug: string) {
   revalidatePath("/esnaflar");
   revalidatePath("/yonetim/admin");
   revalidatePath("/yonetim/admin/dukkan-onay");
+  revalidatePath("/local-yonetim/dukkan-onay");
   revalidateSitemap();
 }
 

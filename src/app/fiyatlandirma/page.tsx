@@ -4,15 +4,12 @@ import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { getActiveFaqs, toFaqItems } from "@/lib/faqs/get-faqs";
 import { getActivePricingPlans } from "@/lib/pricing/get-pricing-plans";
-import { buildPageMetadata } from "@/lib/seo/page-metadata";
+import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Fiyatlandırma | EsnafPRO",
-  description:
-    "Esnaf ve toptancı için şeffaf paket fiyatları. Aylık veya yıllık planlarla EsnafPRO'ya başlayın.",
-  path: "/fiyatlandirma",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePlatformPageMetadata("/fiyatlandirma");
+}
 
 export default async function FiyatlandirmaPage() {
   const [pricingPlans, pricingFaqs] = await Promise.all([

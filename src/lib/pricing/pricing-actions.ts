@@ -72,6 +72,7 @@ export async function upsertPricingPlan(
 
   revalidatePath("/");
   revalidatePath("/yonetim/admin/fiyatlar");
+  revalidatePath("/local-yonetim/fiyatlar");
   return { success: "Plan kaydedildi." };
 }
 
@@ -87,6 +88,7 @@ export async function deletePricingPlan(planId: string): Promise<PricingAdminSta
 
   revalidatePath("/");
   revalidatePath("/yonetim/admin/fiyatlar");
+  revalidatePath("/local-yonetim/fiyatlar");
   return { success: "Plan silindi." };
 }
 
@@ -137,5 +139,6 @@ export async function seedDefaultPricingPlans(): Promise<PricingAdminState> {
 
   revalidatePath("/");
   revalidatePath("/yonetim/admin/fiyatlar");
+  revalidatePath("/local-yonetim/fiyatlar");
   return { success: "Varsayılan planlar veritabanına aktarıldı." };
 }

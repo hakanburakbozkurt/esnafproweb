@@ -303,6 +303,86 @@ export interface Database {
         };
         Relationships: [];
       };
+      dukkan_subscriptions: {
+        Row: {
+          dukkan_id: string;
+          tier: string;
+          actions_used: number;
+          actions_limit: number;
+          expires_at: string | null;
+          notes: string | null;
+          updated_at: string;
+          created_at: string;
+        };
+        Insert: {
+          dukkan_id: string;
+          tier?: string;
+          actions_used?: number;
+          actions_limit?: number;
+          expires_at?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          dukkan_id?: string;
+          tier?: string;
+          actions_used?: number;
+          actions_limit?: number;
+          expires_at?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "dukkan_subscriptions_dukkan_id_fkey";
+            columns: ["dukkan_id"];
+            isOneToOne: true;
+            referencedRelation: "dukkanlar";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      platform_page_seo: {
+        Row: {
+          page_path: string;
+          label: string;
+          meta_title: string;
+          meta_description: string;
+          meta_keywords: string | null;
+          robots_index: boolean;
+          robots_follow: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          page_path: string;
+          label: string;
+          meta_title: string;
+          meta_description: string;
+          meta_keywords?: string | null;
+          robots_index?: boolean;
+          robots_follow?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          page_path?: string;
+          label?: string;
+          meta_title?: string;
+          meta_description?: string;
+          meta_keywords?: string | null;
+          robots_index?: boolean;
+          robots_follow?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       katalogweb: {
         Row: {
           id: string;
@@ -346,19 +426,22 @@ export interface Database {
         Row: {
           id: string;
           brand: string;
-          model_name: string;
+          name: string;
+          sort_order: number;
           created_at: string;
         };
         Insert: {
           id?: string;
           brand: string;
-          model_name: string;
+          name: string;
+          sort_order?: number;
           created_at?: string;
         };
         Update: {
           id?: string;
           brand?: string;
-          model_name?: string;
+          name?: string;
+          sort_order?: number;
           created_at?: string;
         };
         Relationships: [];
@@ -500,6 +583,36 @@ export interface Database {
           id?: string;
           brand?: string;
           model_name?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      cihaz_katalogu: {
+        Row: {
+          id: string;
+          category: string;
+          brand: string;
+          model_name: string;
+          base_specs: Json;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          category: string;
+          brand: string;
+          model_name: string;
+          base_specs?: Json;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          category?: string;
+          brand?: string;
+          model_name?: string;
+          base_specs?: Json;
+          sort_order?: number;
           created_at?: string;
         };
         Relationships: [];
@@ -817,6 +930,7 @@ export interface Database {
       };
       second_hand_devices: {
         Row: {
+          accepts_installments: boolean;
           battery_cycle_count: string | null;
           battery_health: string | null;
           brand: string | null;
@@ -873,6 +987,7 @@ export interface Database {
           web_title: string | null;
         };
         Insert: {
+          accepts_installments?: boolean;
           battery_cycle_count?: string | null;
           battery_health?: string | null;
           brand?: string | null;
@@ -929,6 +1044,7 @@ export interface Database {
           web_title?: string | null;
         };
         Update: {
+          accepts_installments?: boolean;
           battery_cycle_count?: string | null;
           battery_health?: string | null;
           brand?: string | null;
@@ -1011,6 +1127,7 @@ export interface Database {
     Views: {
       second_hand_devices_public: {
         Row: {
+          accepts_installments: boolean;
           battery_cycle_count: string | null;
           battery_health: string | null;
           brand: string | null;

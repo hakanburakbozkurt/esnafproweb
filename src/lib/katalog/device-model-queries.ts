@@ -8,6 +8,7 @@ import {
   normalizeDeviceModelRow,
   type DeviceModelTable,
 } from "@/lib/katalog/device-model-normalize";
+import { normalizeCihazKataloguRow } from "@/lib/katalog/cihaz-katalogu.types";
 
 async function queryDeviceModelRows(
   table: DeviceModelTable,
@@ -26,6 +27,24 @@ async function queryDeviceModelRows(
   );
 }
 
+async function queryCihazKataloguRows(
+  brand?: string
+): Promise<Array<{ brand: string; modelName: string }>> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("cihaz_katalogu").select("*");
+
+  if (error || !data) return [];
+
+  const rows = data.map((row) => normalizeCihazKataloguRow(row));
+  if (!brand?.trim()) {
+    return rows.map((row) => ({ brand: row.brand, modelName: row.model_name }));
+  }
+
+  return rows
+    .filter((row) => brandsMatch(row.brand, brand))
+    .map((row) => ({ brand: row.brand, modelName: row.model_name }));
+}
+
 export async function fetchDeviceModelBrands(): Promise<string[]> {
   const brandSet = new Set<string>();
 
@@ -38,6 +57,10 @@ export async function fetchDeviceModelBrands(): Promise<string[]> {
       }
     })
   );
+
+  for (const row of await queryCihazKataloguRows()) {
+    if (row.brand) brandSet.add(row.brand);
+  }
 
   return mergeUniqueSorted([...brandSet]);
 }
@@ -57,6 +80,10 @@ export async function fetchDeviceModelsForBrand(brand: string): Promise<string[]
       }
     })
   );
+
+  for (const row of await queryCihazKataloguRows(brand)) {
+    if (row.modelName) modelSet.add(row.modelName);
+  }
 
   return mergeUniqueSorted([...modelSet]);
 }

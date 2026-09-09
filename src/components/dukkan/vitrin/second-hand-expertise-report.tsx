@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  getDeviceConditionMarkers,
   getSecondHandExpertiseReport,
   type PublicSecondHandDeviceDetail,
 } from "@/lib/dukkan/second-hand-devices";
@@ -19,37 +20,39 @@ export function SecondHandExpertiseReport({
   className,
 }: SecondHandExpertiseReportProps) {
   const report = getSecondHandExpertiseReport(device);
-  const [activeTab, setActiveTab] = useState<ReportTab>("expertise");
+  const conditionMarkers = getDeviceConditionMarkers(device);
+  const [activeTab, setActiveTab] = useState<ReportTab>("overview");
 
-  const overviewText =
+  const overviewDescription =
     device.web_description?.trim() ||
-    "Bu ilan için ek açıklama girilmemiş. Ekspertiz sekmesinden teknik durumu inceleyebilirsiniz.";
+    "Bu ilan için ek açıklama girilmemiş.";
+  const notes = device.notes?.trim() ?? "";
 
   return (
     <section
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm lg:p-6",
+        "rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm sm:p-7",
         className
       )}
       aria-labelledby="ekspertiz-raporu-baslik"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600/80">
             Durum Raporu
           </p>
           <h2
             id="ekspertiz-raporu-baslik"
-            className="mt-2 text-xl font-bold text-emerald-700 lg:text-2xl"
+            className="mt-2 text-xl font-bold text-neutral-900 lg:text-2xl"
           >
-            Ekspertiz Raporu
+            Genel Bakış & Ekspertiz
           </h2>
         </div>
 
         <div
           role="tablist"
           aria-label="Rapor sekmeleri"
-          className="inline-flex rounded-full border border-slate-200/80 bg-slate-50/90 p-1"
+          className="inline-flex rounded-full border border-neutral-100 bg-emerald-50/50 p-1"
         >
           <ReportTabButton
             active={activeTab === "overview"}
@@ -64,12 +67,58 @@ export function SecondHandExpertiseReport({
         </div>
       </div>
 
+      {conditionMarkers.length > 0 && (
+        <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/50 px-4 py-4 sm:px-5">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+            Cihaz Kondisyonu
+          </h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {conditionMarkers.map((marker) => (
+              <span
+                key={marker.key}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-semibold ring-1",
+                  marker.tone === "emerald" &&
+                    "bg-emerald-100 text-emerald-800 ring-emerald-200",
+                  marker.tone === "amber" &&
+                    "bg-amber-50 text-amber-800 ring-amber-100",
+                  marker.tone === "sky" &&
+                    "bg-sky-50 text-sky-700 ring-sky-100"
+                )}
+              >
+                {marker.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mt-6">
         {activeTab === "overview" ? (
-          <div className="rounded-xl bg-slate-50/80 px-4 py-4">
-            <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600">
-              {overviewText}
-            </p>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-neutral-100 bg-neutral-50/70 px-4 py-4 sm:px-5 sm:py-5">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                İlan Açıklaması
+              </h3>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-neutral-700">
+                {overviewDescription}
+              </p>
+            </div>
+
+            {notes ? (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 sm:px-5 sm:py-5">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                  Notlar
+                </h3>
+                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-emerald-950/80">
+                  {notes}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/50 px-4 py-4 text-sm text-neutral-500">
+                Mağaza notu eklenmemiş.
+              </div>
+            )}
           </div>
         ) : report.hasContent ? (
           <div className="space-y-5">
@@ -78,7 +127,7 @@ export function SecondHandExpertiseReport({
                 {report.highlights.map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-4"
+                    className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-4"
                   >
                     <p className="text-xs font-medium uppercase tracking-[0.12em] text-emerald-600/80">
                       {item.label}
@@ -96,18 +145,18 @@ export function SecondHandExpertiseReport({
                 <article
                   key={section.title}
                   className={cn(
-                    "rounded-xl border px-4 py-4",
+                    "rounded-2xl border px-4 py-4 sm:px-5 sm:py-5",
                     section.tone === "warning"
                       ? "border-amber-200/80 bg-amber-50/60"
                       : section.tone === "success"
                         ? "border-emerald-200/80 bg-emerald-50/50"
-                        : "border-slate-200/70 bg-slate-50/70"
+                        : "border-neutral-100 bg-neutral-50/70"
                   )}
                 >
-                  <h3 className="text-sm font-semibold text-slate-800">
+                  <h3 className="text-sm font-semibold text-neutral-900">
                     {section.title}
                   </h3>
-                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-neutral-700">
                     {section.content}
                   </p>
                 </article>
@@ -115,12 +164,13 @@ export function SecondHandExpertiseReport({
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-8 text-center">
-            <p className="text-sm font-medium text-slate-600">
-              Bu cihaz için henüz ekspertiz bilgisi girilmemiş.
+          <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/60 px-4 py-8 text-center">
+            <p className="text-sm font-medium text-neutral-700">
+              Bu cihaz için henüz ek ekspertiz bilgisi girilmemiş.
             </p>
-            <p className="mt-1 text-xs text-slate-400">
-              Detaylı bilgi için mağaza ile iletişime geçebilirsiniz.
+            <p className="mt-1 text-xs text-neutral-500">
+              Tramer ve boya kayıtları burada görünür. Değişen parça ve arıza
+              bilgileri yukarıda ayrıca vurgulanır.
             </p>
           </div>
         )}
@@ -148,7 +198,7 @@ function ReportTabButton({
         "rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm",
         active
           ? "bg-emerald-600 text-white shadow-sm"
-          : "text-slate-600 hover:text-emerald-600"
+          : "text-neutral-600 hover:text-emerald-700"
       )}
     >
       {label}

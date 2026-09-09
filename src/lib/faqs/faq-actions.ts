@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getDefaultFaqsForContext } from "@/lib/faqs/defaults";
+import { getAllDefaultFaqsForSeed, getDefaultFaqsForContext } from "@/lib/faqs/defaults";
 import type { FaqContext } from "@/lib/faqs/types";
 import { createClient } from "@/lib/supabase/server";
 import { isSuperAdminUser } from "@/lib/auth/super-admin";
@@ -32,6 +32,7 @@ function revalidateFaqPaths() {
   revalidatePath("/");
   revalidatePath("/fiyatlandirma");
   revalidatePath("/yonetim/admin/sss");
+  revalidatePath("/local-yonetim/sss");
 }
 
 export async function upsertFaq(
@@ -160,19 +161,36 @@ export async function seedDefaultFaqsForm(
 
   const context = parseFaqContext(String(formData.get("context") ?? "anasayfa"));
 
-  const { count, error: countError } = await auth.supabase
+  const result = await seedFaqsForContextIfEmpty(auth.supabase, context);
+  if (result.error) {
+    return { error: result.error };
+  }
+
+  if (!result.seeded) {
+    return {
+      error: `Bu alan (${context}) için zaten SSS kayıtları var. Yalnızca boş alana aktarım yapılır.`,
+    };
+  }
+
+  revalidateFaqPaths();
+  return { success: "Varsayılan SSS kayıtları aktarıldı." };
+}
+
+async function seedFaqsForContextIfEmpty(
+  supabase: NonNullable<Awaited<ReturnType<typeof assertSuperAdmin>>["supabase"]>,
+  context: FaqContext
+): Promise<{ seeded: boolean; error?: string }> {
+  const { count, error: countError } = await supabase
     .from("faqs")
     .select("*", { count: "exact", head: true })
     .eq("context", context);
 
   if (countError) {
-    return { error: countError.message };
+    return { seeded: false, error: countError.message };
   }
 
   if ((count ?? 0) > 0) {
-    return {
-      error: `Bu alan (${context}) için zaten SSS kayıtları var. Yalnızca boş alana aktarım yapılır.`,
-    };
+    return { seeded: false };
   }
 
   const payload = getDefaultFaqsForContext(context).map(
@@ -185,12 +203,58 @@ export async function seedDefaultFaqsForm(
     })
   );
 
-  const { error } = await auth.supabase.from("faqs").insert(payload);
+  const { error } = await supabase.from("faqs").insert(payload);
 
   if (error) {
-    return { error: error.message };
+    return { seeded: false, error: error.message };
+  }
+
+  return { seeded: true };
+}
+
+/** Tüm boş SSS alanlarına (anasayfa + fiyatlandirma) varsayılan içeriği yükler. */
+export async function seedAllDefaultFaqsForm(
+  _prev: FaqAdminState
+): Promise<FaqAdminState> {
+  const auth = await assertSuperAdmin();
+  if (auth.error || !auth.supabase) return { error: auth.error ?? "Yetki hatası." };
+
+  const contexts: FaqContext[] = ["anasayfa", "fiyatlandirma"];
+  const seeded: FaqContext[] = [];
+  const skipped: FaqContext[] = [];
+
+  for (const context of contexts) {
+    const result = await seedFaqsForContextIfEmpty(auth.supabase, context);
+    if (result.error) {
+      return { error: result.error };
+    }
+    if (result.seeded) {
+      seeded.push(context);
+    } else {
+      skipped.push(context);
+    }
+  }
+
+  if (seeded.length === 0) {
+    return {
+      error:
+        "Tüm SSS alanlarında zaten kayıt var. Yeni içerik eklemek için manuel SSS oluşturun veya mevcut kayıtları düzenleyin.",
+    };
   }
 
   revalidateFaqPaths();
-  return { success: "Varsayılan SSS kayıtları aktarıldı." };
+
+  const seededLabel = seeded
+    .map((c) => (c === "anasayfa" ? "Ana Sayfa" : "Fiyatlandırma"))
+    .join(" ve ");
+
+  if (skipped.length > 0) {
+    return {
+      success: `${seededLabel} için varsayılan SSS'ler yüklendi. Dolu olan alanlar atlandı.`,
+    };
+  }
+
+  return {
+    success: `Varsayılan SSS'ler yüklendi (${getAllDefaultFaqsForSeed().length} kayıt).`,
+  };
 }

@@ -1,19 +1,39 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  AlertTriangle,
+  BadgeCheck,
+  MapPin,
+  Navigation,
+} from "lucide-react";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
+import { DeviceDetailActionBar } from "@/components/dukkan/vitrin/device-detail-action-bar";
+import { InstallmentOptionsCard } from "@/components/dukkan/vitrin/installment-modal";
 import { SecondHandDeviceGallery } from "@/components/dukkan/vitrin/second-hand-device-gallery";
 import { SecondHandExpertiseReport } from "@/components/dukkan/vitrin/second-hand-expertise-report";
+import { TrustBadges } from "@/components/dukkan/vitrin/trust-badges";
 import { buildWhatsAppUrl, normalizeWhatsAppNumber } from "@/lib/dukkan/contact";
 import {
-  formatSecondHandCondition,
+  appendSecondHandDeviceUrlToWhatsAppMessage,
+  buildSecondHandDeviceInquiryWhatsAppMessage,
+  buildSecondHandDevicePublicUrl,
+  canShowDeviceInstallmentOptions,
   formatSecondHandPrice,
-  getListingTypeBadge,
+  getDeviceConditionWarnings,
   getSecondHandDeviceImages,
   getSecondHandDeviceSpecRows,
   getSecondHandDeviceTitle,
   type PublicSecondHandDeviceDetail,
 } from "@/lib/dukkan/second-hand-devices";
+import { buildGoogleMapsDirectionsUrl } from "@/lib/dukkan/map-navigation";
+import {
+  formatDistanceLabel,
+  haversineDistanceKm,
+  hasValidCoordinates,
+} from "@/lib/geo/haversine";
+import { useUserGeolocation } from "@/lib/marketplace/use-user-geolocation";
 import { desktopContainerClass } from "@/lib/utils/layout";
 import type { Dukkan } from "@/types/database.types";
 import { VitrinDotGrid } from "@/components/dukkan/vitrin/vitrin-open-section";
@@ -30,18 +50,72 @@ export function SecondHandDeviceDetailContent({
   const title = getSecondHandDeviceTitle(device);
   const images = getSecondHandDeviceImages(device);
   const price = formatSecondHandPrice(device.sale_price);
-  const condition = formatSecondHandCondition(device.condition);
-  const listingBadge = getListingTypeBadge(device.listing_type);
   const specRows = getSecondHandDeviceSpecRows(device);
+  const conditionWarnings = getDeviceConditionWarnings(device);
+  const { coords: userCoords } = useUserGeolocation();
+
+  const distanceLabel =
+    hasValidCoordinates(dukkan.enlem, dukkan.boylam) && userCoords
+      ? formatDistanceLabel(
+          haversineDistanceKm(userCoords, {
+            lat: dukkan.enlem!,
+            lng: dukkan.boylam!,
+          })
+        )
+      : null;
+
+  const mapsNavigationUrl = buildGoogleMapsDirectionsUrl({
+    enlem: dukkan.enlem,
+    boylam: dukkan.boylam,
+    adres: dukkan.adres,
+  });
+
   const normalizedWhatsApp = dukkan.whatsapp
     ? normalizeWhatsAppNumber(dukkan.whatsapp)
     : null;
-  const whatsappHref = normalizedWhatsApp
-    ? buildWhatsAppUrl(
-        normalizedWhatsApp,
-        `Merhaba, Esnaf Pro üzerindeki ${title} ilanınız için yazıyorum...`
+
+  const [devicePublicUrl, setDevicePublicUrl] = useState(() =>
+    buildSecondHandDevicePublicUrl(dukkan.slug, device)
+  );
+
+  useEffect(() => {
+    setDevicePublicUrl(
+      buildSecondHandDevicePublicUrl(dukkan.slug, device, window.location.origin)
+    );
+  }, [dukkan.slug, device.id, device.web_slug]);
+
+  const whatsappHref = useMemo(() => {
+    if (!normalizedWhatsApp) return null;
+    return buildWhatsAppUrl(
+      normalizedWhatsApp,
+      buildSecondHandDeviceInquiryWhatsAppMessage(title, devicePublicUrl)
+    );
+  }, [normalizedWhatsApp, title, devicePublicUrl]);
+
+  const tradeWhatsAppHref = useMemo(() => {
+    if (!normalizedWhatsApp) return null;
+    return buildWhatsAppUrl(
+      normalizedWhatsApp,
+      appendSecondHandDeviceUrlToWhatsAppMessage(
+        `Merhaba, ${title} ilanı için fiyat teklifi veya takas hakkında bilgi almak istiyorum.`,
+        devicePublicUrl
       )
-    : null;
+    );
+  }, [normalizedWhatsApp, title, devicePublicUrl]);
+
+  const reservationHref = useMemo(() => {
+    if (!normalizedWhatsApp) return null;
+    return buildWhatsAppUrl(
+      normalizedWhatsApp,
+      appendSecondHandDeviceUrlToWhatsAppMessage(
+        `Merhaba, ${title} ilanı için rezervasyon / satın alma talebi oluşturmak istiyorum. Uygunluğu ve ödeme seçeneklerini paylaşabilir misiniz?`,
+        devicePublicUrl
+      )
+    );
+  }, [normalizedWhatsApp, title, devicePublicUrl]);
+
+  const isVerifiedShop = dukkan.approval_status === "active";
+  const showInstallmentOptions = canShowDeviceInstallmentOptions(device);
 
   return (
     <div className={`${desktopContainerClass} relative pb-10 pt-8 lg:pb-16 lg:pt-12`}>
@@ -50,7 +124,7 @@ export function SecondHandDeviceDetailContent({
       <ScrollReveal>
         <Link
           href={`/${dukkan.slug}/pazaryeri`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-emerald-600"
+          className="inline-flex items-center gap-1 text-sm font-medium text-neutral-500 transition hover:text-emerald-600"
         >
           ← Pazaryeri
         </Link>
@@ -63,56 +137,122 @@ export function SecondHandDeviceDetailContent({
 
         <ScrollReveal delay={0.04}>
           <div className="flex h-full flex-col">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-              {listingBadge.label}
-            </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-emerald-700 lg:text-4xl">
-              {title}
-            </h1>
+            <div className="rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/${dukkan.slug}`}
+                  className="text-sm font-semibold text-emerald-700 transition hover:text-emerald-800"
+                >
+                  {dukkan.dukkan_adi}
+                </Link>
+                {isVerifiedShop && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                    <BadgeCheck className="size-3.5" aria-hidden />
+                    Onaylı Mağaza
+                  </span>
+                )}
+                {!isVerifiedShop && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-neutral-50 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 ring-1 ring-neutral-100">
+                    Esnaf Pro
+                  </span>
+                )}
+              </div>
 
-            {(device.brand || device.model) && (
-              <p className="mt-2 text-sm text-slate-500">
-                {[device.brand, device.model].filter(Boolean).join(" · ")}
-              </p>
-            )}
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
-                  listingBadge.tone === "new"
-                    ? "bg-sky-50 text-sky-700 ring-sky-100"
-                    : "bg-amber-50 text-amber-800 ring-amber-100"
-                }`}
-              >
-                {listingBadge.label}
-              </span>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                {condition}
-              </span>
-              {device.color?.trim() && (
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                  {device.color.trim()}
-                </span>
+              {mapsNavigationUrl && (
+                <a
+                  href={mapsNavigationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3.5 py-3 text-sm transition hover:border-emerald-200 hover:bg-emerald-50"
+                  aria-label={
+                    distanceLabel
+                      ? `${distanceLabel} — mağaza konumunu haritada aç`
+                      : "Mağaza konumunu haritada aç"
+                  }
+                >
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-100">
+                    <MapPin className="size-4" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    {distanceLabel ? (
+                      <span className="font-semibold text-emerald-700">{distanceLabel}</span>
+                    ) : (
+                      <span className="font-semibold text-emerald-700">Haritada aç</span>
+                    )}
+                    <span className="mt-0.5 block text-xs text-emerald-700/70">
+                      Yol tarifi al
+                    </span>
+                  </span>
+                  <Navigation className="size-4 shrink-0 text-emerald-600" aria-hidden />
+                </a>
               )}
+
+              <h1 className="mt-4 text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl">
+                {title}
+              </h1>
+
+              <p className="mt-4 text-2xl font-bold tracking-tight text-emerald-700 sm:text-3xl">
+                {price}
+              </p>
+
+              {showInstallmentOptions && (
+                <InstallmentOptionsCard
+                  className="mt-4"
+                  acceptsInstallments
+                  salePrice={device.sale_price}
+                  productTitle={title}
+                />
+              )}
+
+              <TrustBadges
+                className="mt-4"
+                isVerifiedShop={isVerifiedShop}
+                hasWarranty={device.has_warranty}
+                listingType={device.listing_type}
+                hasInvoice={device.has_invoice}
+              />
             </div>
 
-            <p className="mt-6 text-3xl font-bold tracking-tight text-emerald-700 lg:text-4xl">
-              {price}
-            </p>
+            {conditionWarnings.length > 0 && (
+              <div className="mt-5 space-y-3">
+                {conditionWarnings.map((warning) => (
+                  <div
+                    key={warning.key}
+                    className="rounded-3xl border border-amber-200/80 bg-amber-50/70 p-4 shadow-sm sm:p-5"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                        <AlertTriangle className="size-4" aria-hidden />
+                      </span>
+                      <div className="min-w-0">
+                        <h2 className="text-sm font-bold text-amber-900">
+                          {warning.title}
+                        </h2>
+                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-amber-950/80">
+                          {warning.content}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {specRows.length > 0 && (
-              <div className="mt-8 rounded-2xl border border-slate-200/80 bg-white/80 p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">
+              <div className="mt-5 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">
                   Teknik Detaylar
                 </h2>
                 <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {specRows.map((row) => (
                     <div
                       key={row.label}
-                      className="rounded-xl bg-slate-50/80 px-4 py-3"
+                      className="rounded-2xl bg-emerald-50/40 px-4 py-3 ring-1 ring-emerald-100/70"
                     >
-                      <dt className="text-xs font-medium text-slate-400">{row.label}</dt>
-                      <dd className="mt-1 text-sm font-semibold text-slate-800">
+                      <dt className="text-xs font-medium text-neutral-500">
+                        {row.label}
+                      </dt>
+                      <dd className="mt-1 text-sm font-semibold text-neutral-900">
                         {row.value}
                       </dd>
                     </div>
@@ -121,23 +261,12 @@ export function SecondHandDeviceDetailContent({
               </div>
             )}
 
-            <div className="mt-8 lg:mt-auto lg:pt-8">
-              {whatsappHref ? (
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#20bd5a] sm:w-auto"
-                >
-                  <WhatsAppIcon />
-                  WhatsApp ile Bilgi Al
-                </a>
-              ) : (
-                <p className="text-sm text-slate-400">
-                  İletişim için mağaza iletişim sayfasını ziyaret edin.
-                </p>
-              )}
-            </div>
+            <DeviceDetailActionBar
+              shopSlug={dukkan.slug}
+              reservationHref={reservationHref}
+              whatsappHref={whatsappHref}
+              tradeWhatsAppHref={tradeWhatsAppHref}
+            />
           </div>
         </ScrollReveal>
       </div>
@@ -146,13 +275,5 @@ export function SecondHandDeviceDetailContent({
         <SecondHandExpertiseReport device={device} />
       </ScrollReveal>
     </div>
-  );
-}
-
-function WhatsAppIcon() {
-  return (
-    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
-    </svg>
   );
 }

@@ -2,15 +2,12 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { MarketplacePageContent } from "@/components/marketplace/marketplace-page-content";
 import { getMarketplaceListings } from "@/lib/marketplace/get-public-listings";
-import { buildPageMetadata } from "@/lib/seo/page-metadata";
+import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "İkinci El Pazaryeri | EsnafPRO",
-  description:
-    "Esnaf Pro üyesi mağazaların yayınladığı ikinci el telefon, tablet ve cihaz ilanlarını keşfedin.",
-  path: "/pazaryeri",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePlatformPageMetadata("/pazaryeri");
+}
 
 export default async function PazaryeriPage() {
   const listings = await getMarketplaceListings();

@@ -15,7 +15,7 @@ export default async function FaqAdminPage() {
     notFound();
   }
 
-  const faqs = await getAllFaqsAdmin();
+  const { faqs } = await getAllFaqsAdmin();
 
   return (
     <FaqAdminShell
