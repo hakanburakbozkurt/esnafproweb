@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 const PROTECTED_PAGES = [
   { path: "/yonetim", next: "/yonetim" },
   { path: "/dukkan-ayarlari/urunler", next: "/dukkan-ayarlari/urunler" },
+  { path: "/yonetim/harita-pazari", next: "/yonetim/harita-pazari" },
 ];
 
 test.describe("Giriş yapılmamış kullanıcı", () => {

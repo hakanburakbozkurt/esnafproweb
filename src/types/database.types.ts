@@ -371,6 +371,79 @@ export interface Database {
           },
         ];
       };
+      harita_pazari_taramalari: {
+        Row: {
+          id: string;
+          dukkan_id: string;
+          kendi_place_id: string | null;
+          kendi_sira: number | null;
+          siralama: string[];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          dukkan_id: string;
+          kendi_place_id?: string | null;
+          kendi_sira?: number | null;
+          siralama?: string[];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          dukkan_id?: string;
+          kendi_place_id?: string | null;
+          kendi_sira?: number | null;
+          siralama?: string[];
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "harita_pazari_taramalari_dukkan_id_fkey";
+            columns: ["dukkan_id"];
+            isOneToOne: false;
+            referencedRelation: "dukkanlar";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      harita_pazari_rapor_ayarlari: {
+        Row: {
+          dukkan_id: string;
+          eposta_aktif: boolean;
+          ayrintili: boolean;
+          gonderim_gunu: number;
+          gonderim_saati: number;
+          updated_at: string;
+          created_at: string;
+        };
+        Insert: {
+          dukkan_id: string;
+          eposta_aktif?: boolean;
+          ayrintili?: boolean;
+          gonderim_gunu?: number;
+          gonderim_saati?: number;
+          updated_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          dukkan_id?: string;
+          eposta_aktif?: boolean;
+          ayrintili?: boolean;
+          gonderim_gunu?: number;
+          gonderim_saati?: number;
+          updated_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "harita_pazari_rapor_ayarlari_dukkan_id_fkey";
+            columns: ["dukkan_id"];
+            isOneToOne: true;
+            referencedRelation: "dukkanlar";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       platform_page_seo: {
         Row: {
           page_path: string;
@@ -1266,6 +1339,10 @@ export type DukkanUpdate = Database["public"]["Tables"]["dukkanlar"]["Update"];
 export type DukkanUrunu = Database["public"]["Tables"]["dukkan_urunleri"]["Row"];
 export type KullaniciProfili =
   Database["public"]["Tables"]["kullanici_profilleri"]["Row"];
+export type HaritaPazariTaramasi =
+  Database["public"]["Tables"]["harita_pazari_taramalari"]["Row"];
+export type HaritaPazariRaporAyarlari =
+  Database["public"]["Tables"]["harita_pazari_rapor_ayarlari"]["Row"];
 export type DukkanBlogYazisi =
   Database["public"]["Tables"]["dukkan_blog_yazilari"]["Row"];
 export type ServiceDevice = Database["public"]["Tables"]["service_devices"]["Row"];

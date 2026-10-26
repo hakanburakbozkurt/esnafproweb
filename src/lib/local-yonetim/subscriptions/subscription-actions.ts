@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import {
   DEFAULT_FREE_ACTION_LIMIT,
   PRO_DEFAULT_MONTHS,
+  SHOP_SUBSCRIPTION_TIER_LABELS,
   type SubscriptionAdminState,
 } from "@/lib/local-yonetim/subscriptions/types";
 import { isSuperAdminUser } from "@/lib/auth/super-admin";
@@ -25,6 +26,7 @@ async function assertSubscriptionAdmin() {
 function revalidateSubscriptionPaths() {
   revalidatePath("/local-yonetim/abonelikler");
   revalidatePath("/yonetim");
+  revalidatePath("/yonetim/harita-pazari");
 }
 
 function addMonths(date: Date, months: number) {
@@ -66,6 +68,8 @@ export async function upgradeShopToProForm(
 
   const months = Number(formData.get("pro_months") ?? PRO_DEFAULT_MONTHS);
   const safeMonths = Number.isFinite(months) && months > 0 ? months : PRO_DEFAULT_MONTHS;
+  const tier = formData.get("tier") === "ultra" ? "ultra" : "pro";
+  const tierLabel = SHOP_SUBSCRIPTION_TIER_LABELS[tier];
 
   try {
     await ensureSubscriptionRow(auth.supabase, dukkanId);
@@ -73,7 +77,7 @@ export async function upgradeShopToProForm(
     const { error } = await auth.supabase
       .from("dukkan_subscriptions")
       .update({
-        tier: "pro",
+        tier,
         expires_at: addMonths(new Date(), safeMonths),
         updated_at: new Date().toISOString(),
       })
@@ -81,11 +85,11 @@ export async function upgradeShopToProForm(
 
     if (error) return { error: error.message };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Pro yükseltme başarısız." };
+    return { error: err instanceof Error ? err.message : `${tierLabel} yükseltme başarısız.` };
   }
 
   revalidateSubscriptionPaths();
-  return { success: `Dükkan Pro'ya yükseltildi (${safeMonths} ay).` };
+  return { success: `Dükkan ${tierLabel} katmanına yükseltildi (${safeMonths} ay).` };
 }
 
 export async function resetShopFreeLimitsForm(

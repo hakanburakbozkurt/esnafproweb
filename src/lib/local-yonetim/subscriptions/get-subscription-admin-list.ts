@@ -1,7 +1,7 @@
 import {
   DEFAULT_FREE_ACTION_LIMIT,
+  normalizeShopSubscriptionTier as normalizeTier,
   type ShopSubscriptionAdminRow,
-  type ShopSubscriptionTier,
 } from "@/lib/local-yonetim/subscriptions/types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,10 +9,6 @@ export type SubscriptionAdminQueryResult = {
   rows: ShopSubscriptionAdminRow[];
   error?: string;
 };
-
-function normalizeTier(value: string | null | undefined): ShopSubscriptionTier {
-  return value === "pro" ? "pro" : "free";
-}
 
 export async function getSubscriptionAdminList(): Promise<SubscriptionAdminQueryResult> {
   const supabase = await createClient();

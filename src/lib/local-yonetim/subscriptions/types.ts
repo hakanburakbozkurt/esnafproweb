@@ -1,4 +1,16 @@
-export type ShopSubscriptionTier = "free" | "pro";
+export type ShopSubscriptionTier = "free" | "pro" | "ultra";
+
+export const SHOP_SUBSCRIPTION_TIER_LABELS: Record<ShopSubscriptionTier, string> = {
+  free: "Free",
+  pro: "Pro",
+  ultra: "Ultra",
+};
+
+export function normalizeShopSubscriptionTier(
+  value: string | null | undefined
+): ShopSubscriptionTier {
+  return value === "pro" || value === "ultra" ? value : "free";
+}
 
 export const DEFAULT_FREE_ACTION_LIMIT = 10;
 export const PRO_DEFAULT_MONTHS = 12;

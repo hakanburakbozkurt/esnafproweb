@@ -6,9 +6,6 @@ import {
   localAccentLabelClass,
   localAlertErrorClass,
   localAlertInfoClass,
-  localAlertSuccessClass,
-  localBtnPrimaryClass,
-  localBtnSecondaryClass,
   localBtnSmallDangerClass,
   localBtnSmallPrimaryClass,
   localBtnSmallSecondaryClass,
@@ -20,9 +17,10 @@ import {
   setShopTierFreeForm,
   upgradeShopToProForm,
 } from "@/lib/local-yonetim/subscriptions/subscription-actions";
-import type {
-  ShopSubscriptionAdminRow,
-  SubscriptionAdminState,
+import {
+  SHOP_SUBSCRIPTION_TIER_LABELS,
+  type ShopSubscriptionAdminRow,
+  type SubscriptionAdminState,
 } from "@/lib/local-yonetim/subscriptions/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -46,12 +44,14 @@ function TierBadge({ tier }: { tier: ShopSubscriptionAdminRow["tier"] }) {
     <span
       className={cn(
         "inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-        tier === "pro"
-          ? "bg-emerald-100 text-emerald-800"
-          : "bg-neutral-100 text-neutral-700"
+        tier === "ultra"
+          ? "bg-violet-100 text-violet-800"
+          : tier === "pro"
+            ? "bg-emerald-100 text-emerald-800"
+            : "bg-neutral-100 text-neutral-700"
       )}
     >
-      {tier === "pro" ? "Pro" : "Free"}
+      {SHOP_SUBSCRIPTION_TIER_LABELS[tier]}
     </span>
   );
 }
@@ -89,15 +89,18 @@ function SubscriptionRowActions({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        {row.tier !== "pro" && (
-          <form action={upgradeAction}>
-            <input type="hidden" name="dukkan_id" value={row.dukkan_id} />
-            <input type="hidden" name="pro_months" value="12" />
-            <button type="submit" disabled={upgradePending} className={localBtnSmallPrimaryClass}>
-              {upgradePending ? "…" : "Pro Yap"}
-            </button>
-          </form>
-        )}
+        {(["pro", "ultra"] as const)
+          .filter((tier) => tier !== row.tier)
+          .map((tier) => (
+            <form key={tier} action={upgradeAction}>
+              <input type="hidden" name="dukkan_id" value={row.dukkan_id} />
+              <input type="hidden" name="tier" value={tier} />
+              <input type="hidden" name="pro_months" value="12" />
+              <button type="submit" disabled={upgradePending} className={localBtnSmallPrimaryClass}>
+                {upgradePending ? "…" : `${SHOP_SUBSCRIPTION_TIER_LABELS[tier]} Yap`}
+              </button>
+            </form>
+          ))}
 
         <form action={resetAction}>
           <input type="hidden" name="dukkan_id" value={row.dukkan_id} />
@@ -106,7 +109,7 @@ function SubscriptionRowActions({
           </button>
         </form>
 
-        {row.tier === "pro" && (
+        {row.tier !== "free" && (
           <form action={freeAction}>
             <input type="hidden" name="dukkan_id" value={row.dukkan_id} />
             <button type="submit" disabled={freePending} className={localBtnSmallDangerClass}>
@@ -139,7 +142,7 @@ export function LocalSubscriptionsClient({
   canEdit,
   loadError,
 }: LocalSubscriptionsClientProps) {
-  const proCount = rows.filter((row) => row.tier === "pro").length;
+  const proCount = rows.filter((row) => row.tier !== "free").length;
   const freeCount = rows.length - proCount;
 
   return (
@@ -150,7 +153,7 @@ export function LocalSubscriptionsClient({
           Abonelik & kota yönetimi
         </h1>
         <p className="max-w-2xl text-sm leading-relaxed text-neutral-600">
-          Kayıtlı dükkanların katmanını (Free/Pro), kota kullanımını ve bitiş
+          Kayıtlı dükkanların katmanını (Free/Pro/Ultra), kota kullanımını ve bitiş
           tarihlerini yönetin. Kullanım; cihaz ilanı, blog ve servis kayıtlarından
           türetilir.
         </p>
@@ -165,7 +168,7 @@ export function LocalSubscriptionsClient({
             <p className="mt-1 text-2xl font-bold text-emerald-900">{rows.length}</p>
           </div>
           <div className={localWorkspaceSectionClass}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Pro</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Pro / Ultra</p>
             <p className="mt-1 text-2xl font-bold text-neutral-900">{proCount}</p>
           </div>
           <div className={localWorkspaceSectionClass}>

@@ -2,39 +2,10 @@ import { redirect } from "next/navigation";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
 import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { YonetimDashboardClient } from "@/app/yonetim/yonetim-dashboard-client";
-import { getDukkanScoreEligibleBlogPostCount } from "@/lib/dukkan/blog-posts";
-import type { ProfileHealthInput } from "@/lib/dukkan/profile-health-score";
-import { countDukkanFaqQuestions } from "@/lib/dukkan/shop-score-data";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
 import { createClient } from "@/lib/supabase/server";
+import { loadProfileHealthInput } from "@/lib/yonetim/health-input";
 import Link from "next/link";
-
-function toHealthInput(
-  dukkan: NonNullable<Awaited<ReturnType<typeof loadDukkan>>>,
-  blogPostCount: number
-): ProfileHealthInput {
-  return {
-    logo_url: dukkan.logo_url,
-    banner_url: dukkan.banner_url,
-    aciklama: dukkan.aciklama,
-    instagram_url: dukkan.instagram_url,
-    tiktok_url: dukkan.tiktok_url,
-    facebook_url: dukkan.facebook_url,
-    telefon: dukkan.telefon,
-    whatsapp: dukkan.whatsapp,
-    adres: dukkan.adres,
-    enlem: dukkan.enlem,
-    boylam: dukkan.boylam,
-    google_business_url: dukkan.google_business_url,
-    faqQuestionCount: countDukkanFaqQuestions({
-      anasayfa_sss: dukkan.anasayfa_sss,
-      sss: dukkan.sss,
-      hakkimizda_sss: dukkan.hakkimizda_sss,
-      teknik_servis_sss: dukkan.teknik_servis_sss,
-    }),
-    blogPostCount,
-  };
-}
 
 async function loadDukkan(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase
@@ -105,7 +76,7 @@ export default async function YonetimPage() {
     );
   }
 
-  const blogPostCount = await getDukkanScoreEligibleBlogPostCount(supabase, dukkan.id);
+  const healthInput = await loadProfileHealthInput(supabase, dukkan);
 
   return (
     <YonetimPageShell
@@ -119,7 +90,7 @@ export default async function YonetimPage() {
       <YonetimDashboardClient
         shopSlug={dukkan.slug}
         shopName={dukkan.dukkan_adi}
-        healthInput={toHealthInput(dukkan, blogPostCount)}
+        healthInput={healthInput}
       />
     </YonetimPageShell>
   );

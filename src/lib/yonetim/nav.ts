@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   LayoutGrid,
+  MapPinned,
   Newspaper,
   Settings,
   Smartphone,
@@ -74,6 +75,14 @@ export function getYonetimNavItems(): YonetimNavItem[] {
       icon: Newspaper,
     },
     {
+      id: "harita-pazari",
+      label: "Harita Pazarı",
+      shortLabel: "Harita",
+      href: "/yonetim/harita-pazari",
+      match: (pathname) => pathname.startsWith("/yonetim/harita-pazari"),
+      icon: MapPinned,
+    },
+    {
       id: "katalog",
       label: "Aksesuar Kataloğu",
       shortLabel: "Katalog",
@@ -125,6 +134,14 @@ export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
       href: "/yonetim/blog",
       icon: Newspaper,
       accent: "sky",
+    },
+    {
+      id: "harita-pazari",
+      title: "Harita Pazarı",
+      description: "Google Haritalar sıran ve rakiplerin · PRO",
+      href: "/yonetim/harita-pazari",
+      icon: MapPinned,
+      accent: "teal",
     },
     {
       id: "katalog",
