@@ -75,20 +75,20 @@ export function getYonetimNavItems(): YonetimNavItem[] {
       icon: Newspaper,
     },
     {
-      id: "harita-pazari",
-      label: "Harita Pazarı",
-      shortLabel: "Harita",
-      href: "/yonetim/harita-pazari",
-      match: (pathname) => pathname.startsWith("/yonetim/harita-pazari"),
-      icon: MapPinned,
-    },
-    {
       id: "katalog",
       label: "Aksesuar Kataloğu",
       shortLabel: "Katalog",
       href: "/yonetim/katalog",
       match: (pathname) => pathname.startsWith("/yonetim/katalog"),
       icon: LayoutGrid,
+    },
+    {
+      id: "harita-pazari",
+      label: "Harita Pazarı",
+      shortLabel: "Harita",
+      href: "/yonetim/harita-pazari",
+      match: (pathname) => pathname.startsWith("/yonetim/harita-pazari"),
+      icon: MapPinned,
     },
     {
       id: "settings",
