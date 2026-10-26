@@ -39,6 +39,8 @@ export function PazaryeriPageContent({
     [devices, query, category, listingType, sort]
   );
 
+  const vitrinClosed = dukkan.pazaryeri_vitrin_aktif === false;
+
   return (
     <div className={`${desktopContainerClass} relative pb-10 pt-8 lg:pb-16 lg:pt-12`}>
       <VitrinDotGrid />
@@ -58,6 +60,20 @@ export function PazaryeriPageContent({
         </header>
       </ScrollReveal>
 
+      {vitrinClosed ? (
+        <ScrollReveal delay={0.03}>
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/80 px-6 py-14 text-center">
+            <p className="text-base font-semibold text-slate-700">
+              Pazaryeri vitrini geçici olarak kapalı
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              {dukkan.dukkan_adi} şu an cihaz ilanlarını ziyaretçilere
+              göstermiyor. Daha sonra tekrar kontrol edebilirsiniz.
+            </p>
+          </div>
+        </ScrollReveal>
+      ) : (
+        <>
       <ScrollReveal delay={0.03}>
         <MarketplaceListingToolbar
           query={query}
@@ -105,6 +121,8 @@ export function PazaryeriPageContent({
             </ScrollReveal>
           ))}
         </ul>
+      )}
+        </>
       )}
     </div>
   );

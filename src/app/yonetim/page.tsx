@@ -118,6 +118,7 @@ export default async function YonetimPage() {
     >
       <YonetimDashboardClient
         shopSlug={dukkan.slug}
+        shopName={dukkan.dukkan_adi}
         healthInput={toHealthInput(dukkan, blogPostCount)}
       />
     </YonetimPageShell>

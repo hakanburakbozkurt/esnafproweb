@@ -7,7 +7,7 @@ const MARKETPLACE_DEVICE_SELECT =
   `${PUBLIC_SECOND_HAND_DEVICE_SELECT}, user_id` as const;
 
 const SHOP_SELECT =
-  "user_id, slug, dukkan_adi, adres, whatsapp, telefon, logo_url, enlem, boylam" as const;
+  "user_id, slug, dukkan_adi, adres, whatsapp, telefon, logo_url, enlem, boylam, pazaryeri_vitrin_aktif" as const;
 
 function buildLocationLabel(il: string | null, ilce: string | null): string | null {
   if (ilce && il) return `${ilce}, ${il}`;
@@ -58,7 +58,7 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       if (!device.user_id || !device.id) continue;
 
       const shop = shopByUserId.get(device.user_id);
-      if (!shop) continue;
+      if (!shop || shop.pazaryeri_vitrin_aktif === false) continue;
 
       const { il, ilce } = parseLocationFromAdres(shop.adres);
 

@@ -1,6 +1,6 @@
 /** Cihaz fotoğraf kuyruğu — sıralı dizi, ilk öğe kapak görseli. */
 
-export const MAX_PHOTO_QUEUE = 10;
+export const MAX_PHOTO_QUEUE = 30;
 
 /** @deprecated Eski slot tabanlı upload limiti; kuyruk ile aynı. */
 export const MAX_PHOTO_SLOTS = MAX_PHOTO_QUEUE;
@@ -91,4 +91,26 @@ export function revokeBlobPhotoUrls(photoUris: readonly string[]) {
       URL.revokeObjectURL(uri);
     }
   }
+}
+
+export function removePhotosAtIndices(
+  photoUris: readonly string[],
+  indices: readonly number[]
+): string[] {
+  const indexSet = new Set(indices);
+  const current = normalizePhotoQueue(photoUris);
+
+  for (let i = 0; i < current.length; i++) {
+    const uri = current[i];
+    if (indexSet.has(i) && uri?.startsWith("blob:")) {
+      URL.revokeObjectURL(uri);
+    }
+  }
+
+  return current.filter((_, i) => !indexSet.has(i));
+}
+
+export function clearPhotoQueue(photoUris: readonly string[]): string[] {
+  revokeBlobPhotoUrls(photoUris);
+  return [];
 }

@@ -43,6 +43,7 @@ export interface Database {
           iletisim_sss_goster: boolean;
           teknik_servis_aktif: boolean;
           katalog_modu_aktif: boolean;
+          pazaryeri_vitrin_aktif: boolean;
           teknik_servis_fotograf_1: string | null;
           teknik_servis_fotograf_2: string | null;
           teknik_servis_fotograf_3: string | null;
@@ -85,6 +86,7 @@ export interface Database {
           iletisim_sss_goster?: boolean;
           teknik_servis_aktif?: boolean;
           katalog_modu_aktif?: boolean;
+          pazaryeri_vitrin_aktif?: boolean;
           teknik_servis_fotograf_1?: string | null;
           teknik_servis_fotograf_2?: string | null;
           teknik_servis_fotograf_3?: string | null;
@@ -127,6 +129,7 @@ export interface Database {
           iletisim_sss_goster?: boolean;
           teknik_servis_aktif?: boolean;
           katalog_modu_aktif?: boolean;
+          pazaryeri_vitrin_aktif?: boolean;
           teknik_servis_fotograf_1?: string | null;
           teknik_servis_fotograf_2?: string | null;
           teknik_servis_fotograf_3?: string | null;
@@ -195,6 +198,14 @@ export interface Database {
           fotograf_url: string | null;
           fotograf_url_2: string | null;
           fotograf_url_3: string | null;
+          fotograf_url_4: string | null;
+          fotograf_url_5: string | null;
+          fotograf_url_6: string | null;
+          fotograf_url_7: string | null;
+          fotograf_url_8: string | null;
+          urun_kategorisi: string | null;
+          fiyat: string | null;
+          stok_adedi: number | null;
           gorsel_orani: string;
           sira: number;
           aktif: boolean;
@@ -208,6 +219,14 @@ export interface Database {
           fotograf_url?: string | null;
           fotograf_url_2?: string | null;
           fotograf_url_3?: string | null;
+          fotograf_url_4?: string | null;
+          fotograf_url_5?: string | null;
+          fotograf_url_6?: string | null;
+          fotograf_url_7?: string | null;
+          fotograf_url_8?: string | null;
+          urun_kategorisi?: string | null;
+          fiyat?: string | null;
+          stok_adedi?: number | null;
           gorsel_orani?: string;
           sira?: number;
           aktif?: boolean;
@@ -221,6 +240,14 @@ export interface Database {
           fotograf_url?: string | null;
           fotograf_url_2?: string | null;
           fotograf_url_3?: string | null;
+          fotograf_url_4?: string | null;
+          fotograf_url_5?: string | null;
+          fotograf_url_6?: string | null;
+          fotograf_url_7?: string | null;
+          fotograf_url_8?: string | null;
+          urun_kategorisi?: string | null;
+          fiyat?: string | null;
+          stok_adedi?: number | null;
           gorsel_orani?: string;
           sira?: number;
           aktif?: boolean;

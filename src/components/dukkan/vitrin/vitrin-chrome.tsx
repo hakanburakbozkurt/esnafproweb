@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import type { ReactNode } from "react";
 import { desktopContainerClass } from "@/lib/utils/layout";
-import { VitrinMobileContactDrawer } from "@/components/dukkan/vitrin/vitrin-mobile-contact-drawer";
+import { VitrinMobilAltCubuk } from "@/components/dukkan/vitrin/vitrin-mobil-alt-cubuk";
 import { VitrinGoogleBusinessButton } from "@/components/dukkan/vitrin/vitrin-google-business-button";
 import { hasGoogleBusinessUrl } from "@/lib/dukkan/google-business-url";
 import type { Dukkan } from "@/types/database.types";
@@ -51,7 +51,6 @@ export function VitrinChrome({
     pathname === katalogHref || pathname.startsWith(`${katalogHref}/`);
   const isHakkimizdaPage = pathname === hakkimizdaHref;
   const showGoogleBusinessButton = hasGoogleBusinessUrl(dukkan.google_business_url);
-
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const headerShadow = useTransform(
@@ -187,8 +186,6 @@ export function VitrinChrome({
         </div>
       </motion.header>
 
-      <VitrinMobileContactDrawer dukkan={dukkan} />
-
       <main className="flex min-w-0 flex-col overflow-x-clip pb-10 lg:pb-20">{children}</main>
 
       <footer className="mt-auto border-t border-slate-200/60 bg-white/70 py-8 backdrop-blur-sm lg:py-10">
@@ -207,6 +204,8 @@ export function VitrinChrome({
           </p>
         </div>
       </footer>
+
+      <VitrinMobilAltCubuk dukkan={dukkan} />
     </div>
   );
 }

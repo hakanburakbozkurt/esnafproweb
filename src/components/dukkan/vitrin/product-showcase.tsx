@@ -1,71 +1,63 @@
 "use client";
 
+import { AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useRef } from "react";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
-import { AutoScrollCarousel } from "@/components/dukkan/vitrin/auto-scroll-carousel";
-import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
-import type { DukkanUrunu } from "@/types/database.types";
+import { UrunDetayModal } from "@/components/dukkan/vitrin/urun-detay-modal";
+import { UrunKategoriSeridi } from "@/components/dukkan/vitrin/urun-kategori-seridi";
 import {
   VitrinDotGrid,
   vitrinSectionLabelClass,
 } from "@/components/dukkan/vitrin/vitrin-open-section";
+import { groupUrunlerByKategori, URUN_QUERY_PARAM } from "@/lib/dukkan/group-urunler";
+import type { Dukkan, DukkanUrunu } from "@/types/database.types";
 
-function ProductRow({
-  urun,
-  index,
-}: {
-  urun: DukkanUrunu;
-  index: number;
-}) {
-  const photos = getUrunPhotoUrls(urun);
+type ShowcaseDukkan = Pick<Dukkan, "slug" | "dukkan_adi" | "whatsapp" | "telefon">;
 
-  return (
-    <ScrollReveal delay={index * 0.04}>
-      <article className="grid grid-cols-1 items-center gap-10 border-b border-slate-200/50 py-12 last:border-b-0 lg:grid-cols-2 lg:gap-16 lg:py-20 xl:gap-20">
-        <div className="min-w-0 lg:pr-6">
-          <h2 className="text-3xl font-black leading-[1.08] tracking-tight text-emerald-700 sm:text-4xl lg:text-5xl xl:text-6xl">
-            {urun.urun_adi}
-          </h2>
-          {urun.urun_aciklama && (
-            <p className="mt-6 max-w-md text-base leading-relaxed text-slate-500 lg:mt-8 lg:text-lg">
-              {urun.urun_aciklama}
-            </p>
-          )}
-        </div>
-
-        <div className="w-full min-w-0">
-          {photos.length > 0 ? (
-            <AutoScrollCarousel
-              images={photos}
-              altPrefix={urun.urun_adi}
-              gorselOrani={urun.gorsel_orani}
-              autoplayDelay={3600}
-            />
-          ) : (
-            <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-400">
-              Fotoğraf yok
-            </div>
-          )}
-        </div>
-      </article>
-    </ScrollReveal>
-  );
-}
-
-export function ProductShowcase({ urunler }: { urunler: DukkanUrunu[] }) {
-  return (
-    <div className="flex flex-col">
-      {urunler.map((urun, index) => (
-        <ProductRow key={urun.id} urun={urun} index={index} />
-      ))}
-    </div>
-  );
+function buildSearch(params: URLSearchParams): string {
+  const query = params.toString();
+  return `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
 }
 
 export function ProductShowcaseSection({
   urunler,
+  dukkan,
 }: {
   urunler: DukkanUrunu[];
+  dukkan: ShowcaseDukkan;
 }) {
+  const searchParams = useSearchParams();
+  const groups = useMemo(() => groupUrunlerByKategori(urunler), [urunler]);
+  const openId = searchParams?.get(URUN_QUERY_PARAM) ?? null;
+  const openUrun = openId ? (urunler.find((urun) => urun.id === openId) ?? null) : null;
+
+  const pushedRef = useRef(false);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  const openDetail = useCallback((urun: DukkanUrunu) => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
+    const params = new URLSearchParams(window.location.search);
+    params.set(URUN_QUERY_PARAM, urun.id);
+    window.history.pushState(null, "", buildSearch(params));
+    pushedRef.current = true;
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (pushedRef.current) {
+      pushedRef.current = false;
+      window.history.back();
+    } else {
+      const params = new URLSearchParams(window.location.search);
+      params.delete(URUN_QUERY_PARAM);
+      window.history.replaceState(null, "", buildSearch(params));
+    }
+    requestAnimationFrame(() => trigger?.focus({ preventScroll: true }));
+  }, []);
+
+  const titledGroups = groups.filter((group) => group.title);
+
   return (
     <section id="urunler" className="relative">
       <VitrinDotGrid />
@@ -74,7 +66,42 @@ export function ProductShowcaseSection({
         <p className={vitrinSectionLabelClass}>Ürün & Hizmetler</p>
       </ScrollReveal>
 
-      <ProductShowcase urunler={urunler} />
+      {titledGroups.length > 1 && (
+        <nav
+          aria-label="Ürün kategorileri"
+          className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+        >
+          {titledGroups.map((group) => (
+            <a
+              key={group.id}
+              href={`#${group.id}`}
+              className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700"
+            >
+              {group.title}
+              <span className="text-xs font-medium text-slate-400">{group.urunler.length}</span>
+            </a>
+          ))}
+        </nav>
+      )}
+
+      <div className="space-y-10 lg:space-y-14">
+        {groups.map((group, index) => (
+          <ScrollReveal key={group.id} delay={Math.min(index, 4) * 0.04}>
+            <UrunKategoriSeridi group={group} onOpen={openDetail} />
+          </ScrollReveal>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {openUrun && (
+          <UrunDetayModal
+            key={openUrun.id}
+            urun={openUrun}
+            dukkan={dukkan}
+            onClose={closeDetail}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }

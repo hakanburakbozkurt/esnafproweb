@@ -320,6 +320,34 @@ export async function markSecondHandDeviceSold(
   }
 }
 
+export async function updatePazaryeriVitrinActive(
+  active: boolean
+): Promise<CihazActionResult> {
+  try {
+    const auth = await requireStoreOwner();
+    if (!auth.ok) return auth;
+
+    const { error } = await auth.supabase
+      .from("dukkanlar")
+      .update({ pazaryeri_vitrin_aktif: active })
+      .eq("user_id", auth.user.id);
+
+    if (error) {
+      logCihazAction("updatePazaryeriVitrinActive", error.message, { active });
+      return { ok: false, error: "Vitrin durumu güncellenemedi." };
+    }
+
+    revalidateCihazPaths(auth.shopSlug);
+    return { ok: true };
+  } catch (err) {
+    logCihazAction("updatePazaryeriVitrinActive", "unexpected error", { err });
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Vitrin durumu güncellenemedi.",
+    };
+  }
+}
+
 export async function deleteSecondHandDevice(
   deviceId: string
 ): Promise<CihazActionResult> {

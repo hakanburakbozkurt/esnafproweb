@@ -1,7 +1,19 @@
 "use client";
 
+import { useReducedMotion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { SettingsSectionNav } from "@/components/dukkan/ayarlar/settings-section-nav";
+import { StickySaveBar } from "@/components/dukkan/ayarlar/sticky-save-bar";
+import { UrunlerSummaryCard } from "@/components/dukkan/ayarlar/urunler-summary-card";
+import { useActiveSection } from "@/components/dukkan/ayarlar/use-active-section";
 import { FaqEditor } from "@/components/dukkan/faq-editor";
 import { ProfileHealthScore } from "@/components/dukkan/profile-health-score";
 import { countDukkanFaqQuestions } from "@/lib/dukkan/shop-score-data";
@@ -37,6 +49,11 @@ import {
 import { slugify, sanitizeSlugInput } from "@/lib/utils/slug";
 import { validateDukkanAdi, validateSlug } from "@/lib/utils/reserved-slugs";
 import { validateGoogleBusinessUrlInput } from "@/lib/dukkan/google-business-url";
+import {
+  getDukkanSettingsSections,
+  SETTINGS_SECTION_SCROLL_MARGIN_CLASS,
+  type DukkanSettingsSectionId,
+} from "@/lib/dukkan/settings-sections";
 import { premiumPanelClassName } from "@/lib/utils/cn";
 import { cn } from "@/lib/utils/cn";
 import type { Dukkan, DukkanUrunu, FaqItem } from "@/types/database.types";
@@ -71,7 +88,35 @@ type DukkanFormProps = {
   showVitrinLogoHint?: boolean;
   /** Canlı skor önizlemesi için mevcut blog yazısı sayısı */
   scoreBlogPostCount?: number;
+  /** Yalnızca wide düzen — kaydedilmemiş değişiklikleri geri al */
+  onCancel?: () => void;
+  /** Yalnızca wide düzen — son kayıt başarılı oldu */
+  saved?: boolean;
+  /** "summary": ürünler ayrı sayfada yönetilir, burada yalnızca özet + gizli alanlar */
+  productsMode?: "editor" | "summary";
+  productsHref?: string;
+  /** Yapışkan menülerin hangi başlık yüksekliğine göre konumlanacağı */
+  stickyOffset?: "page" | "yonetim";
 };
+
+const STICKY_OFFSET_CLASSES = {
+  page: { chips: "top-16 lg:top-[4.5rem]", sidebar: "lg:top-24" },
+  yonetim: { chips: "top-[7.5rem]", sidebar: "lg:top-[9rem]" },
+} as const;
+
+function SettingsAnchor({
+  id,
+  children,
+}: {
+  id: DukkanSettingsSectionId;
+  children: ReactNode;
+}) {
+  return (
+    <div id={id} className={cn("space-y-8", SETTINGS_SECTION_SCROLL_MARGIN_CLASS)}>
+      {children}
+    </div>
+  );
+}
 
 export function DukkanForm({
   action,
@@ -87,7 +132,13 @@ export function DukkanForm({
   showSeoFields = false,
   showVitrinLogoHint = false,
   scoreBlogPostCount = 0,
+  onCancel,
+  saved = false,
+  productsMode = "editor",
+  productsHref = "/dukkan-ayarlari/urunler",
+  stickyOffset = "page",
 }: DukkanFormProps) {
+  const formId = useId();
   const [dukkanAdi, setDukkanAdi] = useState(defaultValues?.dukkan_adi ?? "");
   const [slug, setSlug] = useState(defaultValues?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(defaultValues?.slug));
@@ -158,11 +209,12 @@ export function DukkanForm({
     Boolean(defaultValues?.terms_accepted_at)
   );
 
-  useEffect(() => {
+  const handleDukkanAdiChange = (value: string) => {
+    setDukkanAdi(value);
     if (!slugTouched) {
-      setSlug(slugify(dukkanAdi));
+      setSlug(slugify(value));
     }
-  }, [dukkanAdi, slugTouched]);
+  };
 
   const slugValidationError = useMemo(() => {
     if (!slug.trim()) return null;
@@ -203,12 +255,6 @@ export function DukkanForm({
       event.preventDefault();
     }
   };
-
-  useEffect(() => {
-    const raw = defaultValues?.calisma_saatleri ?? null;
-    setCalismaSaatleri(coerceCalismaSaatleriState(raw));
-    setHasLegacyCalismaSaatleri(isLegacyCalismaSaatleri(raw));
-  }, [defaultValues?.calisma_saatleri]);
 
   const isStacked = layout === "wide";
   const sectionVariant = isStacked ? "admin" : "card";
@@ -257,6 +303,116 @@ export function DukkanForm({
     ]
   );
 
+  const formSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        dukkanAdi,
+        slug,
+        logoUrl,
+        bannerUrl,
+        telefon,
+        whatsapp,
+        calismaSaatleri,
+        instagramUrl,
+        tiktokUrl,
+        facebookUrl,
+        adres,
+        googleBusinessUrl,
+        enlem,
+        boylam,
+        aciklama,
+        metaTitle,
+        metaDescription,
+        gallery,
+        urunler,
+        iletisimFaqItems,
+        hakkimizdaFaqItems,
+        anasayfaFaqItems,
+        iletisimSssGoster,
+        teknikServisAktif,
+        katalogModuAktif,
+        teknikServisPhotos,
+        teknikServisAciklama,
+        servisFaqItems,
+        markaTermsAccepted,
+      }),
+    [
+      dukkanAdi,
+      slug,
+      logoUrl,
+      bannerUrl,
+      telefon,
+      whatsapp,
+      calismaSaatleri,
+      instagramUrl,
+      tiktokUrl,
+      facebookUrl,
+      adres,
+      googleBusinessUrl,
+      enlem,
+      boylam,
+      aciklama,
+      metaTitle,
+      metaDescription,
+      gallery,
+      urunler,
+      iletisimFaqItems,
+      hakkimizdaFaqItems,
+      anasayfaFaqItems,
+      iletisimSssGoster,
+      teknikServisAktif,
+      katalogModuAktif,
+      teknikServisPhotos,
+      teknikServisAciklama,
+      servisFaqItems,
+      markaTermsAccepted,
+    ]
+  );
+  const [initialSnapshot] = useState(formSnapshot);
+  const isDirty = formSnapshot !== initialSnapshot;
+
+  useEffect(() => {
+    if (!isStacked || !isDirty || isPending) return;
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isStacked, isDirty, isPending]);
+
+  const reduceMotion = useReducedMotion();
+  const settingsSections = useMemo(
+    () => getDukkanSettingsSections({ showSeo: showSeoFields }),
+    [showSeoFields]
+  );
+  const settingsSectionIds = useMemo(
+    () => (isStacked ? settingsSections.map((section) => section.id) : []),
+    [isStacked, settingsSections]
+  );
+  const [activeSectionId, setActiveSectionId] = useActiveSection(settingsSectionIds);
+
+  const scrollToSection = (id: DukkanSettingsSectionId) => {
+    setActiveSectionId(id);
+    document.getElementById(id)?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  const saveDisabledReason = !markaTermsAccepted
+    ? "Kaydetmek için Modüller bölümündeki sözleşme onayını işaretleyin."
+    : hasBlockingValidationError
+      ? "Formda düzeltilmesi gereken alanlar var."
+      : null;
+
+  const handleCancel = () => {
+    if (!isDirty || !onCancel) return;
+    if (window.confirm("Kaydedilmemiş değişiklikler silinecek. Emin misiniz?")) {
+      onCancel();
+    }
+  };
+
   const temelBilgiler = (
     <FormSection
       variant={sectionVariant}
@@ -270,7 +426,7 @@ export function DukkanForm({
             required
             placeholder="Örn: Beep Mobile"
             value={dukkanAdi}
-            onChange={(e) => setDukkanAdi(e.target.value)}
+            onChange={(e) => handleDukkanAdiChange(e.target.value)}
             aria-invalid={dukkanAdiValidationError ? true : undefined}
             className="w-full"
           />
@@ -759,11 +915,19 @@ export function DukkanForm({
     <FormSection
       variant={sectionVariant}
       title="Ürün & Hizmetler"
-      description="Vitrinde sergilenecek ürün ve hizmet fotoğrafları."
+      description={
+        productsMode === "summary"
+          ? "Ürünlerinizi ayrı sayfada kategori, fiyat ve stok bilgisiyle düzenleyin."
+          : "Vitrinde sergilenecek ürün ve hizmet fotoğrafları."
+      }
       className="!space-y-0"
     >
       <div className="pt-2">
-        <ProductPhotoEditor items={urunler} onChange={setUrunler} storeSlug={slug} />
+        {productsMode === "summary" ? (
+          <UrunlerSummaryCard items={urunler} href={productsHref} confirmLeave={isDirty} />
+        ) : (
+          <ProductPhotoEditor items={urunler} onChange={setUrunler} storeSlug={slug} />
+        )}
       </div>
     </FormSection>
   );
@@ -794,20 +958,49 @@ export function DukkanForm({
     </FormSection>
   );
 
+  const markaTermsSection = (
+    <FormSection
+      title="Marka ve Telif Hakları Onay Sözleşmesi"
+      variant={sectionVariant}
+    >
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+        <input
+          type="checkbox"
+          name={MARKA_TERMS_FIELD_NAME}
+          value="true"
+          required
+          checked={markaTermsAccepted}
+          onChange={(event) => setMarkaTermsAccepted(event.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+        />
+        <span className="text-sm leading-relaxed text-slate-600">
+          {MARKA_TERMS_LABEL}
+        </span>
+      </label>
+    </FormSection>
+  );
+
   const stackedSections = (
     <>
-      {temelBilgiler}
-      {showSeoFields && seoAyarlari}
-      {markaGorselleri}
-      {hakkimizdaSection}
-      {hakkimizdaSss}
-      {iletisimSosyal}
-      {konumTanitim}
-      {iletisimSss}
-      {vitrinGorunurluk}
-      {urunHizmetler}
-      {anasayfaSss}
-      {teknikServis}
+      <SettingsAnchor id="ayar-temel">{temelBilgiler}</SettingsAnchor>
+      <SettingsAnchor id="ayar-urunler">{urunHizmetler}</SettingsAnchor>
+      {showSeoFields && <SettingsAnchor id="ayar-seo">{seoAyarlari}</SettingsAnchor>}
+      <SettingsAnchor id="ayar-gorseller">{markaGorselleri}</SettingsAnchor>
+      <SettingsAnchor id="ayar-hakkimizda">
+        {hakkimizdaSection}
+        {hakkimizdaSss}
+      </SettingsAnchor>
+      <SettingsAnchor id="ayar-iletisim">
+        {iletisimSosyal}
+        {iletisimSss}
+      </SettingsAnchor>
+      <SettingsAnchor id="ayar-konum">{konumTanitim}</SettingsAnchor>
+      <SettingsAnchor id="ayar-sss">{anasayfaSss}</SettingsAnchor>
+      <SettingsAnchor id="ayar-moduller">
+        {vitrinGorunurluk}
+        {teknikServis}
+        {markaTermsSection}
+      </SettingsAnchor>
     </>
   );
 
@@ -828,33 +1021,8 @@ export function DukkanForm({
     </>
   );
 
-  return (
+  const formMessages = (
     <>
-      {isStacked && (
-        <>
-          <div className="mb-6 lg:hidden">
-            <ProfileHealthScore input={healthInput} />
-          </div>
-          <div className="pointer-events-none fixed right-4 top-24 z-30 hidden w-[min(100%,22rem)] lg:block xl:right-8 xl:top-28">
-            <div className="pointer-events-auto">
-              <ProfileHealthScore input={healthInput} />
-            </div>
-          </div>
-        </>
-      )}
-
-      <form
-        action={action}
-        onSubmit={handleFormSubmit}
-        className={cn(isStacked && "mx-auto w-full max-w-5xl", "space-y-8")}
-      >
-      {hiddenFields &&
-        Object.entries(hiddenFields).map(([key, value]) => (
-          <input key={key} type="hidden" name={key} value={value} />
-        ))}
-
-      {isStacked ? stackedSections : defaultSections}
-
       {error && (
         <p className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
@@ -866,35 +1034,88 @@ export function DukkanForm({
           {warning}
         </p>
       )}
+    </>
+  );
 
-      <FormSection
-        title="Marka ve Telif Hakları Onay Sözleşmesi"
-        variant={sectionVariant}
-      >
-        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
-          <input
-            type="checkbox"
-            name={MARKA_TERMS_FIELD_NAME}
-            value="true"
-            required
-            checked={markaTermsAccepted}
-            onChange={(event) => setMarkaTermsAccepted(event.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+  const hiddenFieldInputs =
+    hiddenFields &&
+    Object.entries(hiddenFields).map(([key, value]) => (
+      <input key={key} type="hidden" name={key} value={value} />
+    ));
+
+  if (!isStacked) {
+    return (
+      <form action={action} onSubmit={handleFormSubmit} className="space-y-8">
+        {hiddenFieldInputs}
+        {defaultSections}
+        {formMessages}
+        {markaTermsSection}
+        <Button
+          type="submit"
+          disabled={isPending || hasBlockingValidationError}
+          className="min-h-12 w-full sm:w-auto"
+        >
+          {isPending ? pendingLabel : submitLabel}
+        </Button>
+      </form>
+    );
+  }
+
+  return (
+    <>
+      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <aside className="hidden lg:block">
+          <div className={cn("sticky space-y-4", STICKY_OFFSET_CLASSES[stickyOffset].sidebar)}>
+            <SettingsSectionNav
+              variant="sidebar"
+              sections={settingsSections}
+              activeId={activeSectionId}
+              onSelect={scrollToSection}
+            />
+            <ProfileHealthScore input={healthInput} />
+          </div>
+        </aside>
+
+        <div className="min-w-0">
+          <SettingsSectionNav
+            variant="chips"
+            sections={settingsSections}
+            activeId={activeSectionId}
+            onSelect={scrollToSection}
+            className={cn("mb-6 lg:hidden", STICKY_OFFSET_CLASSES[stickyOffset].chips)}
           />
-          <span className="text-sm leading-relaxed text-slate-600">
-            {MARKA_TERMS_LABEL}
-          </span>
-        </label>
-      </FormSection>
 
-      <Button
-        type="submit"
-        disabled={isPending || hasBlockingValidationError}
-        className="min-h-12 w-full sm:w-auto"
-      >
-        {isPending ? pendingLabel : submitLabel}
-      </Button>
-    </form>
+          <div className="mb-6 lg:hidden">
+            <ProfileHealthScore input={healthInput} />
+          </div>
+
+          <form
+            id={formId}
+            action={action}
+            onSubmit={handleFormSubmit}
+            className="space-y-8 pb-36 sm:pb-28"
+          >
+            {hiddenFieldInputs}
+            {stackedSections}
+            {formMessages}
+          </form>
+        </div>
+      </div>
+
+      <StickySaveBar
+        formId={formId}
+        isDirty={isDirty}
+        isPending={isPending}
+        saveDisabled={hasBlockingValidationError}
+        disabledReason={saveDisabledReason}
+        error={error}
+        saved={saved}
+        submitLabel={submitLabel}
+        pendingLabel={pendingLabel}
+        onCancel={onCancel ? handleCancel : undefined}
+        idleText={onCancel ? undefined : "Bilgileri doldurup mağazanızı açın"}
+        collapseWhenClean={Boolean(onCancel)}
+      />
     </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { updateDukkan, type DukkanFormState } from "@/lib/dukkan/actions";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
 import {
@@ -16,6 +16,14 @@ import type { Dukkan, DukkanUrunu } from "@/types/database.types";
 
 const initialState: DukkanFormState = {};
 
+function hashString(value: string): string {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = ((hash << 5) + hash + value.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(36);
+}
+
 function DukkanAyarlariForm({
   dukkan,
   urunler,
@@ -27,10 +35,16 @@ function DukkanAyarlariForm({
 }) {
   const [state, formAction, isPending] = useActionState(updateDukkan, initialState);
   const approvalStatus = normalizeShopApprovalStatus(dukkan.approval_status);
+  const [resetCount, setResetCount] = useState(0);
+  /** Kayıt sonrası sunucudan gelen veri değişince form yeni değerlerle yeniden kurulur. */
+  const dataKey = useMemo(
+    () => hashString(JSON.stringify({ dukkan, urunler })),
+    [dukkan, urunler]
+  );
 
   return (
     <div className="space-y-6">
-      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3">
         <DukkanApprovalStatusBadge status={approvalStatus} />
         <p className="text-sm text-slate-500">
           Vitrin adresi:{" "}
@@ -60,9 +74,10 @@ function DukkanAyarlariForm({
         </p>
       )}
 
-      <div className="relative mx-auto w-full max-w-5xl">
+      <div className="relative mx-auto w-full max-w-6xl">
         <VitrinDotGrid />
         <DukkanForm
+          key={`${dataKey}-${resetCount}`}
           action={formAction}
           submitLabel="Değişiklikleri Kaydet"
           pendingLabel="Güncelleniyor…"
@@ -76,6 +91,10 @@ function DukkanAyarlariForm({
           showSeoFields
           showVitrinLogoHint
           scoreBlogPostCount={blogPostCount}
+          saved={Boolean(state.success)}
+          productsMode="summary"
+          stickyOffset="yonetim"
+          onCancel={() => setResetCount((count) => count + 1)}
         />
       </div>
     </div>

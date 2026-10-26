@@ -40,7 +40,7 @@ export function VitrinPageContent({
       <div className={`${desktopContainerClass} relative pt-4 sm:pt-5 lg:pt-6`}>
         <VitrinDotGrid />
 
-        {!!urunler?.length && <ProductShowcaseSection urunler={urunler} />}
+        {!!urunler?.length && <ProductShowcaseSection urunler={urunler} dukkan={dukkan} />}
 
         {qrDevice && (
           <ScrollReveal className="mt-6 lg:mt-10">

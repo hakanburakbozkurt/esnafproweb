@@ -27,7 +27,7 @@ export default async function CihazlarYonetimPage() {
 
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("id, slug, dukkan_adi")
+    .select("id, slug, dukkan_adi, pazaryeri_vitrin_aktif")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -70,7 +70,11 @@ export default async function CihazlarYonetimPage() {
           {initialResult.error}
         </div>
       )}
-      <CihazlarClient initialDevices={initialDevices} shopSlug={dukkan.slug} />
+      <CihazlarClient
+        initialDevices={initialDevices}
+        shopSlug={dukkan.slug}
+        pazaryeriVitrinAktif={dukkan.pazaryeri_vitrin_aktif ?? true}
+      />
     </YonetimPageShell>
   );
 }

@@ -59,8 +59,8 @@ export function getYonetimNavItems(): YonetimNavItem[] {
     },
     {
       id: "cihazlar",
-      label: "Cihaz Yönetimi",
-      shortLabel: "Cihazlar",
+      label: "2. El Cihazlar",
+      shortLabel: "2. El",
       href: "/yonetim/cihazlar",
       match: (pathname) => pathname.startsWith("/yonetim/cihazlar"),
       icon: Smartphone,
@@ -75,7 +75,7 @@ export function getYonetimNavItems(): YonetimNavItem[] {
     },
     {
       id: "katalog",
-      label: "Katalog Yönetimi",
+      label: "Aksesuar Kataloğu",
       shortLabel: "Katalog",
       href: "/yonetim/katalog",
       match: (pathname) => pathname.startsWith("/yonetim/katalog"),
@@ -104,8 +104,8 @@ export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
     },
     {
       id: "cihazlar",
-      title: "Cihaz Yönetimi",
-      description: "Envanter ve pazaryeri",
+      title: "2. El Cihazlar",
+      description: "İlanlar ve pazaryeri",
       href: "/yonetim/cihazlar",
       icon: Smartphone,
       accent: "teal",
@@ -128,7 +128,7 @@ export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
     },
     {
       id: "katalog",
-      title: "Katalog Yönetimi",
+      title: "Aksesuar Kataloğu",
       description: "Toplu kılıf görselleri",
       href: "/yonetim/katalog",
       icon: LayoutGrid,
