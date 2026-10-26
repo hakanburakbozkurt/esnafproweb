@@ -24,10 +24,20 @@ export type UrunFormItem = {
   fotograf_url: string;
   fotograf_url_2: string;
   fotograf_url_3: string;
+  fotograf_url_4: string;
+  fotograf_url_5: string;
+  fotograf_url_6: string;
+  fotograf_url_7: string;
+  fotograf_url_8: string;
+  urun_kategorisi: string;
+  fiyat: string;
+  stok_adedi: string;
   gorsel_orani: UrunGorselOrani;
 };
 
-const PHOTO_SLOT_KEYS = [
+const PRESERVED_PHOTO_SLOTS = [4, 5, 6, 7, 8] as const;
+
+export const PHOTO_SLOT_KEYS = [
   "fotograf_url",
   "fotograf_url_2",
   "fotograf_url_3",
@@ -42,8 +52,22 @@ export function emptyUrunItem(): UrunFormItem {
     fotograf_url: "",
     fotograf_url_2: "",
     fotograf_url_3: "",
+    fotograf_url_4: "",
+    fotograf_url_5: "",
+    fotograf_url_6: "",
+    fotograf_url_7: "",
+    fotograf_url_8: "",
+    urun_kategorisi: "",
+    fiyat: "",
+    stok_adedi: "",
     gorsel_orani: "yatay",
   };
+}
+
+function readOptionalText(item: object, key: string): string {
+  const value = (item as Record<string, unknown>)[key];
+  if (typeof value === "number") return String(value);
+  return typeof value === "string" ? value : "";
 }
 
 export function normalizeUrunItems(
@@ -60,6 +84,14 @@ export function normalizeUrunItems(
       "fotograf_url_2" in item ? (item.fotograf_url_2 ?? "") : "",
     fotograf_url_3:
       "fotograf_url_3" in item ? (item.fotograf_url_3 ?? "") : "",
+    fotograf_url_4: readOptionalText(item, "fotograf_url_4"),
+    fotograf_url_5: readOptionalText(item, "fotograf_url_5"),
+    fotograf_url_6: readOptionalText(item, "fotograf_url_6"),
+    fotograf_url_7: readOptionalText(item, "fotograf_url_7"),
+    fotograf_url_8: readOptionalText(item, "fotograf_url_8"),
+    urun_kategorisi: readOptionalText(item, "urun_kategorisi"),
+    fiyat: readOptionalText(item, "fiyat"),
+    stok_adedi: readOptionalText(item, "stok_adedi"),
     gorsel_orani: normalizeUrunGorselOrani(
       "gorsel_orani" in item ? item.gorsel_orani : "yatay"
     ),
@@ -71,7 +103,61 @@ function photoFieldName(index: number, slot: number): string {
   return `fotograf_url_${index}_${slot}`;
 }
 
-function RatioToggle({
+const ALL_PHOTO_SLOTS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+
+function photoKey(slot: number) {
+  return (slot === 1 ? "fotograf_url" : `fotograf_url_${slot}`) as
+    | "fotograf_url"
+    | `fotograf_url_${2 | 3 | 4 | 5 | 6 | 7 | 8}`;
+}
+
+export function getUrunItemPhotoUrls(item: UrunFormItem): string[] {
+  return ALL_PHOTO_SLOTS.map((slot) => item[photoKey(slot)].trim()).filter(Boolean);
+}
+
+/** Fotoğrafı olmayan ürünler sunucuda kaydedilmez. */
+export function isUrunItemSavable(item: UrunFormItem): boolean {
+  return getUrunItemPhotoUrls(item).length > 0;
+}
+
+/** Ürünün tüm alanlarını görünmez input olarak forma ekler (silip yeniden yazan senkron için). */
+export function UrunHiddenFields({
+  index,
+  item,
+}: {
+  index: number;
+  item: UrunFormItem;
+}) {
+  return (
+    <>
+      {item.id && <input type="hidden" name={`urun_id_${index}`} value={item.id} />}
+      <input type="hidden" name={`urun_adi_${index}`} value={item.urun_adi} />
+      <input
+        type="hidden"
+        name={`urun_aciklama_${index}`}
+        value={item.urun_aciklama}
+      />
+      <input type="hidden" name={`gorsel_orani_${index}`} value={item.gorsel_orani} />
+      {ALL_PHOTO_SLOTS.map((slot) => (
+        <input
+          key={slot}
+          type="hidden"
+          name={photoFieldName(index, slot)}
+          value={item[photoKey(slot)]}
+        />
+      ))}
+      <input
+        type="hidden"
+        name={`urun_kategorisi_${index}`}
+        value={item.urun_kategorisi}
+      />
+      <input type="hidden" name={`fiyat_${index}`} value={item.fiyat} />
+      <input type="hidden" name={`stok_adedi_${index}`} value={item.stok_adedi} />
+    </>
+  );
+}
+
+export function RatioToggle({
   value,
   onChange,
 }: {
@@ -96,17 +182,16 @@ function RatioToggle({
   );
 }
 
-function PhotoSlot({
-  slot,
-  productIndex,
+export function PhotoSlot({
+  fieldName,
   url,
   label,
   loading,
   onUpload,
   onClear,
 }: {
-  slot: number;
-  productIndex: number;
+  /** Verilirse değer form alanı olarak gönderilir */
+  fieldName?: string;
   url: string;
   label: string;
   loading: boolean;
@@ -117,11 +202,7 @@ function PhotoSlot({
 
   return (
     <div className="flex min-w-0 flex-col rounded-xl border border-slate-200/80 bg-white p-2 shadow-sm">
-      <input
-        type="hidden"
-        name={photoFieldName(productIndex, slot)}
-        value={url}
-      />
+      {fieldName && <input type="hidden" name={fieldName} value={url} />}
       <p className="mb-1.5 truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
@@ -233,6 +314,21 @@ function UrunRow({
         name={`gorsel_orani_${index}`}
         value={item.gorsel_orani}
       />
+      {PRESERVED_PHOTO_SLOTS.map((slot) => (
+        <input
+          key={slot}
+          type="hidden"
+          name={photoFieldName(index, slot)}
+          value={item[`fotograf_url_${slot}`]}
+        />
+      ))}
+      <input
+        type="hidden"
+        name={`urun_kategorisi_${index}`}
+        value={item.urun_kategorisi}
+      />
+      <input type="hidden" name={`fiyat_${index}`} value={item.fiyat} />
+      <input type="hidden" name={`stok_adedi_${index}`} value={item.stok_adedi} />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -262,8 +358,7 @@ function UrunRow({
           return (
             <PhotoSlot
               key={key}
-              slot={slot}
-              productIndex={index}
+              fieldName={photoFieldName(index, slot)}
               url={item[key]}
               label={label}
               loading={loadingSlot === slot}
@@ -323,25 +418,21 @@ export function ProductPhotoEditor({
     onChange([...items, emptyUrunItem()]);
   }
 
+  const limitReached = items.length >= MAX_PRODUCT_PHOTOS;
+  const limitMessage = `En fazla ${MAX_PRODUCT_PHOTOS} ürün ekleyebilirsiniz`;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-500">
+      <div className="space-y-1.5 text-sm text-slate-500">
+        <p>
           Her ürün için en fazla {MAX_PRODUCT_PHOTO_SLOTS} fotoğraf. Format
           değiştirmek için satır başındaki{" "}
           <span className="font-medium text-slate-600">Yatay ⇄</span> düğmesini
-          kullanın. En fazla {MAX_PRODUCT_PHOTOS} ürün ({items.length}/
-          {MAX_PRODUCT_PHOTOS})
+          kullanın. ({items.length}/{MAX_PRODUCT_PHOTOS} ürün)
         </p>
-        {items.length < MAX_PRODUCT_PHOTOS && (
-          <button
-            type="button"
-            onClick={addItem}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-6 py-2.5 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
-          >
-            + Ürün Ekle
-          </button>
-        )}
+        <p className="text-xs text-amber-700">
+          Fotoğraf eklenmeyen ürünler kaydedilmez.
+        </p>
       </div>
 
       {!items.length ? (
@@ -368,6 +459,26 @@ export function ProductPhotoEditor({
               onRemove={(i) => onChange(items.filter((_, idx) => idx !== i))}
             />
           ))}
+        </div>
+      )}
+
+      {items.length > 0 && (
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+          <button
+            type="button"
+            onClick={addItem}
+            disabled={limitReached}
+            title={limitReached ? limitMessage : undefined}
+            aria-describedby={limitReached ? "urun-limit-mesaji" : undefined}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-6 py-2.5 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400"
+          >
+            + Ürün Ekle
+          </button>
+          {limitReached && (
+            <p id="urun-limit-mesaji" className="text-sm text-slate-500">
+              {limitMessage}
+            </p>
+          )}
         </div>
       )}
     </div>

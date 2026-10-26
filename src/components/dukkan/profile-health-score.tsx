@@ -14,9 +14,12 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 export function ProfileHealthScore({
   input,
   className,
+  onOpenDetails,
 }: {
   input: ProfileHealthInput;
   className?: string;
+  /** Verilirse kart tıklanabilir olur ve skor dökümünü açar */
+  onOpenDetails?: () => void;
 }) {
   const { score, message } = calculateProfileHealthScore(input);
   const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
@@ -30,10 +33,22 @@ export function ProfileHealthScore({
           ? "stroke-amber-500"
           : "stroke-red-500";
 
+  const Wrapper = onOpenDetails ? "button" : "div";
+
   return (
-    <div
+    <Wrapper
+      {...(onOpenDetails
+        ? {
+            type: "button" as const,
+            onClick: onOpenDetails,
+            "aria-haspopup": "dialog" as const,
+            "aria-label": `Profil ve SEO skoru ${score}/100. Dökümü göster`,
+          }
+        : {})}
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/30 backdrop-blur-sm",
+        "block w-full rounded-2xl border border-slate-200/80 bg-white/95 p-4 text-left shadow-sm shadow-slate-200/30 backdrop-blur-sm",
+        onOpenDetails &&
+          "transition hover:border-emerald-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40",
         className
       )}
     >
@@ -79,8 +94,13 @@ export function ProfileHealthScore({
             Profil & SEO Skoru
           </p>
           <p className="mt-2 text-xs leading-relaxed text-slate-600">{message}</p>
+          {onOpenDetails && (
+            <span className="mt-2 inline-flex text-xs font-semibold text-emerald-700">
+              Dökümü gör →
+            </span>
+          )}
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }

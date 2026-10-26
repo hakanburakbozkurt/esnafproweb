@@ -4,17 +4,20 @@ import { RefreshCw, Smartphone } from "lucide-react";
 import { useCallback, useRef, useState, useTransition } from "react";
 import { CihazDeviceForm } from "@/components/cihaz/cihaz-device-form";
 import { CihazDeviceList } from "@/components/cihaz/cihaz-device-list";
+import { CihazShowcaseToggle } from "@/components/cihaz/cihaz-showcase-toggle";
 import { useCihazVitrini } from "@/lib/cihaz/use-cihaz-vitrini";
 import type { IkinciElCihaz } from "@/lib/cihaz/types";
 
 type CihazlarClientProps = {
   initialDevices: IkinciElCihaz[];
   shopSlug: string;
+  pazaryeriVitrinAktif: boolean;
 };
 
 export function CihazlarClient({
   initialDevices,
   shopSlug,
+  pazaryeriVitrinAktif,
 }: CihazlarClientProps) {
   const vitrini = useCihazVitrini(initialDevices);
   const formRef = useRef<HTMLDivElement>(null);
@@ -87,6 +90,16 @@ export function CihazlarClient({
           {refreshError}
         </div>
       )}
+
+      <CihazShowcaseToggle
+        initialActive={pazaryeriVitrinAktif}
+        shopSlug={shopSlug}
+        publishedDeviceCount={
+          vitrini.devices.filter(
+            (device) => device.web_published && device.status === "available"
+          ).length
+        }
+      />
 
       <div ref={formRef}>
         <CihazDeviceForm

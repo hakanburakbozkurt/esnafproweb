@@ -32,6 +32,9 @@ import {
 
 export const MAX_FAQ_ITEMS = 10;
 
+export const MAX_URUN_KATEGORISI_LENGTH = 60;
+export const MAX_URUN_FIYAT_LENGTH = 40;
+
 export type ParsedUrun = {
   id?: string;
   urun_adi: string;
@@ -39,8 +42,23 @@ export type ParsedUrun = {
   fotograf_url: string | null;
   fotograf_url_2: string | null;
   fotograf_url_3: string | null;
+  fotograf_url_4: string | null;
+  fotograf_url_5: string | null;
+  fotograf_url_6: string | null;
+  fotograf_url_7: string | null;
+  fotograf_url_8: string | null;
+  urun_kategorisi: string | null;
+  fiyat: string | null;
+  stok_adedi: number | null;
   gorsel_orani: "yatay" | "dikey";
 };
+
+function parseStokAdedi(raw: string): number | null {
+  if (!raw) return null;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 0) return null;
+  return value;
+}
 
 export type ParsedDukkanForm = {
   dukkan_adi: string;
@@ -109,16 +127,27 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
 
   for (let i = 0; i < MAX_PRODUCT_PHOTOS; i++) {
     const foto1 = String(formData.get(`fotograf_url_${i}`) ?? "").trim();
-    const foto2 = String(formData.get(`fotograf_url_${i}_2`) ?? "").trim();
-    const foto3 = String(formData.get(`fotograf_url_${i}_3`) ?? "").trim();
+    const extraFotos = [2, 3, 4, 5, 6, 7, 8].map((slot) =>
+      String(formData.get(`fotograf_url_${i}_${slot}`) ?? "").trim()
+    );
 
-    if (!foto1 && !foto2 && !foto3) continue;
+    if (!foto1 && extraFotos.every((url) => !url)) continue;
 
+    const [foto2, foto3, foto4, foto5, foto6, foto7, foto8] = extraFotos;
     const ad = String(formData.get(`urun_adi_${i}`) ?? "").trim();
     const aciklama = String(formData.get(`urun_aciklama_${i}`) ?? "").trim();
     const id = String(formData.get(`urun_id_${i}`) ?? "").trim();
     const gorselOraniRaw = String(formData.get(`gorsel_orani_${i}`) ?? "yatay").trim();
     const gorsel_orani = gorselOraniRaw === "dikey" ? "dikey" : "yatay";
+    const kategori = String(formData.get(`urun_kategorisi_${i}`) ?? "")
+      .trim()
+      .slice(0, MAX_URUN_KATEGORISI_LENGTH);
+    const fiyat = String(formData.get(`fiyat_${i}`) ?? "")
+      .trim()
+      .slice(0, MAX_URUN_FIYAT_LENGTH);
+    const stokAdedi = parseStokAdedi(
+      String(formData.get(`stok_adedi_${i}`) ?? "").trim()
+    );
 
     items.push({
       id: id || undefined,
@@ -127,6 +156,14 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
       fotograf_url: foto1 || null,
       fotograf_url_2: foto2 || null,
       fotograf_url_3: foto3 || null,
+      fotograf_url_4: foto4 || null,
+      fotograf_url_5: foto5 || null,
+      fotograf_url_6: foto6 || null,
+      fotograf_url_7: foto7 || null,
+      fotograf_url_8: foto8 || null,
+      urun_kategorisi: kategori || null,
+      fiyat: fiyat || null,
+      stok_adedi: stokAdedi,
       gorsel_orani,
     });
   }

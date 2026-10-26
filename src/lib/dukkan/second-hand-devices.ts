@@ -146,10 +146,32 @@ function parseExpertiseField(value: string | null | undefined): ParsedExpertiseF
   return { plainText: trimmed };
 }
 
+export async function isShopPazaryeriVitrinActive(
+  supabase: SupabaseClient<Database>,
+  userId: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("dukkanlar")
+    .select("pazaryeri_vitrin_aktif")
+    .eq("user_id", userId)
+    .eq("aktif", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[second-hand-devices] vitrin flag error:", error.message);
+    return false;
+  }
+
+  return data?.pazaryeri_vitrin_aktif !== false;
+}
+
 export async function fetchPublishedSecondHandDevices(
   supabase: SupabaseClient<Database>,
   userId: string
 ): Promise<PublicDeviceListRow[]> {
+  const vitrinActive = await isShopPazaryeriVitrinActive(supabase, userId);
+  if (!vitrinActive) return [];
+
   const { data, error } = await supabase
     .from("second_hand_devices_public")
     .select(PUBLIC_SECOND_HAND_DEVICE_SELECT)
@@ -173,6 +195,9 @@ export async function fetchPublishedSecondHandDeviceBySlug(
 ): Promise<PublicDeviceDetailRow | null> {
   const trimmedSlug = deviceSlug.trim();
   if (!trimmedSlug) return null;
+
+  const vitrinActive = await isShopPazaryeriVitrinActive(supabase, userId);
+  if (!vitrinActive) return null;
 
   const base = () =>
     supabase
@@ -204,6 +229,9 @@ export async function hasPublishedSecondHandDevices(
   supabase: SupabaseClient<Database>,
   userId: string
 ): Promise<boolean> {
+  const vitrinActive = await isShopPazaryeriVitrinActive(supabase, userId);
+  if (!vitrinActive) return false;
+
   const { data, error } = await supabase
     .from("second_hand_devices_public")
     .select("id")

@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
 import { YonetimHeader } from "@/components/yonetim/yonetim-header";
+import { YonetimMobileTabBar } from "@/components/yonetim/yonetim-mobile-tab-bar";
 import { YonetimSubNav } from "@/components/yonetim/yonetim-sub-nav";
 
 type YonetimPageShellProps = ComponentProps<typeof SubPageShell> & {
@@ -14,19 +15,22 @@ export function YonetimPageShell({
   ...props
 }: YonetimPageShellProps) {
   return (
-    <SubPageShell
-      {...props}
-      siteHeader={<YonetimHeader />}
-      subNav={
-        showYonetimNav ? (
-          <>
-            {subNav}
-            <YonetimSubNav />
-          </>
-        ) : (
-          subNav
-        )
-      }
-    />
+    <>
+      <SubPageShell
+        {...props}
+        siteHeader={<YonetimHeader />}
+        subNav={
+          showYonetimNav ? (
+            <>
+              {subNav}
+              <YonetimSubNav />
+            </>
+          ) : (
+            subNav
+          )
+        }
+      />
+      {showYonetimNav && <YonetimMobileTabBar />}
+    </>
   );
 }
