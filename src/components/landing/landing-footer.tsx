@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { getFooterStores } from "@/lib/dukkan/get-public-stores";
+import {
+  SITE_CONTACT,
+  SITE_CONTACT_ADDRESS,
+  SITE_CONTACT_LINKS,
+} from "@/lib/site/contact";
 import { CORPORATE_FOOTER_LINKS } from "@/lib/site/corporate-links";
 
 export async function LandingFooter() {
@@ -17,6 +22,25 @@ export async function LandingFooter() {
             Esnaf ve küçük işletmeler için dijital vitrin, stok, kasa ve teknik
             servis yönetimi.
           </p>
+          <address className="mt-4 space-y-1.5 text-sm not-italic leading-relaxed text-slate-500">
+            <p>{SITE_CONTACT_ADDRESS}</p>
+            <p>
+              <a
+                href={SITE_CONTACT_LINKS.tel}
+                className="transition hover:text-emerald-700"
+              >
+                {SITE_CONTACT.phoneDisplay}
+              </a>
+            </p>
+            <p className="min-w-0 break-words">
+              <a
+                href={SITE_CONTACT_LINKS.mailto}
+                className="transition hover:text-emerald-700"
+              >
+                {SITE_CONTACT.email}
+              </a>
+            </p>
+          </address>
         </div>
 
         <nav

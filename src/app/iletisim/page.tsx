@@ -1,3 +1,4 @@
+import { ContactDetails } from "@/components/landing/contact-details";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
@@ -21,15 +22,9 @@ export default async function IletisimPage() {
               EsnafPRO hakkında sorularınız, iş birliği teklifleriniz veya
               destek talepleriniz için bizimle iletişime geçebilirsiniz.
             </p>
-            <p>
-              E-posta:{" "}
-              <a
-                href="mailto:destek@esnafpro.com"
-                className="font-medium text-emerald-700 hover:text-emerald-800"
-              >
-                destek@esnafpro.com
-              </a>
-            </p>
+          </div>
+          <div className="mt-8">
+            <ContactDetails />
           </div>
         </article>
       </main>

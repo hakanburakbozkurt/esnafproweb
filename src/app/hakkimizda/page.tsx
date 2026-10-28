@@ -1,3 +1,4 @@
+import { ContactDetails } from "@/components/landing/contact-details";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
@@ -26,6 +27,12 @@ export default async function HakkimizdaPage() {
               Amacımız; her ölçekteki işletmenin kod bilmeden, hızlı ve
               profesyonel bir web vitrinine sahip olmasını kolaylaştırmaktır.
             </p>
+          </div>
+          <h2 className="mt-12 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+            İletişim bilgileri
+          </h2>
+          <div className="mt-4">
+            <ContactDetails />
           </div>
         </article>
       </main>
