@@ -73,6 +73,7 @@ export function MarketplaceDeviceCard({
                 deviceCategory={device.device_category}
                 listingType={device.listing_type}
                 locationBadge={locationBadge}
+                stockStatus={device.web_published ? "available" : "unavailable"}
               />
             </div>
           </Link>

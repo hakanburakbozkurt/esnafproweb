@@ -9,6 +9,7 @@ type DeviceListingBadgesProps = {
   deviceCategory?: string | null;
   listingType?: string | null;
   locationBadge?: string | null;
+  stockStatus?: "available" | "unavailable";
   className?: string;
 };
 
@@ -17,6 +18,7 @@ export function DeviceListingBadges({
   deviceCategory,
   listingType,
   locationBadge,
+  stockStatus,
   className,
 }: DeviceListingBadgesProps) {
   const listingBadge = getListingTypeBadge(listingType);
@@ -42,6 +44,18 @@ export function DeviceListingBadges({
       <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 shadow-sm backdrop-blur-sm sm:px-2.5 sm:py-1 sm:text-[11px]">
         {condition}
       </span>
+      {stockStatus && (
+        <span
+          className={cn(
+            "rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm backdrop-blur-sm sm:px-2.5 sm:py-1 sm:text-[11px]",
+            stockStatus === "available"
+              ? "bg-green-600/90 text-white"
+              : "bg-red-500/90 text-white"
+          )}
+        >
+          {stockStatus === "available" ? "Stoğu Var" : "Tükendi"}
+        </span>
+      )}
       {locationBadge && (
         <span className="max-w-full truncate rounded-full bg-slate-900/75 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm sm:px-2.5 sm:py-1 sm:text-[11px]">
           {locationBadge}

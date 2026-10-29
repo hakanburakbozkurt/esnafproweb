@@ -195,6 +195,16 @@ export function SecondHandDeviceDetailContent({
                 {price}
               </p>
 
+              {device.web_published ? (
+                <div className="mt-3 inline-flex rounded-full bg-green-600/10 px-3.5 py-2 text-xs font-bold text-green-700 ring-1 ring-green-200">
+                  ✓ Stoğu Var
+                </div>
+              ) : (
+                <div className="mt-3 inline-flex rounded-full bg-red-600/10 px-3.5 py-2 text-xs font-bold text-red-700 ring-1 ring-red-200">
+                  ✕ Tükendi
+                </div>
+              )}
+
               {showInstallmentOptions && (
                 <InstallmentOptionsCard
                   className="mt-4"
