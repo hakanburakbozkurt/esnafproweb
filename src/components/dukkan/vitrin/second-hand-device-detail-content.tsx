@@ -157,6 +157,9 @@ export function SecondHandDeviceDetailContent({
                   </span>
                 )}
               </div>
+              <p className="mt-2 text-sm text-neutral-600">
+                <span className="font-semibold">Sahip mağaza,</span> pazaryeride satılan ikinci el cihazlar hakkında daha fazla bilgi için mağaza sayfasını ziyaret edin.
+              </p>
 
               {mapsNavigationUrl && (
                 <a

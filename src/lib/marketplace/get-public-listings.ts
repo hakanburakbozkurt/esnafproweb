@@ -7,7 +7,7 @@ const MARKETPLACE_DEVICE_SELECT =
   `${PUBLIC_SECOND_HAND_DEVICE_SELECT}, user_id` as const;
 
 const SHOP_SELECT =
-  "user_id, slug, dukkan_adi, adres, whatsapp, telefon, logo_url, enlem, boylam, pazaryeri_vitrin_aktif" as const;
+  "id, user_id, slug, dukkan_adi, adres, whatsapp, telefon, logo_url, enlem, boylam, pazaryeri_vitrin_aktif" as const;
 
 function buildLocationLabel(il: string | null, ilce: string | null): string | null {
   if (ilce && il) return `${ilce}, ${il}`;
@@ -51,6 +51,17 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
     }
 
     const shopByUserId = new Map(shops.map((shop) => [shop.user_id, shop] as const));
+    const shopIds = shops.map((shop) => shop.id);
+
+    // Fetch seller ratings
+    const { data: ratings } = await supabase
+      .from("seller_ratings_summary")
+      .select("dukkan_id, average_rating, total_reviews")
+      .in("dukkan_id", shopIds);
+
+    const ratingsByShopId = new Map(
+      (ratings ?? []).map((r) => [r.dukkan_id, { average_rating: r.average_rating, total_reviews: r.total_reviews }] as const)
+    );
 
     const listings: MarketplaceListing[] = [];
 
@@ -61,6 +72,7 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       if (!shop || shop.pazaryeri_vitrin_aktif === false) continue;
 
       const { il, ilce } = parseLocationFromAdres(shop.adres);
+      const shopRating = ratingsByShopId.get(shop.id);
 
       listings.push({
         device,
@@ -73,6 +85,8 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
           logo_url: shop.logo_url,
           enlem: shop.enlem,
           boylam: shop.boylam,
+          averageRating: shopRating?.average_rating ?? null,
+          totalReviews: shopRating?.total_reviews ?? null,
         },
         il,
         ilce,

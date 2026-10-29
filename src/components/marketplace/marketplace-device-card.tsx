@@ -87,6 +87,12 @@ export function MarketplaceDeviceCard({
                 >
                   {shop.dukkan_adi}
                 </Link>
+                {shop.averageRating != null && shop.totalReviews != null && (
+                  <div className="mt-1 flex items-center gap-1">
+                    <span className="text-xs font-bold text-amber-500">⭐ {shop.averageRating}</span>
+                    <span className="text-[10px] text-slate-400">({shop.totalReviews})</span>
+                  </div>
+                )}
                 {showLocationSubtitle && listing.locationLabel && (
                   <p className="mt-0.5 truncate text-[11px] text-slate-400 sm:text-xs">
                     {listing.locationLabel}

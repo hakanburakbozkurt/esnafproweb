@@ -9,6 +9,8 @@ export type MarketplaceShopInfo = {
   logo_url: string | null;
   enlem: number | null;
   boylam: number | null;
+  averageRating?: number | null;
+  totalReviews?: number | null;
 };
 
 export type MarketplaceListing = {
