@@ -11,7 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { MAX_URUN_FIYAT_LENGTH, MAX_URUN_KATEGORISI_LENGTH } from "@/lib/dukkan/form-data";
+import {
+  MAX_URUN_BARKOD_LENGTH,
+  MAX_URUN_FIYAT_LENGTH,
+  MAX_URUN_KATEGORISI_LENGTH,
+} from "@/lib/dukkan/form-data";
 import { MAX_URUN_PHOTO_SLOTS } from "@/lib/dukkan/urun-photo-slots";
 
 const NEW_CATEGORY_VALUE = "__yeni__";
@@ -233,6 +237,30 @@ export function UrunEditPanel({
           <p className="-mt-3 text-xs text-slate-400">
             Stok 0 ise “Tükendi”, 1 ise “Son 1 adet”, daha fazlaysa “Stokta” rozeti görünür.
           </p>
+
+          <div>
+            <Label htmlFor={fieldId("barkod")}>Barkod</Label>
+            <Input
+              id={fieldId("barkod")}
+              value={item.barkod}
+              maxLength={MAX_URUN_BARKOD_LENGTH}
+              autoComplete="off"
+              spellCheck={false}
+              onChange={(event) =>
+                patch({
+                  barkod: event.target.value
+                    .replace(/\s+/g, "")
+                    .replace(/[^A-Za-z0-9._-]/g, ""),
+                })
+              }
+              placeholder="Örn: 8690000000017"
+              className="w-full"
+            />
+            <p className="mt-1.5 text-xs text-slate-400">
+              Trendyol ve Hepsiburada’ya göndermek için gerekli. Kutudaki barkodu yazın; barkod
+              yoksa kendi stok kodunuzu kullanabilirsiniz, ama bazı kategoriler gerçek barkod ister.
+            </p>
+          </div>
 
           <div>
             <Label htmlFor={fieldId("aciklama")}>Açıklama</Label>

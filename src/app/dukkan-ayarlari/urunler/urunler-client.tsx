@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Store } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { AuthRequiredCard } from "@/components/auth/auth-required-card";
@@ -48,14 +48,23 @@ function UrunlerForm({
           <ArrowLeft className="size-4" aria-hidden />
           Mağaza ayarları
         </Link>
-        <Link
-          href={`/${dukkan.slug}`}
-          target="_blank"
-          className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
-        >
-          Vitrini görüntüle
-          <ExternalLink className="size-4" aria-hidden />
-        </Link>
+        <div className="flex flex-wrap items-center gap-1">
+          <Link
+            href="/dukkan-ayarlari/pazaryeri"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+          >
+            <Store className="size-4" aria-hidden />
+            Trendyol’a gönder
+          </Link>
+          <Link
+            href={`/${dukkan.slug}`}
+            target="_blank"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+          >
+            Vitrini görüntüle
+            <ExternalLink className="size-4" aria-hidden />
+          </Link>
+        </div>
       </div>
 
       {loadError && (
