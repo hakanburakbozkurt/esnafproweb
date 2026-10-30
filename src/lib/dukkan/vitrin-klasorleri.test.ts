@@ -49,7 +49,7 @@ describe("buildVitrinKlasorleri", () => {
     ]);
   });
 
-  it("cihazları ürünlerden ayrı, '(cihaz)' ekli klasörlere koyar ve alt kategori açmaz", () => {
+  it("cihazları ürünlerden ayrı klasörlere koyar; müşteriye '(cihaz)' eki gösterilmez", () => {
     const klasorler = buildVitrinKlasorleri(
       [urun("u1", "iPad kılıfı", "Tablet › Tablet Kılıfı")],
       [
@@ -64,14 +64,26 @@ describe("buildVitrinKlasorleri", () => {
     const tablet = klasorler.find((k) => k.ad === "Tablet")!;
     expect(tablet).toMatchObject({ urunSayisi: 1, cihazSayisi: 0 });
 
-    const tabletCihaz = klasorler.find((k) => k.ad === "Tablet (cihaz)")!;
-    expect(tabletCihaz).toMatchObject({ slug: "tablet-cihaz", urunSayisi: 0, cihazSayisi: 1, altlar: [] });
+    const tabletler = klasorler.find((k) => k.ad === "Tabletler")!;
+    expect(tabletler).toMatchObject({ slug: "tabletler", urunSayisi: 0, cihazSayisi: 1, altlar: [] });
 
-    const telefon = klasorler.find((k) => k.ad === "Telefon (cihaz)")!;
-    expect(telefon).toMatchObject({ slug: "telefon-cihaz", cihazSayisi: 2, altlar: [] });
+    const telefonlar = klasorler.find((k) => k.ad === "Telefonlar")!;
+    expect(telefonlar).toMatchObject({ slug: "telefonlar", cihazSayisi: 2, altlar: [] });
     expect(klasorler.map((k) => k.ad)).toEqual(
-      expect.arrayContaining(["Bilgisayar (cihaz)", "Akıllı Saat (cihaz)", "Diğer (cihaz)"])
+      expect.arrayContaining(["Bilgisayarlar", "Akıllı Saatler", "Diğer Cihazlar"])
     );
+    expect(klasorler.some((k) => k.ad.includes("(cihaz)"))).toBe(false);
+  });
+
+  it("ürün formunda '(cihaz)' ile seçilen ürünler aynı cihaz klasörüne girer", () => {
+    const klasorler = buildVitrinKlasorleri(
+      [urun("p1", "Telefon standı", "Telefon (cihaz)"), urun("p2", "Tablet kutusu", "Tablet (cihaz)")],
+      [cihaz("c1", "phone")]
+    );
+    const telefonlar = klasorler.find((k) => k.ad === "Telefonlar")!;
+    expect(telefonlar).toMatchObject({ urunSayisi: 1, cihazSayisi: 1 });
+    expect(klasorler.find((k) => k.ad === "Tabletler")).toMatchObject({ urunSayisi: 1, cihazSayisi: 0 });
+    expect(klasorler.some((k) => k.ad.includes("(cihaz)"))).toBe(false);
   });
 
   it("çok öğeli klasör önce, kategorisiz ürünler her zaman en sonda", () => {
