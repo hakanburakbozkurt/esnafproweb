@@ -14,6 +14,7 @@ import {
 import { UrunCard } from "@/components/dukkan/urunler/urun-card";
 import { UrunEditPanel } from "@/components/dukkan/urunler/urun-edit-panel";
 import type { UrunItemUpdater } from "@/components/dukkan/urunler/urun-photo-grid";
+import { mergeVitrinKategorileri } from "@/lib/dukkan/vitrin-kategorileri";
 import { MAX_PRODUCT_PHOTOS } from "@/lib/supabase/storage.constants";
 import type { DukkanUrunu } from "@/types/database.types";
 
@@ -314,7 +315,7 @@ export function UrunListManager({
             key={editingEntry.key}
             item={editingEntry.item}
             position={editingIndex + 1}
-            categories={uniqueCategories(entries, editingEntry.key)}
+            categories={mergeVitrinKategorileri(uniqueCategories(entries, editingEntry.key))}
             storeSlug={storeSlug}
             onChange={(next) => updateEntry(editingEntry.key, next)}
             onBusyChange={handleBusyChange}
