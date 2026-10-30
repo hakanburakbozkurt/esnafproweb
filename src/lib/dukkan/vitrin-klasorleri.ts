@@ -25,28 +25,28 @@ export function slugifyTr(text: string): string {
     .replace(/-+$/g, "");
 }
 
-/** Cihaz türü → klasör adı. Tablet cihazları aksesuarlarla aynı "Tablet" klasörüne girer. */
+/**
+ * Cihaz türü → klasör adı. Cihazlar ürün (aksesuar) klasörlerine karışmaz;
+ * adın sonundaki "(cihaz)" ile ayrılır: "Tablet" kılıflar, "Tablet (cihaz)" tabletler.
+ */
 const CIHAZ_KLASORU: Record<string, string> = {
-  phone: "Telefon",
-  tablet: "Tablet",
-  computer: "Bilgisayar",
-  watch: "Akıllı Saat",
-  console: "Konsol",
+  phone: "Telefon (cihaz)",
+  tablet: "Tablet (cihaz)",
+  computer: "Bilgisayar (cihaz)",
+  watch: "Akıllı Saat (cihaz)",
+  console: "Konsol (cihaz)",
 };
 
 /** Cihazın türü bilinmiyorsa düştüğü klasör. */
-const VARSAYILAN_CIHAZ_KLASORU = "Diğer Cihazlar";
+const VARSAYILAN_CIHAZ_KLASORU = "Diğer (cihaz)";
 
 export const DIGER_URUNLER_KLASORU = "Diğer Ürünler";
 
 /** Eşit adette klasörlerin sırası: önce cihaz klasörleri, sonra hazır ürün kategorileri. */
 const KLASOR_SIRASI: readonly string[] = [
-  "Telefon",
-  "Tablet",
-  "Bilgisayar",
-  "Akıllı Saat",
-  "Konsol",
-  ...VITRIN_KATEGORILERI.filter((kategori) => kategori !== "Tablet"),
+  ...Object.values(CIHAZ_KLASORU),
+  VARSAYILAN_CIHAZ_KLASORU,
+  ...VITRIN_KATEGORILERI,
 ];
 
 export type VitrinUrunMin = {
@@ -64,7 +64,7 @@ export type VitrinCihazMin = {
 
 export type KlasorOgesi<U, C> =
   | { tur: "urun"; urun: U; alt: string | null }
-  | { tur: "cihaz"; cihaz: C; alt: string };
+  | { tur: "cihaz"; cihaz: C; alt: null };
 
 export type KlasorAltGrubu = {
   slug: string;
@@ -84,12 +84,6 @@ export type VitrinKlasoru<U, C> = {
 
 export function cihazKlasorAdi(deviceCategory: string | null | undefined): string {
   return CIHAZ_KLASORU[deviceCategory?.trim() ?? ""] ?? VARSAYILAN_CIHAZ_KLASORU;
-}
-
-/** "İkinci El Telefon", "Sıfır Tablet" gibi; arama motoru için de açıklayıcı alt grup adı. */
-export function cihazAltAdi(listingType: string | null | undefined, klasorAdi: string): string {
-  const durum = listingType?.trim() === "new" ? "Sıfır" : "İkinci El";
-  return `${durum} ${klasorAdi}`;
 }
 
 function siraIndex(ad: string): number {
@@ -135,12 +129,11 @@ export function buildVitrinKlasorleri<U extends VitrinUrunMin, C extends VitrinC
   }
 
   for (const cihaz of cihazlar) {
+    // Cihaz klasörlerinde alt kategori yok; sıfır / ikinci el bilgisi kartın üzerinde yazar.
     const klasorAd = cihazKlasorAdi(cihaz.device_category);
-    const alt = cihazAltAdi(cihaz.listing_type, klasorAd);
     const klasor = klasorAl(klasorAd);
-    klasor.ogeler.push({ tur: "cihaz", cihaz, alt });
+    klasor.ogeler.push({ tur: "cihaz", cihaz, alt: null });
     klasor.cihazSayisi += 1;
-    altEkle(klasorAd, alt);
   }
 
   const sonuc = [...klasorler.values()];

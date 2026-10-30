@@ -49,7 +49,7 @@ describe("buildVitrinKlasorleri", () => {
     ]);
   });
 
-  it("cihazları türüne göre klasörlere koyar; tablet cihazı aksesuarlarla aynı klasöre girer", () => {
+  it("cihazları ürünlerden ayrı, '(cihaz)' ekli klasörlere koyar ve alt kategori açmaz", () => {
     const klasorler = buildVitrinKlasorleri(
       [urun("u1", "iPad kılıfı", "Tablet › Tablet Kılıfı")],
       [
@@ -58,17 +58,20 @@ describe("buildVitrinKlasorleri", () => {
         cihaz("c3", "phone", "new"),
         cihaz("c4", "computer"),
         cihaz("c5", "watch"),
+        cihaz("c6", null),
       ]
     );
     const tablet = klasorler.find((k) => k.ad === "Tablet")!;
-    expect(tablet.urunSayisi).toBe(1);
-    expect(tablet.cihazSayisi).toBe(1);
-    expect(tablet.altlar.map((a) => a.ad)).toEqual(["Tablet Kılıfı", "Sıfır Tablet"]);
+    expect(tablet).toMatchObject({ urunSayisi: 1, cihazSayisi: 0 });
 
-    const telefon = klasorler.find((k) => k.ad === "Telefon")!;
-    expect(telefon.altlar.map((a) => a.ad)).toEqual(["İkinci El Telefon", "Sıfır Telefon"]);
-    expect(klasorler.map((k) => k.ad)).toContain("Bilgisayar");
-    expect(klasorler.map((k) => k.ad)).toContain("Akıllı Saat");
+    const tabletCihaz = klasorler.find((k) => k.ad === "Tablet (cihaz)")!;
+    expect(tabletCihaz).toMatchObject({ slug: "tablet-cihaz", urunSayisi: 0, cihazSayisi: 1, altlar: [] });
+
+    const telefon = klasorler.find((k) => k.ad === "Telefon (cihaz)")!;
+    expect(telefon).toMatchObject({ slug: "telefon-cihaz", cihazSayisi: 2, altlar: [] });
+    expect(klasorler.map((k) => k.ad)).toEqual(
+      expect.arrayContaining(["Bilgisayar (cihaz)", "Akıllı Saat (cihaz)", "Diğer (cihaz)"])
+    );
   });
 
   it("çok öğeli klasör önce, kategorisiz ürünler her zaman en sonda", () => {
