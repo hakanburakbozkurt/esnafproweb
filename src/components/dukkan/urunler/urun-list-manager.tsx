@@ -2,7 +2,7 @@
 
 import { AnimatePresence } from "framer-motion";
 import { PackagePlus, Plus, Search, SearchX } from "lucide-react";
-import { useCallback, useEffect, useId, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { StickySaveBar } from "@/components/dukkan/ayarlar/sticky-save-bar";
 import {
   emptyUrunItem,
@@ -69,6 +69,10 @@ export function UrunListManager({
   onCancel,
 }: UrunListManagerProps) {
   const formId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
+  /** "Tamam" ile başlatılan kayıt bitince paneli kapatmak için */
+  const [closeAfterSave, setCloseAfterSave] = useState(false);
+  const [wasPending, setWasPending] = useState(isPending);
   const [entries, setEntries] = useState<Entry[]>(() => toEntries(defaultUrunler));
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES);
@@ -141,6 +145,25 @@ export function UrunListManager({
     );
   }
 
+  // Panelden kayıt denendiyse: kayıt bitince başarılıysa paneli kapat, hata varsa açık bırak.
+  if (wasPending !== isPending) {
+    setWasPending(isPending);
+    if (!isPending && closeAfterSave) {
+      setCloseAfterSave(false);
+      if (!error) setEditingKey(null);
+    }
+  }
+
+  function handleDone() {
+    if (isUploading) return;
+    if (!isDirty) {
+      closePanel();
+      return;
+    }
+    setCloseAfterSave(true);
+    formRef.current?.requestSubmit();
+  }
+
   const handleBusyChange = useCallback((busy: boolean) => {
     setUploadingCount((count) => Math.max(0, count + (busy ? 1 : -1)));
   }, []);
@@ -165,6 +188,7 @@ export function UrunListManager({
       )
     ) {
       event.preventDefault();
+      setCloseAfterSave(false);
     }
   }
 
@@ -184,6 +208,7 @@ export function UrunListManager({
   return (
     <>
       <form
+        ref={formRef}
         id={formId}
         action={action}
         onSubmit={handleSubmit}
@@ -295,6 +320,8 @@ export function UrunListManager({
             onBusyChange={handleBusyChange}
             onRemove={() => removeEntry(editingEntry.key)}
             onClose={closePanel}
+            onDone={handleDone}
+            saveError={error ?? null}
           />
         )}
       </AnimatePresence>
