@@ -62,3 +62,25 @@ describe("ürün bağlantıları", () => {
     );
   });
 });
+
+describe("groupUrunlerByKategori alt kategoriler", () => {
+  it("aynı ana kategorideki ürünleri tek klasörde toplar ve alt kategorilere ayırır", () => {
+    const silikon = makeUrun({ urun_kategorisi: "Kılıf › Silikon Kılıf" });
+    const deri = makeUrun({ urun_kategorisi: "Kılıf › Deri Kılıf" });
+    const genel = makeUrun({ urun_kategorisi: "Kılıf" });
+    const silikon2 = makeUrun({ urun_kategorisi: "Kılıf › Silikon Kılıf" });
+
+    const groups = groupUrunlerByKategori([silikon, deri, genel, silikon2]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].title).toBe("Kılıf");
+    expect(groups[0].urunler).toHaveLength(4);
+    expect(groups[0].altGruplar.map((a) => a.title)).toEqual(["Silikon Kılıf", "Deri Kılıf", null]);
+    expect(groups[0].altGruplar[0].urunler).toEqual([silikon, silikon2]);
+  });
+
+  it("alt kategorisi olmayan kategoride altGruplar boştur", () => {
+    const groups = groupUrunlerByKategori([makeUrun({ urun_kategorisi: "Tablet" })]);
+    expect(groups[0].altGruplar).toEqual([]);
+  });
+});
