@@ -15,6 +15,18 @@ export const VITRIN_KATEGORILERI = [
   "Aksesuar",
 ] as const;
 
+/**
+ * Ürün formunda cihaz seçenekleri. "(cihaz)" ekı yalnızca bu açılır listede görünür;
+ * vitrinde bu ürünler cihaz klasörlerine (Telefonlar, Tabletler…) gider.
+ */
+export const VITRIN_CIHAZ_KATEGORILERI = [
+  "Telefon (cihaz)",
+  "Tablet (cihaz)",
+  "Bilgisayar (cihaz)",
+  "Akıllı Saat (cihaz)",
+  "Konsol (cihaz)",
+] as const;
+
 /** Her ana kategorinin alt kategorileri (veritabanındaki `categories` ağacından). */
 export const VITRIN_ALT_KATEGORILERI: Readonly<Record<string, readonly string[]>> = {
   "Cam - Ekran Koruyucu": ["360 Tam Kaplama", "9H Temperli Cam", "Nano Ekran Koruyucu", "Seramik Cam", "Standart Cam"],
@@ -70,7 +82,7 @@ export function ayirKategori(deger: string | null | undefined): { ana: string; a
 
 /** Hazır kategoriler önce (verilen sırayla), ardından mevcut özel kategoriler (A-Z). */
 export function mergeVitrinKategorileri(mevcut: readonly string[]): string[] {
-  const hazir: string[] = [...VITRIN_KATEGORILERI];
+  const hazir: string[] = [...VITRIN_KATEGORILERI, ...VITRIN_CIHAZ_KATEGORILERI];
   const ozel = mevcut
     .filter((kategori) => !hazir.includes(kategori))
     .sort((a, b) => a.localeCompare(b, "tr"));

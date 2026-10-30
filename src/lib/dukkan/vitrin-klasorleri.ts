@@ -26,19 +26,28 @@ export function slugifyTr(text: string): string {
 }
 
 /**
- * Cihaz türü → klasör adı. Cihazlar ürün (aksesuar) klasörlerine karışmaz;
- * adın sonundaki "(cihaz)" ile ayrılır: "Tablet" kılıflar, "Tablet (cihaz)" tabletler.
+ * Cihaz türü → müşterinin gördüğü klasör adı. "(cihaz)" eki burada kullanılmaz;
+ * ürün formundaki "(cihaz)" seçenekleri de aynı klasörlere gider (aşağıdaki eşleme).
  */
 const CIHAZ_KLASORU: Record<string, string> = {
-  phone: "Telefon (cihaz)",
-  tablet: "Tablet (cihaz)",
-  computer: "Bilgisayar (cihaz)",
-  watch: "Akıllı Saat (cihaz)",
-  console: "Konsol (cihaz)",
+  phone: "Telefonlar",
+  tablet: "Tabletler",
+  computer: "Bilgisayarlar",
+  watch: "Akıllı Saatler",
+  console: "Konsollar",
 };
 
-/** Cihazın türü bilinmiyorsa düştüğü klasör. */
-const VARSAYILAN_CIHAZ_KLASORU = "Diğer (cihaz)";
+/** Cihaz türü bilinmiyorsa düştüğü klasör. */
+const VARSAYILAN_CIHAZ_KLASORU = "Diğer Cihazlar";
+
+/** Ürün formunda "(cihaz)" ile seçilen kategori → aynı cihaz klasörü. */
+const CIHAZ_URUN_KATEGORISI_KLASORU: Record<string, string> = {
+  "Telefon (cihaz)": CIHAZ_KLASORU.phone,
+  "Tablet (cihaz)": CIHAZ_KLASORU.tablet,
+  "Bilgisayar (cihaz)": CIHAZ_KLASORU.computer,
+  "Akıllı Saat (cihaz)": CIHAZ_KLASORU.watch,
+  "Konsol (cihaz)": CIHAZ_KLASORU.console,
+};
 
 export const DIGER_URUNLER_KLASORU = "Diğer Ürünler";
 
@@ -121,7 +130,7 @@ export function buildVitrinKlasorleri<U extends VitrinUrunMin, C extends VitrinC
 
   for (const urun of urunler) {
     const { ana, alt } = ayirKategori(urun.urun_kategorisi);
-    const klasorAd = ana || DIGER_URUNLER_KLASORU;
+    const klasorAd = CIHAZ_URUN_KATEGORISI_KLASORU[ana] ?? (ana || DIGER_URUNLER_KLASORU);
     const klasor = klasorAl(klasorAd);
     klasor.ogeler.push({ tur: "urun", urun, alt });
     klasor.urunSayisi += 1;
