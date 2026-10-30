@@ -7,6 +7,7 @@ import { ESNAF_ROLE, getSignupHref } from "@/lib/auth/roles";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import { LandingBlogSection } from "@/components/landing/landing-blog-section";
 import { FeaturedStoresSection } from "@/components/landing/featured-stores-section";
+import { ScrollShowcaseSection } from "@/components/landing/scroll-showcase-section";
 import type { PublicBlogPost } from "@/lib/blog/public-blog-post.types";
 import type { PublicStoreCard } from "@/lib/dukkan/public-store.types";
 import type { FaqItem } from "@/types/database.types";
@@ -951,6 +952,7 @@ export function HomePageClient({
   return (
     <div className="min-w-0 max-w-full overflow-x-hidden">
       <HeroSection />
+      <ScrollShowcaseSection />
       <FeatureMapSection />
       <DigitalSupplySection />
       <ModuleGallerySection />
