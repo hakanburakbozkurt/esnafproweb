@@ -1270,6 +1270,15 @@ export interface Database {
         };
         Relationships: [];
       };
+      seller_ratings_summary: {
+        Row: {
+          dukkan_id: string | null;
+          total_reviews: number | null;
+          average_rating: number | null;
+          last_review_date: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       get_my_role: {
