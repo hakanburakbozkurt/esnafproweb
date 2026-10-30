@@ -1,5 +1,11 @@
 import type { MetadataRoute } from "next";
 import { getSecondHandDeviceHref } from "@/lib/dukkan/second-hand-devices";
+import {
+  buildUrunSluglari,
+  buildVitrinKlasorleri,
+  vitrinKlasorPath,
+  vitrinUrunPath,
+} from "@/lib/dukkan/vitrin-klasorleri";
 import { isBlogPostScoreEligible } from "@/lib/blog/blog-publish-rules";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -81,12 +87,16 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     return staticPages;
   }
 
-  const [{ data: dukkanlar, error: dukkanError }, { data: blogPosts }, { data: devices }] =
-    await Promise.all([
+  const [
+    { data: dukkanlar, error: dukkanError },
+    { data: blogPosts },
+    { data: devices },
+    { data: urunler },
+  ] = await Promise.all([
       supabase
         .from("dukkanlar")
         .select(
-          "id, slug, user_id, updated_at, created_at, iletisim_sss_goster, teknik_servis_aktif, katalog_modu_aktif"
+          "id, slug, user_id, updated_at, created_at, iletisim_sss_goster, teknik_servis_aktif, katalog_modu_aktif, pazaryeri_vitrin_aktif"
         )
         .eq("aktif", true)
         .eq("approval_status", "active"),
@@ -96,8 +106,13 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         .eq("yayinda", true),
       supabase
         .from("second_hand_devices_public")
-        .select("id, user_id, web_slug, web_published_at, created_at")
+        .select("id, user_id, web_slug, web_published_at, created_at, device_category, listing_type")
         .eq("web_published", true),
+      supabase
+        .from("dukkan_urunleri")
+        .select("id, dukkan_id, urun_adi, urun_kategorisi, sira")
+        .eq("aktif", true)
+        .order("sira", { ascending: true }),
     ]);
 
   if (dukkanError) {
@@ -127,6 +142,14 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     const userDevices = devicesByUserId.get(device.user_id) ?? [];
     userDevices.push(device);
     devicesByUserId.set(device.user_id, userDevices);
+  }
+
+  const urunlerByDukkanId = new Map<string, NonNullable<typeof urunler>>();
+
+  for (const urun of urunler ?? []) {
+    const shopUrunler = urunlerByDukkanId.get(urun.dukkan_id) ?? [];
+    shopUrunler.push(urun);
+    urunlerByDukkanId.set(urun.dukkan_id, shopUrunler);
   }
 
   const dynamicPages: MetadataRoute.Sitemap = [];
@@ -208,6 +231,30 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         sitemapEntry(`${shopBase}/katalog`, storeLastModified, {
           changeFrequency: "daily",
           priority: 0.65,
+        })
+      );
+    }
+
+    // Vitrin klasörleri (kategori sayfaları) ve ürün sayfaları. Cihazlar yalnızca
+    // mağazanın pazaryeri vitrini açıksa klasörlere girer (sayfadaki davranışla aynı).
+    const storeUrunler = urunlerByDukkanId.get(dukkan.id) ?? [];
+    const vitrinCihazlari = dukkan.pazaryeri_vitrin_aktif === false ? [] : userDevices;
+    const klasorler = buildVitrinKlasorleri(storeUrunler, vitrinCihazlari);
+
+    for (const klasor of klasorler) {
+      dynamicPages.push(
+        sitemapEntry(vitrinKlasorPath(dukkan.slug.trim(), klasor.slug), storeLastModified, {
+          changeFrequency: "weekly",
+          priority: 0.7,
+        })
+      );
+    }
+
+    for (const urunSlug of buildUrunSluglari(storeUrunler).values()) {
+      dynamicPages.push(
+        sitemapEntry(vitrinUrunPath(dukkan.slug.trim(), urunSlug), storeLastModified, {
+          changeFrequency: "weekly",
+          priority: 0.6,
         })
       );
     }

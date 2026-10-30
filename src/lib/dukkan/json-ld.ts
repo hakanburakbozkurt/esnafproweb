@@ -250,3 +250,90 @@ export function buildProductJsonLd(input: {
 export function buildDukkanJsonLd(dukkan: Dukkan) {
   return [buildLocalBusinessJsonLd(dukkan)];
 }
+
+/** Kategori (klasör) sayfası: CollectionPage + içindeki öğelerin ItemList'i. */
+export function buildCollectionPageJsonLd(input: {
+  slug: string;
+  path: string;
+  name: string;
+  description?: string | null;
+  items: Array<{ name: string; path: string; image?: string | null }>;
+}) {
+  const url = absoluteStorePath(input.slug, input.path);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: input.name,
+    url,
+    ...(input.description ? { description: input.description } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "EsnafPRO",
+      url: getPublicSiteUrl(),
+    },
+    about: {
+      "@id": `${absoluteStorePath(input.slug)}#localbusiness`,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: input.items.length,
+      itemListElement: input.items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        url: `${getPublicSiteUrl()}${item.path.startsWith("/") ? item.path : `/${item.path}`}`,
+        ...(item.image ? { image: item.image } : {}),
+      })),
+    },
+  };
+}
+
+/**
+ * Mağaza ürünü (dukkan_urunleri) için Product şeması. Fiyat anlaşılamıyorsa
+ * Offer eklenmez; Google yanlış fiyat göstermesin.
+ */
+export function buildUrunProductJsonLd(input: {
+  name: string;
+  description?: string | null;
+  images: string[];
+  category?: string | null;
+  price: number | null;
+  stokAdedi: number | null;
+  shopName: string;
+  shopSlug: string;
+  path: string;
+}) {
+  const url = `${getPublicSiteUrl()}${input.path.startsWith("/") ? input.path : `/${input.path}`}`;
+  const description =
+    input.description?.trim() || `${input.shopName} mağazasında ${input.name}. Fiyat ve stok bilgisi için iletişime geçin.`;
+
+  const availability =
+    input.stokAdedi === 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: input.name,
+    description,
+    url,
+    ...(input.images.length ? { image: input.images } : {}),
+    ...(input.category ? { category: input.category } : {}),
+    ...(input.price != null
+      ? {
+          offers: {
+            "@type": "Offer",
+            url,
+            priceCurrency: "TRY",
+            price: input.price,
+            availability,
+            seller: {
+              "@type": "LocalBusiness",
+              name: input.shopName,
+              url: absoluteStorePath(input.shopSlug),
+            },
+          },
+        }
+      : {}),
+  };
+}
