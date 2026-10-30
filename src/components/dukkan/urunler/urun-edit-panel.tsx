@@ -30,6 +30,10 @@ type UrunEditPanelProps = {
   onBusyChange: (busy: boolean) => void;
   onRemove: () => void;
   onClose: () => void;
+  /** "Tamam" düğmesi: varsa kaydetmeyi dener; yoksa doğrudan kapatır */
+  onDone?: () => void;
+  /** Son kayıt denemesinin hatası; panel açık kalır ve hatayı gösterir */
+  saveError?: string | null;
 };
 
 export function UrunEditPanel({
@@ -41,6 +45,8 @@ export function UrunEditPanel({
   onBusyChange,
   onRemove,
   onClose,
+  onDone,
+  saveError,
 }: UrunEditPanelProps) {
   const reduceMotion = useReducedMotion();
   const baseId = useId();
@@ -277,6 +283,11 @@ export function UrunEditPanel({
           </div>
         </div>
 
+        {saveError && (
+          <p role="alert" className="mx-5 mb-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
+            {saveError}
+          </p>
+        )}
         <footer className="flex gap-2 border-t border-slate-100 px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
@@ -290,7 +301,7 @@ export function UrunEditPanel({
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onDone ?? onClose}
             className="ml-auto inline-flex min-h-11 items-center justify-center rounded-full bg-slate-900 px-6 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             Tamam
