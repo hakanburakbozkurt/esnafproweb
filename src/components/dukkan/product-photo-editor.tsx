@@ -32,6 +32,7 @@ export type UrunFormItem = {
   urun_kategorisi: string;
   fiyat: string;
   stok_adedi: string;
+  barkod: string;
   gorsel_orani: UrunGorselOrani;
 };
 
@@ -60,6 +61,7 @@ export function emptyUrunItem(): UrunFormItem {
     urun_kategorisi: "",
     fiyat: "",
     stok_adedi: "",
+    barkod: "",
     gorsel_orani: "yatay",
   };
 }
@@ -92,6 +94,7 @@ export function normalizeUrunItems(
     urun_kategorisi: readOptionalText(item, "urun_kategorisi"),
     fiyat: readOptionalText(item, "fiyat"),
     stok_adedi: readOptionalText(item, "stok_adedi"),
+    barkod: readOptionalText(item, "barkod"),
     gorsel_orani: normalizeUrunGorselOrani(
       "gorsel_orani" in item ? item.gorsel_orani : "yatay"
     ),
@@ -153,6 +156,7 @@ export function UrunHiddenFields({
       />
       <input type="hidden" name={`fiyat_${index}`} value={item.fiyat} />
       <input type="hidden" name={`stok_adedi_${index}`} value={item.stok_adedi} />
+      <input type="hidden" name={`barkod_${index}`} value={item.barkod} />
     </>
   );
 }
@@ -329,6 +333,7 @@ function UrunRow({
       />
       <input type="hidden" name={`fiyat_${index}`} value={item.fiyat} />
       <input type="hidden" name={`stok_adedi_${index}`} value={item.stok_adedi} />
+      <input type="hidden" name={`barkod_${index}`} value={item.barkod} />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">

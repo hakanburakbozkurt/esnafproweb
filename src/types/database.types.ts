@@ -15,6 +15,15 @@ export type ServiceDeviceStatus = "tamirde" | "hazir" | "teslim_edildi";
 
 export type ShopApprovalStatus = "active" | "pending" | "rejected";
 
+export type PazaryeriPlatform = "trendyol" | "hepsiburada";
+
+export type PazaryeriUrunDurumu =
+  | "taslak"
+  | "gonderildi"
+  | "onay_bekliyor"
+  | "yayinda"
+  | "hata";
+
 export interface Database {
   public: {
     Tables: {
@@ -206,6 +215,7 @@ export interface Database {
           urun_kategorisi: string | null;
           fiyat: string | null;
           stok_adedi: number | null;
+          barkod: string | null;
           gorsel_orani: string;
           sira: number;
           aktif: boolean;
@@ -227,6 +237,7 @@ export interface Database {
           urun_kategorisi?: string | null;
           fiyat?: string | null;
           stok_adedi?: number | null;
+          barkod?: string | null;
           gorsel_orani?: string;
           sira?: number;
           aktif?: boolean;
@@ -248,10 +259,91 @@ export interface Database {
           urun_kategorisi?: string | null;
           fiyat?: string | null;
           stok_adedi?: number | null;
+          barkod?: string | null;
           gorsel_orani?: string;
           sira?: number;
           aktif?: boolean;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      pazaryeri_baglantilari: {
+        Row: {
+          id: string;
+          dukkan_id: string;
+          platform: PazaryeriPlatform;
+          satici_id: string;
+          api_key_secret_id: string;
+          api_secret_secret_id: string;
+          son_test_basarili: boolean | null;
+          son_test_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pazaryeri_urunleri: {
+        Row: {
+          id: string;
+          dukkan_id: string;
+          platform: PazaryeriPlatform;
+          barkod: string;
+          marka_id: number | null;
+          marka_adi: string | null;
+          kategori_id: number | null;
+          kategori_adi: string | null;
+          ozellikler: Json;
+          kdv_orani: number | null;
+          durum: PazaryeriUrunDurumu;
+          batch_request_id: string | null;
+          son_hata: string | null;
+          son_gonderim_at: string | null;
+          stok_fiyat_batch_id: string | null;
+          son_senkron_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          dukkan_id: string;
+          platform: PazaryeriPlatform;
+          barkod: string;
+          marka_id?: number | null;
+          marka_adi?: string | null;
+          kategori_id?: number | null;
+          kategori_adi?: string | null;
+          ozellikler?: Json;
+          kdv_orani?: number | null;
+          durum?: PazaryeriUrunDurumu;
+          batch_request_id?: string | null;
+          son_hata?: string | null;
+          son_gonderim_at?: string | null;
+          stok_fiyat_batch_id?: string | null;
+          son_senkron_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          dukkan_id?: string;
+          platform?: PazaryeriPlatform;
+          barkod?: string;
+          marka_id?: number | null;
+          marka_adi?: string | null;
+          kategori_id?: number | null;
+          kategori_adi?: string | null;
+          ozellikler?: Json;
+          kdv_orani?: number | null;
+          durum?: PazaryeriUrunDurumu;
+          batch_request_id?: string | null;
+          son_hata?: string | null;
+          son_gonderim_at?: string | null;
+          stok_fiyat_batch_id?: string | null;
+          son_senkron_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -1272,6 +1364,42 @@ export interface Database {
       };
     };
     Functions: {
+      pazaryeri_baglanti_kaydet: {
+        Args: {
+          p_dukkan_id: string;
+          p_platform: string;
+          p_satici_id: string;
+          p_api_key: string;
+          p_api_secret: string;
+        };
+        Returns: undefined;
+      };
+      pazaryeri_baglanti_kimlik: {
+        Args: {
+          p_dukkan_id: string;
+          p_platform: string;
+        };
+        Returns: {
+          satici_id: string;
+          api_key: string;
+          api_secret: string;
+        }[];
+      };
+      pazaryeri_baglanti_sil: {
+        Args: {
+          p_dukkan_id: string;
+          p_platform: string;
+        };
+        Returns: undefined;
+      };
+      pazaryeri_baglanti_test_sonucu: {
+        Args: {
+          p_dukkan_id: string;
+          p_platform: string;
+          p_basarili: boolean;
+        };
+        Returns: undefined;
+      };
       get_my_role: {
         Args: Record<PropertyKey, never>;
         Returns: string;
@@ -1364,6 +1492,9 @@ export type TamirMarkasi = Database["public"]["Tables"]["tamir_markalari"]["Row"
 export type TamirSerisi = Database["public"]["Tables"]["tamir_serileri"]["Row"];
 export type TamirModeli = Database["public"]["Tables"]["tamir_modelleri"]["Row"];
 export type TamirFiyati = Database["public"]["Tables"]["tamir_fiyatlari"]["Row"];
+export type PazaryeriBaglantisi =
+  Database["public"]["Tables"]["pazaryeri_baglantilari"]["Row"];
+export type PazaryeriUrunu = Database["public"]["Tables"]["pazaryeri_urunleri"]["Row"];
 
 /** @deprecated Use Dukkan */
 export type Store = Dukkan;

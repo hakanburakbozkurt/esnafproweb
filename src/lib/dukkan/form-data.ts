@@ -34,6 +34,18 @@ export const MAX_FAQ_ITEMS = 10;
 
 export const MAX_URUN_KATEGORISI_LENGTH = 60;
 export const MAX_URUN_FIYAT_LENGTH = 40;
+export const MAX_URUN_BARKOD_LENGTH = 40;
+
+/** Pazaryeri barkod kuralı: harf, rakam, nokta, tire, alt çizgi; boşluk yok. */
+export const URUN_BARKOD_PATTERN = /^[A-Za-z0-9._-]{1,40}$/;
+
+/** Boşlukları atar, izin verilmeyen karakterleri temizler. Geçersizse null. */
+export function normalizeUrunBarkod(raw: string): string | null {
+  const cleaned = raw.replace(/\s+/g, "").replace(/[^A-Za-z0-9._-]/g, "");
+  if (!cleaned) return null;
+  const value = cleaned.slice(0, MAX_URUN_BARKOD_LENGTH);
+  return URUN_BARKOD_PATTERN.test(value) ? value : null;
+}
 
 export type ParsedUrun = {
   id?: string;
@@ -50,6 +62,7 @@ export type ParsedUrun = {
   urun_kategorisi: string | null;
   fiyat: string | null;
   stok_adedi: number | null;
+  barkod: string | null;
   gorsel_orani: "yatay" | "dikey";
 };
 
@@ -148,6 +161,7 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
     const stokAdedi = parseStokAdedi(
       String(formData.get(`stok_adedi_${i}`) ?? "").trim()
     );
+    const barkod = normalizeUrunBarkod(String(formData.get(`barkod_${i}`) ?? ""));
 
     items.push({
       id: id || undefined,
@@ -164,6 +178,7 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
       urun_kategorisi: kategori || null,
       fiyat: fiyat || null,
       stok_adedi: stokAdedi,
+      barkod,
       gorsel_orani,
     });
   }

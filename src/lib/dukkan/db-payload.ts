@@ -86,6 +86,7 @@ export const DUKKAN_URUN_OPTIONAL_KEYS = [
   "urun_kategorisi",
   "fiyat",
   "stok_adedi",
+  "barkod",
   "gorsel_orani",
 ] as const;
 
@@ -326,6 +327,7 @@ function buildUrunRows(dukkanId: string, urunler: ParsedUrun[]) {
     urun_kategorisi: urun.urun_kategorisi,
     fiyat: urun.fiyat,
     stok_adedi: urun.stok_adedi,
+    barkod: urun.barkod,
     gorsel_orani: urun.gorsel_orani,
     sira: index,
     aktif: true,

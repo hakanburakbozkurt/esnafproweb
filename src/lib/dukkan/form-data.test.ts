@@ -34,6 +34,20 @@ describe("parseUrunlerFromFormData", () => {
     expect(urun).toMatchObject({ urun_kategorisi: "Kılıf", fiyat: "250 TL", stok_adedi: 3 });
   });
 
+  it("barkodu temizler: boşluk ve izin verilmeyen karakterler atılır", () => {
+    const result = parseUrunlerFromFormData(
+      formOf({
+        fotograf_url_0: "a",
+        barkod_0: " 869 0000 000017 ",
+        fotograf_url_1: "b",
+        barkod_1: "KLF-01/ş",
+        fotograf_url_2: "c",
+        barkod_2: "",
+      })
+    );
+    expect(result.map((u) => u.barkod)).toEqual(["8690000000017", "KLF-01", null]);
+  });
+
   it("boş veya geçersiz stoğu NULL yapar; 0 korunur", () => {
     const result = parseUrunlerFromFormData(
       formOf({
