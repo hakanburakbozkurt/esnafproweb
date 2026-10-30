@@ -14,7 +14,7 @@ import {
 import { UrunCard } from "@/components/dukkan/urunler/urun-card";
 import { UrunEditPanel } from "@/components/dukkan/urunler/urun-edit-panel";
 import type { UrunItemUpdater } from "@/components/dukkan/urunler/urun-photo-grid";
-import { mergeVitrinKategorileri } from "@/lib/dukkan/vitrin-kategorileri";
+import { ayirKategori, mergeVitrinKategorileri } from "@/lib/dukkan/vitrin-kategorileri";
 import { MAX_PRODUCT_PHOTOS } from "@/lib/supabase/storage.constants";
 import type { DukkanUrunu } from "@/types/database.types";
 
@@ -49,6 +49,17 @@ function uniqueCategories(entries: Entry[], excludeKey?: string | null): string[
     if (value) set.add(value);
   }
   return [...set].sort((a, b) => a.localeCompare(b, "tr"));
+}
+
+/** Form açılır listesi için yalnızca ana kategoriler (alt kategoriler panelin kendi listesinde). */
+function uniqueRootCategories(entries: Entry[], excludeKey?: string | null): string[] {
+  const set = new Set<string>();
+  for (const entry of entries) {
+    if (entry.key === excludeKey) continue;
+    const { ana } = ayirKategori(entry.item.urun_kategorisi);
+    if (ana) set.add(ana);
+  }
+  return [...set];
 }
 
 function matchesQuery(item: UrunFormItem, query: string): boolean {
@@ -315,7 +326,7 @@ export function UrunListManager({
             key={editingEntry.key}
             item={editingEntry.item}
             position={editingIndex + 1}
-            categories={mergeVitrinKategorileri(uniqueCategories(entries, editingEntry.key))}
+            categories={mergeVitrinKategorileri(uniqueRootCategories(entries, editingEntry.key))}
             storeSlug={storeSlug}
             onChange={(next) => updateEntry(editingEntry.key, next)}
             onBusyChange={handleBusyChange}

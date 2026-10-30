@@ -17,6 +17,11 @@ import {
   MAX_URUN_KATEGORISI_LENGTH,
 } from "@/lib/dukkan/form-data";
 import { MAX_URUN_PHOTO_SLOTS } from "@/lib/dukkan/urun-photo-slots";
+import {
+  ayirKategori,
+  birlestirKategori,
+  VITRIN_ALT_KATEGORILERI,
+} from "@/lib/dukkan/vitrin-kategorileri";
 
 const NEW_CATEGORY_VALUE = "__yeni__";
 
@@ -54,8 +59,10 @@ export function UrunEditPanel({
   const [creatingCategory, setCreatingCategory] = useState(false);
 
   const kategori = item.urun_kategorisi;
+  const { ana: anaKategori, alt: altKategori } = ayirKategori(kategori);
+  const altSecenekleri = VITRIN_ALT_KATEGORILERI[anaKategori] ?? [];
   const isCustomCategory =
-    creatingCategory || (kategori.trim() !== "" && !categories.includes(kategori));
+    creatingCategory || (anaKategori !== "" && !categories.includes(anaKategori));
 
   const onCloseRef = useRef(onClose);
   useEffect(() => {
@@ -173,7 +180,7 @@ export function UrunEditPanel({
             <Label htmlFor={fieldId("kategori")}>Kategori</Label>
             <select
               id={fieldId("kategori")}
-              value={isCustomCategory ? NEW_CATEGORY_VALUE : kategori}
+              value={isCustomCategory ? NEW_CATEGORY_VALUE : anaKategori}
               onChange={(event) => {
                 const value = event.target.value;
                 if (value === NEW_CATEGORY_VALUE) {
@@ -194,6 +201,26 @@ export function UrunEditPanel({
               ))}
               <option value={NEW_CATEGORY_VALUE}>+ Yeni kategori…</option>
             </select>
+            {!isCustomCategory && altSecenekleri.length > 0 && (
+              <div className="mt-2">
+                <Label htmlFor={fieldId("alt-kategori")}>Alt kategori (isteğe bağlı)</Label>
+                <select
+                  id={fieldId("alt-kategori")}
+                  value={altKategori ?? ""}
+                  onChange={(event) =>
+                    patch({ urun_kategorisi: birlestirKategori(anaKategori, event.target.value) })
+                  }
+                  className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  <option value="">Alt kategorisiz</option>
+                  {altSecenekleri.map((alt) => (
+                    <option key={alt} value={alt}>
+                      {alt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {isCustomCategory && (
               <Input
                 aria-label="Yeni kategori adı"

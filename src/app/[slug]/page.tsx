@@ -1,58 +1,54 @@
 import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { VitrinPageContent } from "@/components/dukkan/vitrin/vitrin-page-content";
 import { buildDukkanJsonLd, buildFaqPageJsonLd } from "@/lib/dukkan/json-ld";
 import { resolveFaqItemsForDukkan } from "@/lib/dukkan/faq";
-import { hasPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
 import { getPublicServiceDevice } from "@/lib/dukkan/service-device-public";
 import {
   buildStoreHomeSeoMetadata,
   NOT_FOUND_STORE_METADATA,
 } from "@/lib/dukkan/metadata";
+import { vitrinUrunPath } from "@/lib/dukkan/vitrin-klasorleri";
+import { getVitrinVerisi } from "@/lib/dukkan/vitrin-veri";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ servis?: string }>;
+  searchParams: Promise<{ servis?: string; urun?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: dukkan } = await supabase
-    .from("dukkanlar")
-    .select(
-      "dukkan_adi, aciklama, meta_title, meta_description, slug, adres, banner_url, logo_url, approval_status"
-    )
-    .eq("slug", slug)
-    .eq("aktif", true)
-    .maybeSingle();
+  const veri = await getVitrinVerisi(slug);
 
-  if (!dukkan) {
+  if (!veri) {
     return NOT_FOUND_STORE_METADATA;
   }
 
-  return buildStoreHomeSeoMetadata(dukkan);
+  return buildStoreHomeSeoMetadata(veri.dukkan);
 }
 
 export default async function StoreVitrinPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { servis } = await searchParams;
-  const supabase = await createClient();
+  const { servis, urun } = await searchParams;
+  const veri = await getVitrinVerisi(slug);
 
-  const { data: dukkan, error: dukkanError } = await supabase
-    .from("dukkanlar")
-    .select("*")
-    .eq("slug", slug)
-    .eq("aktif", true)
-    .maybeSingle();
-
-  if (dukkanError || !dukkan) {
+  if (!veri) {
     notFound();
   }
 
+  const { dukkan, klasorler, cihazlar, urunSluglari } = veri;
+
+  // Eski paylaşım bağlantıları (?urun=<id>) ürünün kendi sayfasına taşınır.
+  const eskiUrunId = urun?.trim();
+  if (eskiUrunId) {
+    const urunSlug = urunSluglari.get(eskiUrunId);
+    if (urunSlug) redirect(vitrinUrunPath(dukkan.slug, urunSlug));
+  }
+
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,16 +56,7 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
   const showContactNav = dukkan.iletisim_sss_goster ?? true;
   const showTeknikServisNav = dukkan.teknik_servis_aktif ?? false;
   const showKatalogNav = dukkan.katalog_modu_aktif ?? false;
-
-  const [{ data: urunler }, showPazaryeriNav] = await Promise.all([
-    supabase
-      .from("dukkan_urunleri")
-      .select("*")
-      .eq("dukkan_id", dukkan.id)
-      .eq("aktif", true)
-      .order("sira", { ascending: true }),
-    hasPublishedSecondHandDevices(supabase, dukkan.user_id),
-  ]);
+  const showPazaryeriNav = cihazlar.length > 0;
 
   let qrDevice = null;
   const servisCode = servis?.trim();
@@ -100,7 +87,7 @@ export default async function StoreVitrinPage({ params, searchParams }: PageProp
       >
         <VitrinPageContent
           dukkan={dukkan}
-          urunler={urunler}
+          klasorler={klasorler}
           qrDevice={qrDevice}
           faqItems={faqItems}
         />

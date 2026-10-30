@@ -1,5 +1,4 @@
-"use client";
-
+import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
 import { getUrunStokBadge, URUN_STOK_BADGE_CLASSES } from "@/lib/dukkan/urun-stok";
@@ -8,10 +7,13 @@ import type { DukkanUrunu } from "@/types/database.types";
 
 type UrunVitrinKartiProps = {
   urun: DukkanUrunu;
-  onOpen: (urun: DukkanUrunu) => void;
+  /** Ürünün kendi sayfası */
+  href: string;
+  /** Alt kategori etiketi (ör. "Silikon Kılıf") */
+  altEtiket?: string | null;
 };
 
-export function UrunVitrinKarti({ urun, onOpen }: UrunVitrinKartiProps) {
+export function UrunVitrinKarti({ urun, href, altEtiket }: UrunVitrinKartiProps) {
   const photos = getUrunPhotoUrls(urun);
   const [cover, hoverPhoto] = photos;
   const stokBadge = getUrunStokBadge(urun.stok_adedi);
@@ -19,10 +21,8 @@ export function UrunVitrinKarti({ urun, onOpen }: UrunVitrinKartiProps) {
   const fiyat = urun.fiyat?.trim();
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(urun)}
-      aria-label={`${urun.urun_adi} — detayları gör`}
+    <Link
+      href={href}
       className="group flex h-full w-full flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-white text-left shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_18px_40px_-18px_rgb(15_23_42/0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-slate-50">
@@ -59,7 +59,7 @@ export function UrunVitrinKarti({ urun, onOpen }: UrunVitrinKartiProps) {
         {stokBadge && (
           <span
             className={cn(
-              "absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 backdrop-blur",
+              "absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 backdrop-blur",
               URUN_STOK_BADGE_CLASSES[stokBadge.tone]
             )}
           >
@@ -69,6 +69,7 @@ export function UrunVitrinKarti({ urun, onOpen }: UrunVitrinKartiProps) {
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5 sm:p-4">
+        {altEtiket && <p className="truncate text-xs font-medium text-slate-500">{altEtiket}</p>}
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">
           {urun.urun_adi}
         </h3>
@@ -85,6 +86,6 @@ export function UrunVitrinKarti({ urun, onOpen }: UrunVitrinKartiProps) {
           </span>
         </div>
       </div>
-    </button>
+    </Link>
   );
 }

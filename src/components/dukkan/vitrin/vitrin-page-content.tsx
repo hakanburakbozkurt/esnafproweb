@@ -4,7 +4,7 @@ import {
   ScrollReveal,
 } from "@/components/motion/scroll-reveal";
 import { FaqSection } from "@/components/dukkan/faq-section";
-import { ProductShowcaseSection } from "@/components/dukkan/vitrin/product-showcase";
+import { VitrinKlasorKartlari, type VitrinKlasor } from "@/components/dukkan/vitrin/vitrin-klasor-kartlari";
 import { QrServiceView } from "@/components/dukkan/vitrin/qr-service-view";
 import { VitrinMap } from "@/components/dukkan/vitrin/vitrin-map";
 import {
@@ -15,18 +15,18 @@ import { VitrinCover } from "@/components/dukkan/vitrin/vitrin-cover";
 import { hasVisibleFaqItems } from "@/lib/dukkan/faq";
 import { hasCompleteCoordinates } from "@/lib/dukkan/location";
 import { desktopContainerClass } from "@/lib/utils/layout";
-import type { Dukkan, DukkanUrunu, FaqItem, PublicServiceDevice } from "@/types/database.types";
+import type { Dukkan, FaqItem, PublicServiceDevice } from "@/types/database.types";
 
 type VitrinPageContentProps = {
   dukkan: Dukkan;
-  urunler: DukkanUrunu[] | null;
+  klasorler: VitrinKlasor[];
   qrDevice: PublicServiceDevice | null;
   faqItems: FaqItem[];
 };
 
 export function VitrinPageContent({
   dukkan,
-  urunler,
+  klasorler,
   qrDevice,
   faqItems,
 }: VitrinPageContentProps) {
@@ -40,7 +40,11 @@ export function VitrinPageContent({
       <div className={`${desktopContainerClass} relative pt-4 sm:pt-5 lg:pt-6`}>
         <VitrinDotGrid />
 
-        {!!urunler?.length && <ProductShowcaseSection urunler={urunler} dukkan={dukkan} />}
+        {klasorler.length > 0 && (
+          <ScrollReveal>
+            <VitrinKlasorKartlari shopSlug={dukkan.slug} klasorler={klasorler} />
+          </ScrollReveal>
+        )}
 
         {qrDevice && (
           <ScrollReveal className="mt-6 lg:mt-10">
