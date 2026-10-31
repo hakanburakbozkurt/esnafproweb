@@ -172,8 +172,11 @@ export function buildBlogPostingJsonLd(input: {
   post: DukkanBlogYazisi;
   shopName: string;
   shopSlug: string;
+  shopAdres?: string | null;
 }) {
   const url = absoluteStorePath(input.shopSlug, `/blog/${input.post.slug}`);
+  const { il, ilce } = parseLocationFromAdres(input.shopAdres);
+  const areaName = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
 
   return {
     "@context": "https://schema.org",
@@ -194,6 +197,9 @@ export function buildBlogPostingJsonLd(input: {
     ...(input.post.kapak_url ? { image: input.post.kapak_url } : {}),
     ...(input.post.icerik
       ? { articleBody: stripBlogHtml(input.post.icerik) }
+      : {}),
+    ...(areaName
+      ? { contentLocation: { "@type": "AdministrativeArea", name: areaName } }
       : {}),
   };
 }
