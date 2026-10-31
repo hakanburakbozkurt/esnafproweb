@@ -86,6 +86,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             post,
             shopName: dukkan.dukkan_adi,
             shopSlug: dukkan.slug,
+            shopAdres: dukkan.adres,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
             { name: "Blog", segment: "blog" },
