@@ -126,6 +126,21 @@ export async function renderStoreLlmsTxt(slug: string): Promise<string | null> {
     ...formatLlmsLinkList(store.vitrinPages),
   ];
 
+  if (store.kategoriler.length > 0) {
+    lines.push("", "## Kategoriler", "", ...formatLlmsLinkList(store.kategoriler));
+  }
+
+  if (store.urunler.length > 0) {
+    lines.push("", "## Ürünler", "");
+    if (store.urunToplam > store.urunler.length) {
+      lines.push(
+        `Dükkanda toplam ${store.urunToplam} aktif ürün var; ilk ${store.urunler.length} tanesi listelenir.`,
+        ""
+      );
+    }
+    lines.push(...formatLlmsLinkList(store.urunler));
+  }
+
   if (store.blogPosts.length > 0) {
     lines.push("", "## Blog Yazıları", "", ...formatLlmsLinkList(store.blogPosts));
   }
