@@ -7,6 +7,7 @@ import { ESNAF_ROLE, getSignupHref } from "@/lib/auth/roles";
 import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import { LandingBlogSection } from "@/components/landing/landing-blog-section";
 import { FeaturedStoresSection } from "@/components/landing/featured-stores-section";
+import { ScrollShowcaseSection } from "@/components/landing/scroll-showcase-section";
 import type { PublicBlogPost } from "@/lib/blog/public-blog-post.types";
 import type { PublicStoreCard } from "@/lib/dukkan/public-store.types";
 import type { FaqItem } from "@/types/database.types";
@@ -332,12 +333,13 @@ function HeroSection() {
       <div className="mx-auto grid w-full min-w-0 max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="min-w-0 max-w-xl">
           <h1 className="text-3xl font-bold leading-[1.12] tracking-tight text-slate-900 sm:text-4xl lg:text-[2.75rem] xl:text-5xl">
-            Mağazanı Dijitale Taşı,{" "}
-            <span className="text-emerald-600">Kendi Slug Adresinle Anında Satışa Başla</span>
+            Ücretsiz mağazanı kur,{" "}
+            <span className="text-emerald-600">dükkanın bugün internette olsun</span>
           </h1>
           <p className="mt-6 text-base leading-relaxed text-slate-500 sm:text-lg">
-            Sadece bir uygulama değil; SEO uyumlu dükkan sayfanı kur, ürünlerini sergile,
-            toptancınla ve müşterilerinle doğrudan ticaret yap.
+            Kendi sayfa adresinle ürünlerini, cihazlarını ve teknik servisini tek yerde göster.
+            Müşterin WhatsApp&apos;tan yazsın, arasın, yol tarifi alsın. Ürünlerini Trendyol&apos;a
+            da aynı panelden gönder.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -345,7 +347,7 @@ function HeroSection() {
               href={getSignupHref(ESNAF_ROLE, "/dukkan-ac")}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 px-7 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl hover:shadow-emerald-500/40 sm:w-auto md:hover:scale-[1.02] sm:text-base"
             >
-              Hemen Mağazanını Oluştur
+              Ücretsiz Mağazanı Aç
             </a>
             <a
               href="/fiyatlandirma"
@@ -354,10 +356,10 @@ function HeroSection() {
               Fiyatlandırmayı İncele
             </a>
             <a
-              href="#ozellikler"
+              href="#magaza-tanitim"
               className="inline-flex min-h-12 items-center justify-center px-2 py-3 text-sm font-semibold text-emerald-600 transition hover:text-emerald-700"
             >
-              Özellikleri Keşfet →
+              Mağaza nasıl görünür? →
             </a>
           </div>
         </div>
@@ -951,6 +953,7 @@ export function HomePageClient({
   return (
     <div className="min-w-0 max-w-full overflow-x-hidden">
       <HeroSection />
+      <ScrollShowcaseSection />
       <FeatureMapSection />
       <DigitalSupplySection />
       <ModuleGallerySection />
