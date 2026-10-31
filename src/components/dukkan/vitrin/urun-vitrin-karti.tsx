@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
+import { KartGorseli } from "@/components/ui/kart-gorseli";
 import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
 import { getUrunStokBadge, URUN_STOK_BADGE_CLASSES } from "@/lib/dukkan/urun-stok";
 import { cn } from "@/lib/utils/cn";
 import type { DukkanUrunu } from "@/types/database.types";
+
+/** Mobilde 2, tablette 3, masaüstünde 4 sütun */
+export const URUN_KART_SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px";
 
 type UrunVitrinKartiProps = {
   urun: DukkanUrunu;
@@ -28,25 +32,23 @@ export function UrunVitrinKarti({ urun, href, altEtiket }: UrunVitrinKartiProps)
       <div className="relative aspect-square w-full overflow-hidden bg-slate-50">
         {cover ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <KartGorseli
               src={cover}
               alt={urun.urun_adi}
-              loading="lazy"
+              sizes={URUN_KART_SIZES}
               className={cn(
-                "absolute inset-0 h-full w-full object-cover transition duration-500 motion-reduce:transition-none",
+                "object-cover transition duration-500 motion-reduce:transition-none",
                 hoverPhoto ? "group-hover:opacity-0" : "group-hover:scale-[1.04]",
                 soldOut && "grayscale-[60%]"
               )}
             />
             {hoverPhoto && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <KartGorseli
                 src={hoverPhoto}
                 alt=""
                 aria-hidden
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:opacity-100 motion-reduce:transition-none"
+                sizes={URUN_KART_SIZES}
+                className="object-cover opacity-0 transition duration-500 group-hover:opacity-100 motion-reduce:transition-none"
               />
             )}
           </>
