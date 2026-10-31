@@ -195,7 +195,11 @@ function buildStoreCatalog(
     }
   }
 
-  const { urunLinks, kategoriLinks, urunToplam } = buildStoreUrunLinks(slug, urunKaynaklari);
+  const { urunLinks, kategoriLinks, urunToplam } = buildStoreUrunLinks(
+    slug,
+    urunKaynaklari,
+    buildLocalAreaLabel(store.adres)
+  );
 
   const totalPublicUrls =
     vitrinPages.length +

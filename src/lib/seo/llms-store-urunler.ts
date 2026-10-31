@@ -36,7 +36,8 @@ function kisalt(metin: string, max = NOT_MAX_LENGTH): string {
  */
 export function buildStoreUrunLinks(
   shopSlug: string,
-  urunler: LlmsUrunKaynagi[]
+  urunler: LlmsUrunKaynagi[],
+  areaLabel?: string | null
 ): { urunLinks: LlmsUrunLink[]; kategoriLinks: LlmsUrunLink[]; urunToplam: number } {
   const urunSluglari = buildUrunSluglari(urunler);
 
@@ -45,7 +46,9 @@ export function buildStoreUrunLinks(
     const { ana } = ayirKategori(urun.urun_kategorisi);
     const fiyat = urun.fiyat?.trim();
     const stok = getUrunStokBadge(urun.stok_adedi)?.label;
-    const ozet = [ana || "Diğer Ürünler", fiyat || "Fiyat için sorun", stok].filter(Boolean).join(" · ");
+    const ozet = [ana || "Diğer Ürünler", fiyat || "Fiyat için sorun", stok, areaLabel]
+      .filter(Boolean)
+      .join(" · ");
     const aciklama = urun.urun_aciklama?.trim();
 
     return {

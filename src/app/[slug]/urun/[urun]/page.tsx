@@ -10,7 +10,11 @@ import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import { VitrinDotGrid } from "@/components/dukkan/vitrin/vitrin-open-section";
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { buildStoreBreadcrumbJsonLd, buildUrunProductJsonLd } from "@/lib/dukkan/json-ld";
-import { buildStoreSubpageSeoMetadata, NOT_FOUND_STORE_METADATA } from "@/lib/dukkan/metadata";
+import {
+  buildLocalAreaLabel,
+  buildStoreSubpageSeoMetadata,
+  NOT_FOUND_STORE_METADATA,
+} from "@/lib/dukkan/metadata";
 import { parseUrunFiyati } from "@/lib/dukkan/urun-fiyat";
 import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
 import { ayirKategori } from "@/lib/dukkan/vitrin-kategorileri";
@@ -61,10 +65,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const bulunan = urunBul(veri, urunSlug);
   if (!bulunan) return NOT_FOUND_STORE_METADATA;
 
+  // Başlıkta ilçe: "Hayalet Cam — Esenkent, Esenyurt" (arama terimi ürün + konum birlikte)
+  const alan = buildLocalAreaLabel(veri.dukkan.adres);
+  const baslik = alan ? `${bulunan.urun.urun_adi} — ${alan}` : bulunan.urun.urun_adi;
+
   return buildStoreSubpageSeoMetadata(
     veri.dukkan,
     `urun/${urunSlug}`,
-    bulunan.urun.urun_adi,
+    baslik,
     urunMetaAciklamasi(veri, bulunan.urun),
     { image: getUrunPhotoUrls(bulunan.urun)[0] ?? null }
   );
@@ -105,6 +113,7 @@ export default async function UrunPage({ params }: PageProps) {
             stokAdedi: urun.stok_adedi,
             shopName: dukkan.dukkan_adi,
             shopSlug: dukkan.slug,
+            shopAdres: dukkan.adres,
             path,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
