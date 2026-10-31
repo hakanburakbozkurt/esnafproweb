@@ -11,6 +11,7 @@ import {
 import { blogExcerptFromHtml } from "@/lib/blog/blog-html";
 import { isBlogPostScoreEligible } from "@/lib/blog/blog-publish-rules";
 import { PLATFORM_STATIC_ROUTES } from "@/lib/seo/llms-route-map";
+import { buildStoreUrunLinks, type LlmsUrunKaynagi } from "@/lib/seo/llms-store-urunler";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -29,6 +30,10 @@ export type LlmsStoreCatalog = {
   vitrinPages: LlmsLink[];
   blogPosts: LlmsLink[];
   marketplaceDevices: LlmsLink[];
+  kategoriler: LlmsLink[];
+  urunler: LlmsLink[];
+  /** Dükkanda aktif toplam ürün sayısı (urunler listesi en fazla LLMS_MAX_URUN) */
+  urunToplam: number;
   totalPublicUrls: number;
 };
 
@@ -100,7 +105,8 @@ function buildStoreSummary(store: StoreRow): string {
 function buildStoreCatalog(
   store: StoreRow,
   blogPosts: BlogRow[],
-  devices: DeviceRow[]
+  devices: DeviceRow[],
+  urunKaynaklari: LlmsUrunKaynagi[] = []
 ): LlmsStoreCatalog {
   const slug = store.slug.trim();
   const base = `/${slug}`;
@@ -189,8 +195,14 @@ function buildStoreCatalog(
     }
   }
 
+  const { urunLinks, kategoriLinks, urunToplam } = buildStoreUrunLinks(slug, urunKaynaklari);
+
   const totalPublicUrls =
-    vitrinPages.length + blogPostLinks.length + marketplaceDevices.length;
+    vitrinPages.length +
+    blogPostLinks.length +
+    marketplaceDevices.length +
+    kategoriLinks.length +
+    urunLinks.length;
 
   return {
     slug,
@@ -201,8 +213,36 @@ function buildStoreCatalog(
     vitrinPages,
     blogPosts: blogPostLinks,
     marketplaceDevices,
+    kategoriler: kategoriLinks,
+    urunler: urunLinks,
+    urunToplam,
     totalPublicUrls,
   };
+}
+
+/** Tek dükkanın aktif ürünleri, vitrinle aynı filtre ve sırayla. Hata durumunda boş liste. */
+async function fetchStoreUrunler(dukkanId: string): Promise<LlmsUrunKaynagi[]> {
+  let supabase;
+  try {
+    supabase = createPublicClient();
+  } catch (error) {
+    console.error("[llms.txt] Supabase client error:", error);
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("dukkan_urunleri")
+    .select("id, urun_adi, urun_aciklama, urun_kategorisi, fiyat, stok_adedi")
+    .eq("dukkan_id", dukkanId)
+    .eq("aktif", true)
+    .order("sira", { ascending: true });
+
+  if (error) {
+    console.error("[llms.txt] dukkan_urunleri fetch error:", error.message);
+    return [];
+  }
+
+  return data ?? [];
 }
 
 async function fetchPublicCatalogData(): Promise<{
@@ -292,7 +332,8 @@ export async function buildLlmsStoreCatalog(
 
   if (!store) return null;
 
-  return buildStoreCatalog(store, data.blogPosts, data.devices);
+  const urunKaynaklari = await fetchStoreUrunler(store.id);
+  return buildStoreCatalog(store, data.blogPosts, data.devices, urunKaynaklari);
 }
 
 export function formatLlmsLinkList(links: LlmsLink[]): string[] {
