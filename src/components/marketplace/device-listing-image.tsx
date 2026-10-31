@@ -1,3 +1,4 @@
+import { KartGorseli } from "@/components/ui/kart-gorseli";
 import { cn } from "@/lib/utils/cn";
 
 type DeviceListingImageProps = {
@@ -6,6 +7,8 @@ type DeviceListingImageProps = {
   aspect?: "square" | "4/3";
   className?: string;
   imgClassName?: string;
+  /** Mobilde kart solunda küçük (112px), geniş ekranda kart genişliği */
+  sizes?: string;
 };
 
 export function DeviceListingImage({
@@ -14,6 +17,7 @@ export function DeviceListingImage({
   aspect = "4/3",
   className,
   imgClassName,
+  sizes = "(max-width: 640px) 112px, 320px",
 }: DeviceListingImageProps) {
   return (
     <div
@@ -24,16 +28,11 @@ export function DeviceListingImage({
       )}
     >
       {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <KartGorseli
           src={src}
           alt={alt}
-          loading="lazy"
-          draggable={false}
-          className={cn(
-            "max-h-full max-w-full object-contain p-2 sm:p-3",
-            imgClassName
-          )}
+          sizes={sizes}
+          className={cn("object-contain p-2 sm:p-3", imgClassName)}
         />
       ) : (
         <span className="text-xs text-slate-400 sm:text-sm">Görsel yok</span>

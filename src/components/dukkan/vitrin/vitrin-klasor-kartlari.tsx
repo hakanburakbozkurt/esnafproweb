@@ -4,6 +4,7 @@ import { getSecondHandDeviceImage, type PublicSecondHandDevice } from "@/lib/duk
 import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
 import { vitrinKlasorPath, type VitrinKlasoru } from "@/lib/dukkan/vitrin-klasorleri";
 import type { DukkanUrunu } from "@/types/database.types";
+import { KartGorseli } from "@/components/ui/kart-gorseli";
 
 export type VitrinKlasor = VitrinKlasoru<DukkanUrunu, PublicSecondHandDevice>;
 
@@ -75,12 +76,12 @@ function KlasorKarti({
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
         {kapak ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <KartGorseli
             src={kapak}
             alt={`${klasor.ad} kategorisi`}
-            loading={oncelikli ? "eager" : "lazy"}
-            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+            oncelikli={oncelikli}
+            className="object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         ) : (
           <span className="flex h-full items-center justify-center text-slate-300">
@@ -91,14 +92,12 @@ function KlasorKarti({
         {kucukler.length > 0 && (
           <div aria-hidden className="absolute bottom-2 right-2 flex -space-x-3">
             {kucukler.map((src) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <span
                 key={src}
-                src={src}
-                alt=""
-                loading="lazy"
-                className="size-10 rounded-xl border-2 border-white object-cover shadow-sm sm:size-11"
-              />
+                className="relative block size-10 overflow-hidden rounded-xl border-2 border-white shadow-sm sm:size-11"
+              >
+                <KartGorseli src={src} alt="" aria-hidden sizes="48px" className="object-cover" />
+              </span>
             ))}
           </div>
         )}
