@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { FaqEditor } from "@/components/dukkan/faq-editor";
 import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { compressUrunImage } from "@/lib/dukkan/compress-urun-image";
 import { uploadDukkanImage } from "@/lib/supabase/upload-dukkan-image";
 import { MAX_PRODUCT_PHOTO_SLOTS } from "@/lib/supabase/storage.constants";
 import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
@@ -122,7 +123,8 @@ export function TeknikServisEditor({
     setLoadingSlot(key);
     setError(null);
 
-    const result = await uploadDukkanImage(file, storeSlug, "servis");
+    const compressed = await compressUrunImage(file);
+    const result = await uploadDukkanImage(compressed, storeSlug, "servis");
 
     setLoadingSlot(null);
 

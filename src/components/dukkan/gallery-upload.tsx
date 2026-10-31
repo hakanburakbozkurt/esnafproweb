@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { compressUrunImage } from "@/lib/dukkan/compress-urun-image";
 import { uploadDukkanImage } from "@/lib/supabase/upload-dukkan-image";
 import { MAX_GALLERY_PHOTOS } from "@/lib/supabase/storage.constants";
 
@@ -35,7 +36,8 @@ export function GalleryUpload({
     const selected = Array.from(files).slice(0, remaining);
 
     for (const file of selected) {
-      const result = await uploadDukkanImage(file, storeSlug, "galeri");
+      const compressed = await compressUrunImage(file);
+      const result = await uploadDukkanImage(compressed, storeSlug, "galeri");
       if ("error" in result) {
         setError(result.error);
         break;
