@@ -187,10 +187,11 @@ function buildStoreCatalog(
         device.web_description?.trim() ||
         `${title} — ${condition}, ${price}`;
 
+      const area = buildLocalAreaLabel(store.adres);
       marketplaceDevices.push({
         path: devicePath,
         title,
-        note: truncateNote(description),
+        note: truncateNote(area ? `${description}. ${area}` : description),
       });
     }
   }
