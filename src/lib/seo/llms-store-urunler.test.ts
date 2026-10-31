@@ -40,6 +40,15 @@ describe("buildStoreUrunLinks", () => {
     expect(urunLinks[1].note).toBe("Cam - Ekran Koruyucu · Fiyat için sorun · Tükendi");
   });
 
+  it("konum verilirse ürün notuna ilçe/il ekler", () => {
+    const { urunLinks } = buildStoreUrunLinks(
+      "beep",
+      [urun("a", "Hayalet cam", { urun_kategorisi: "Cam - Ekran Koruyucu", fiyat: "150" })],
+      "Esenkent, Esenyurt"
+    );
+    expect(urunLinks[0].note).toBe("Cam - Ekran Koruyucu · 150 · Esenkent, Esenyurt");
+  });
+
   it("açıklamayı nottan sonra ekler ve uzunluğu sınırlar", () => {
     const uzun = "a".repeat(400);
     const { urunLinks } = buildStoreUrunLinks("beep", [

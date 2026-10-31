@@ -302,9 +302,12 @@ export function buildUrunProductJsonLd(input: {
   stokAdedi: number | null;
   shopName: string;
   shopSlug: string;
+  shopAdres?: string | null;
   path: string;
 }) {
   const url = `${getPublicSiteUrl()}${input.path.startsWith("/") ? input.path : `/${input.path}`}`;
+  const { il, ilce } = parseLocationFromAdres(input.shopAdres);
+  const areaName = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
   const description =
     input.description?.trim() || `${input.shopName} mağazasında ${input.name}. Fiyat ve stok bilgisi için iletişime geçin.`;
 
@@ -327,10 +330,22 @@ export function buildUrunProductJsonLd(input: {
             priceCurrency: "TRY",
             price: input.price,
             availability,
+            ...(areaName ? { areaServed: { "@type": "AdministrativeArea", name: areaName } } : {}),
             seller: {
               "@type": "LocalBusiness",
               name: input.shopName,
               url: absoluteStorePath(input.shopSlug),
+              ...(input.shopAdres
+                ? {
+                    address: {
+                      "@type": "PostalAddress",
+                      streetAddress: input.shopAdres,
+                      ...(ilce ? { addressLocality: ilce } : {}),
+                      ...(il ? { addressRegion: il } : {}),
+                      addressCountry: "TR",
+                    },
+                  }
+                : {}),
             },
           },
         }
