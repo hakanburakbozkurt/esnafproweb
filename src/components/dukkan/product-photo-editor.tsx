@@ -10,6 +10,7 @@ import {
   toggleUrunGorselOrani,
   type UrunGorselOrani,
 } from "@/lib/dukkan/urun-gorsel-orani";
+import { compressUrunImage } from "@/lib/dukkan/compress-urun-image";
 import { uploadDukkanImage } from "@/lib/supabase/upload-dukkan-image";
 import {
   MAX_PRODUCT_PHOTOS,
@@ -290,7 +291,8 @@ function UrunRow({
     setLoadingSlot(slot);
     setError(null);
 
-    const result = await uploadDukkanImage(file, storeSlug, "urun");
+    const compressed = await compressUrunImage(file);
+    const result = await uploadDukkanImage(compressed, storeSlug, "urun");
 
     setLoadingSlot(null);
 

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Field } from "@/components/ui/field";
+import { compressUrunImage } from "@/lib/dukkan/compress-urun-image";
 import { uploadDukkanImage } from "@/lib/supabase/upload-dukkan-image";
 import { cn } from "@/lib/utils/cn";
 
@@ -37,7 +38,8 @@ export function ImageUploadBox({
     setLoading(true);
     setError(null);
 
-    const result = await uploadDukkanImage(file, storeSlug, subfolder);
+    const compressed = await compressUrunImage(file);
+    const result = await uploadDukkanImage(compressed, storeSlug, subfolder);
 
     setLoading(false);
 
