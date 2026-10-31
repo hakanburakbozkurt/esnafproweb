@@ -7,6 +7,7 @@ import {
   buildStoreBreadcrumbJsonLd,
 } from "@/lib/dukkan/json-ld";
 import {
+  buildLocalAreaLabel,
   buildStoreSubpageSeoMetadata,
   NOT_FOUND_STORE_METADATA,
 } from "@/lib/dukkan/metadata";
@@ -50,11 +51,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = getSecondHandDeviceTitle(device);
   const deviceSegment = `pazaryeri/${device.web_slug?.trim() || device.id}`;
+  // Başlıkta ilçe: "iPad 9 — Esenkent, Esenyurt"
+  const alan = buildLocalAreaLabel(dukkan.adres);
 
   return buildStoreSubpageSeoMetadata(
     dukkan,
     deviceSegment,
-    title,
+    alan ? `${title} — ${alan}` : title,
     device.web_description?.trim() ??
       `${dukkan.dukkan_adi} ikinci el cihaz ilanı: ${title}`,
     { image: device.image_urls?.[0] ?? null }
@@ -111,6 +114,7 @@ export default async function PazaryeriDevicePage({ params }: PageProps) {
             device,
             shopName: dukkan.dukkan_adi,
             shopSlug: dukkan.slug,
+            shopAdres: dukkan.adres,
             devicePath,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [

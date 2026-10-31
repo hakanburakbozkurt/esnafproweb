@@ -212,12 +212,15 @@ export function buildProductJsonLd(input: {
   >;
   shopName: string;
   shopSlug: string;
+  shopAdres?: string | null;
   devicePath: string;
 }) {
   const name =
     input.device.web_title?.trim() ||
     `${input.device.brand} ${input.device.model}`.trim();
   const url = `${getPublicSiteUrl()}${input.devicePath.startsWith("/") ? input.devicePath : `/${input.devicePath}`}`;
+  const { il, ilce } = parseLocationFromAdres(input.shopAdres);
+  const areaName = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
 
   return {
     "@context": "https://schema.org",
@@ -235,10 +238,22 @@ export function buildProductJsonLd(input: {
       priceCurrency: "TRY",
       price: input.device.sale_price,
       availability: "https://schema.org/InStock",
+      ...(areaName ? { areaServed: { "@type": "AdministrativeArea", name: areaName } } : {}),
       seller: {
         "@type": "LocalBusiness",
         name: input.shopName,
         url: absoluteStorePath(input.shopSlug),
+        ...(input.shopAdres
+          ? {
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: input.shopAdres,
+                ...(ilce ? { addressLocality: ilce } : {}),
+                ...(il ? { addressRegion: il } : {}),
+                addressCountry: "TR",
+              },
+            }
+          : {}),
       },
     },
     ...(input.device.condition
