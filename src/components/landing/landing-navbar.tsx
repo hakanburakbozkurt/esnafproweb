@@ -14,14 +14,9 @@ export function LandingNavbar() {
 
         <ul className="flex shrink-0 items-center gap-3 sm:gap-8">
           <li>
-            <a href="#ozellikler" className={NAV_LINK_CLASS}>
-              Özellikler
-            </a>
-          </li>
-          <li>
-            <a href="#moduller" className={NAV_LINK_CLASS}>
-              Modüller
-            </a>
+            <Link href="/#magaza-tanitim" className={NAV_LINK_CLASS}>
+              Mağaza nasıl görünür
+            </Link>
           </li>
           <li>
             <Link href="/pazaryeri" className={NAV_LINK_CLASS}>
