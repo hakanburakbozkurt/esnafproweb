@@ -142,7 +142,8 @@ export function buildBlogPostSeoMetadata(
 ): Metadata {
   const title = resolveBlogSeoTitle(
     post.meta_title,
-    post.baslik,
+    // Özel meta başlık yoksa yazı başlığına il/ilçe eklenir (ürün sayfalarıyla aynı kural)
+    post.meta_title?.trim() ? post.baslik : withLocalAreaSuffix(post.baslik, dukkan.adres),
     dukkan.dukkan_adi
   );
   const description = withLocalAreaSuffix(
