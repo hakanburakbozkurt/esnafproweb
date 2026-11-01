@@ -69,7 +69,7 @@ export function CalismaSaatleriEditor({
             return (
               <div
                 key={day}
-                className="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1.1fr)_auto_minmax(0,0.9fr)_minmax(0,0.9fr)] sm:items-center lg:px-5"
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2.5 px-4 py-3 sm:grid-cols-[minmax(0,1.1fr)_auto_minmax(0,0.9fr)_minmax(0,0.9fr)] sm:items-center sm:gap-3 sm:py-4 lg:px-5"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-slate-900">
@@ -99,39 +99,41 @@ export function CalismaSaatleriEditor({
                   />
                 </button>
 
-                <label className="block space-y-1.5">
-                  <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400 sm:sr-only">
-                    Başlangıç
-                  </span>
-                  <Input
-                    type="time"
-                    value={entry.baslangic}
-                    disabled={entry.acik !== true}
-                    onChange={(event) =>
-                      updateDay(day, {
-                        baslangic: normalizeTimeValue(event.target.value, entry.baslangic),
-                      })
-                    }
-                    className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-                  />
-                </label>
+                <div className="col-span-2 grid grid-cols-2 gap-2 sm:contents">
+                  <label className="block space-y-1 sm:space-y-1.5">
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400 sm:sr-only">
+                      Başlangıç
+                    </span>
+                    <Input
+                      type="time"
+                      value={entry.baslangic}
+                      disabled={entry.acik !== true}
+                      onChange={(event) =>
+                        updateDay(day, {
+                          baslangic: normalizeTimeValue(event.target.value, entry.baslangic),
+                        })
+                      }
+                      className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                    />
+                  </label>
 
-                <label className="block space-y-1.5">
-                  <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400 sm:sr-only">
-                    Bitiş
-                  </span>
-                  <Input
-                    type="time"
-                    value={entry.bitis}
-                    disabled={entry.acik !== true}
-                    onChange={(event) =>
-                      updateDay(day, {
-                        bitis: normalizeTimeValue(event.target.value, entry.bitis),
-                      })
-                    }
-                    className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-                  />
-                </label>
+                  <label className="block space-y-1 sm:space-y-1.5">
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400 sm:sr-only">
+                      Bitiş
+                    </span>
+                    <Input
+                      type="time"
+                      value={entry.bitis}
+                      disabled={entry.acik !== true}
+                      onChange={(event) =>
+                        updateDay(day, {
+                          bitis: normalizeTimeValue(event.target.value, entry.bitis),
+                        })
+                      }
+                      className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                    />
+                  </label>
+                </div>
               </div>
             );
           })}
