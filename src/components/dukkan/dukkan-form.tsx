@@ -13,7 +13,6 @@ import {
 import { SettingsSectionNav } from "@/components/dukkan/ayarlar/settings-section-nav";
 import { StickySaveBar } from "@/components/dukkan/ayarlar/sticky-save-bar";
 import { UrunlerSummaryCard } from "@/components/dukkan/ayarlar/urunler-summary-card";
-import { useActiveSection } from "@/components/dukkan/ayarlar/use-active-section";
 import { FaqEditor } from "@/components/dukkan/faq-editor";
 import { ProfileHealthScore } from "@/components/dukkan/profile-health-score";
 import { countDukkanFaqQuestions } from "@/lib/dukkan/shop-score-data";
@@ -106,13 +105,20 @@ const STICKY_OFFSET_CLASSES = {
 
 function SettingsAnchor({
   id,
+  active,
   children,
 }: {
   id: DukkanSettingsSectionId;
+  active: boolean;
   children: ReactNode;
 }) {
+  // Bölümler DOM'da kalır (yalnızca gizlenir); böylece kaydetmede tüm alanlar gönderilir.
   return (
-    <div id={id} className={cn("space-y-8", SETTINGS_SECTION_SCROLL_MARGIN_CLASS)}>
+    <div
+      id={id}
+      hidden={!active}
+      className={cn("space-y-8", SETTINGS_SECTION_SCROLL_MARGIN_CLASS)}
+    >
       {children}
     </div>
   );
@@ -386,18 +392,24 @@ export function DukkanForm({
     () => getDukkanSettingsSections({ showSeo: showSeoFields }),
     [showSeoFields]
   );
-  const settingsSectionIds = useMemo(
-    () => (isStacked ? settingsSections.map((section) => section.id) : []),
-    [isStacked, settingsSections]
-  );
-  const [activeSectionId, setActiveSectionId] = useActiveSection(settingsSectionIds);
+  const [activeSectionId, setActiveSectionId] = useState<DukkanSettingsSectionId>("ayar-temel");
 
-  const scrollToSection = (id: DukkanSettingsSectionId) => {
+  // Diğer sayfalardan gelen bağlantılar (ör. /dukkan-ayarlari#ayar-konum) ilgili bölümü açar
+  useEffect(() => {
+    const syncFromHash = () => {
+      const id = window.location.hash.replace("#", "");
+      if (settingsSections.some((section) => section.id === id)) {
+        setActiveSectionId(id as DukkanSettingsSectionId);
+      }
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+  }, [settingsSections]);
+
+  const selectSection = (id: DukkanSettingsSectionId) => {
     setActiveSectionId(id);
-    document.getElementById(id)?.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   };
 
   const saveDisabledReason = !markaTermsAccepted
@@ -982,21 +994,23 @@ export function DukkanForm({
 
   const stackedSections = (
     <>
-      <SettingsAnchor id="ayar-temel">{temelBilgiler}</SettingsAnchor>
-      <SettingsAnchor id="ayar-urunler">{urunHizmetler}</SettingsAnchor>
-      {showSeoFields && <SettingsAnchor id="ayar-seo">{seoAyarlari}</SettingsAnchor>}
-      <SettingsAnchor id="ayar-gorseller">{markaGorselleri}</SettingsAnchor>
-      <SettingsAnchor id="ayar-hakkimizda">
+      <SettingsAnchor id="ayar-temel" active={activeSectionId === "ayar-temel"}>{temelBilgiler}</SettingsAnchor>
+      <SettingsAnchor id="ayar-urunler" active={activeSectionId === "ayar-urunler"}>{urunHizmetler}</SettingsAnchor>
+      {showSeoFields && (
+        <SettingsAnchor id="ayar-seo" active={activeSectionId === "ayar-seo"}>{seoAyarlari}</SettingsAnchor>
+      )}
+      <SettingsAnchor id="ayar-gorseller" active={activeSectionId === "ayar-gorseller"}>{markaGorselleri}</SettingsAnchor>
+      <SettingsAnchor id="ayar-hakkimizda" active={activeSectionId === "ayar-hakkimizda"}>
         {hakkimizdaSection}
         {hakkimizdaSss}
       </SettingsAnchor>
-      <SettingsAnchor id="ayar-iletisim">
+      <SettingsAnchor id="ayar-iletisim" active={activeSectionId === "ayar-iletisim"}>
         {iletisimSosyal}
         {iletisimSss}
       </SettingsAnchor>
-      <SettingsAnchor id="ayar-konum">{konumTanitim}</SettingsAnchor>
-      <SettingsAnchor id="ayar-sss">{anasayfaSss}</SettingsAnchor>
-      <SettingsAnchor id="ayar-moduller">
+      <SettingsAnchor id="ayar-konum" active={activeSectionId === "ayar-konum"}>{konumTanitim}</SettingsAnchor>
+      <SettingsAnchor id="ayar-sss" active={activeSectionId === "ayar-sss"}>{anasayfaSss}</SettingsAnchor>
+      <SettingsAnchor id="ayar-moduller" active={activeSectionId === "ayar-moduller"}>
         {vitrinGorunurluk}
         {teknikServis}
         {markaTermsSection}
@@ -1070,7 +1084,7 @@ export function DukkanForm({
               variant="sidebar"
               sections={settingsSections}
               activeId={activeSectionId}
-              onSelect={scrollToSection}
+              onSelect={selectSection}
             />
             <ProfileHealthScore input={healthInput} />
           </div>
@@ -1081,7 +1095,7 @@ export function DukkanForm({
             variant="chips"
             sections={settingsSections}
             activeId={activeSectionId}
-            onSelect={scrollToSection}
+            onSelect={selectSection}
             className={cn("mb-6 lg:hidden", STICKY_OFFSET_CLASSES[stickyOffset].chips)}
           />
 
