@@ -25,7 +25,8 @@ export function getPublicSiteUrl(): string {
   return "https://www.esnafpro.app";
 }
 
+/** Şifre sıfırlama e-postasındaki bağlantı her zaman üretim alan adına gider */
 export function getPasswordResetRedirectUrl(): string {
-  const siteUrl = getSiteUrl();
+  const siteUrl = getPublicSiteUrl();
   return `${siteUrl}/auth/callback?next=/yeni-sifre`;
 }
