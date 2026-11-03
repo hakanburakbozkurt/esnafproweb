@@ -6,8 +6,8 @@ import {
 } from "@/lib/yonetim/nav";
 import { cn } from "@/lib/utils/cn";
 
-export function YonetimHubGrid({ shopSlug }: { shopSlug: string }) {
-  const items = getYonetimHubItems(shopSlug);
+export function YonetimHubGrid() {
+  const items = getYonetimHubItems();
 
   return (
     <section aria-labelledby="tum-moduller-baslik">

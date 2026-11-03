@@ -35,7 +35,7 @@ export function YonetimDashboardClient({
         <EsnafKocuCoach healthInput={healthInput} />
       </div>
 
-      <YonetimHubGrid shopSlug={shopSlug} />
+      <YonetimHubGrid />
 
       <AnimatePresence>
         {scoreSheetOpen && (

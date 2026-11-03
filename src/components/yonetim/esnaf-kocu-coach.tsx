@@ -33,14 +33,11 @@ export function EsnafKocuCoach({
           <div className="min-w-0 flex-1">
             <p className={yonetimPanelAccentLabelClass}>Esnaf Koçu</p>
             <p className="mt-2 text-base leading-relaxed text-slate-700 sm:text-lg">
-              <span className="font-semibold text-slate-900">Esnaf Koçu:</span> {primary.message}
+              {primary.message}
             </p>
             {secondary && (
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{secondary.message}</p>
             )}
-            <p className="mt-3 text-xs font-medium text-emerald-700/80">
-              Profil & SEO Skoru: {result.score}/100
-            </p>
           </div>
 
           {primary.href && primary.cta && (

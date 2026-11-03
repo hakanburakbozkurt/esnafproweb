@@ -69,7 +69,7 @@ export function SeoGeoScoreCard({
 
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
-            Profil & SEO Skoru
+            Vitrin skoru
           </p>
           <ul className="mt-2 space-y-1">
             {breakdown.map((item) => (

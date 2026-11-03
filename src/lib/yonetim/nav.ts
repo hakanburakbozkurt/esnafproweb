@@ -101,7 +101,7 @@ export function getYonetimNavItems(): YonetimNavItem[] {
   ];
 }
 
-export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
+export function getYonetimHubItems(): YonetimHubItem[] {
   return [
     {
       id: "servis",
@@ -138,7 +138,7 @@ export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
     {
       id: "harita-pazari",
       title: "Harita Pazarı",
-      description: "Google Haritalar sıran ve rakiplerin · PRO",
+      description: "Google Haritalar'da sıralamanı gör",
       href: "/yonetim/harita-pazari",
       icon: MapPinned,
       accent: "teal",
@@ -150,14 +150,6 @@ export function getYonetimHubItems(shopSlug: string): YonetimHubItem[] {
       href: "/yonetim/katalog",
       icon: LayoutGrid,
       accent: "amber",
-    },
-    {
-      id: "vitrin",
-      title: "Vitrini Görüntüle",
-      description: `/${shopSlug}`,
-      href: `/${shopSlug}`,
-      icon: LayoutDashboard,
-      accent: "slate",
     },
   ];
 }

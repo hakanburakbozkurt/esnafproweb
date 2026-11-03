@@ -76,7 +76,7 @@ export function ProfileHealthSheet({
         <header className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600">
-              Profil & SEO Skoru
+              Vitrin skoru
             </p>
             <h2 id={titleId} className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
               {score}
