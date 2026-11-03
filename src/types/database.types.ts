@@ -216,6 +216,8 @@ export interface Database {
           fiyat: string | null;
           stok_adedi: number | null;
           barkod: string | null;
+          /** Mobil uygulama stok ürünü; doluysa stok_adedi uygulamadan senkronlanır. */
+          product_id: string | null;
           gorsel_orani: string;
           sira: number;
           aktif: boolean;
@@ -238,6 +240,7 @@ export interface Database {
           fiyat?: string | null;
           stok_adedi?: number | null;
           barkod?: string | null;
+          product_id?: string | null;
           gorsel_orani?: string;
           sira?: number;
           aktif?: boolean;
@@ -260,6 +263,7 @@ export interface Database {
           fiyat?: string | null;
           stok_adedi?: number | null;
           barkod?: string | null;
+          product_id?: string | null;
           gorsel_orani?: string;
           sira?: number;
           aktif?: boolean;

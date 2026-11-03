@@ -270,6 +270,13 @@ export function UrunEditPanel({
           <p className="-mt-3 text-xs text-slate-400">
             Stok 0 ise “Tükendi”, 1 ise “Son 1 adet”, daha fazlaysa “Stokta” rozeti görünür.
           </p>
+          {item.product_id ? (
+            <p className="-mt-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800 ring-1 ring-inset ring-emerald-600/15">
+              Bu ürün mobil uygulamadaki stoğa bağlı. Stok adedi satış ve toptancı
+              teslimlerinde otomatik güncellenir; buradan değiştirirseniz bir sonraki
+              stok hareketinde uygulamadaki sayıya döner.
+            </p>
+          ) : null}
 
           <div>
             <Label htmlFor={fieldId("barkod")}>Barkod</Label>
