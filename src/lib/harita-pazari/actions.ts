@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getShopPlan } from "@/lib/abonelik/get-shop-plan";
+import { getPlanLimits } from "@/lib/abonelik/plan-limits";
 import { getDukkanScoreEligibleBlogPostCount } from "@/lib/dukkan/blog-posts";
 import { hasGoogleBusinessUrl } from "@/lib/dukkan/google-business-url";
 import { logDukkanAction } from "@/lib/dukkan/logger";
@@ -49,7 +50,7 @@ async function loadContext() {
   if (!dukkan) return { error: "Bu hesaba bağlı bir mağaza bulunamadı." } as const;
 
   const plan = await getShopPlan(supabase, dukkan.id);
-  if (!plan.ucretliAktif) {
+  if (!getPlanLimits(plan).haritaPazari) {
     return { error: "Harita Pazarı PRO ve ULTRA planlarda kullanılabilir." } as const;
   }
 

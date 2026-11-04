@@ -1,6 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getShopPlan } from "@/lib/abonelik/get-shop-plan";
+import {
+  getIstanbulMonthStartIso,
+  getPlanLimits,
+  isPlanEnforcementEnabled,
+  isWithinLimit,
+  planLimitMessage,
+} from "@/lib/abonelik/plan-limits";
 import { isWholesalerAccount, wholesalerStoreAccessError } from "@/lib/auth/wholesaler";
 import { URUN_BARKOD_PATTERN } from "@/lib/dukkan/form-data";
 import { logDukkanAction } from "@/lib/dukkan/logger";
@@ -372,6 +380,43 @@ export type TrendyolGonderSonucu =
   | { ok: true; durum: PazaryeriUrunDurumu }
   | { error: string; hatalar?: string[] };
 
+/** Aylık yeni ürün gönderim sınırı (PLAN_ENFORCEMENT=on iken). Daha önce gönderilmiş ürünün güncellenmesi sayılmaz. */
+async function getTrendyolGonderimLimitHatasi(
+  baglam: Baglam,
+  barkod: string
+): Promise<string | null> {
+  if (!isPlanEnforcementEnabled()) return null;
+
+  const limits = getPlanLimits(await getShopPlan(baglam.supabase, baglam.dukkanId));
+  if (limits.trendyolAylikUrun === null) return null;
+
+  const { data: mevcut } = await baglam.supabase
+    .from("pazaryeri_urunleri")
+    .select("son_gonderim_at")
+    .eq("dukkan_id", baglam.dukkanId)
+    .eq("platform", PLATFORM)
+    .eq("barkod", barkod)
+    .maybeSingle();
+  if (mevcut?.son_gonderim_at) return null;
+
+  const { count, error } = await baglam.supabase
+    .from("pazaryeri_urunleri")
+    .select("id", { count: "exact", head: true })
+    .eq("dukkan_id", baglam.dukkanId)
+    .eq("platform", PLATFORM)
+    .gte("son_gonderim_at", getIstanbulMonthStartIso());
+  if (error) return "Gönderim sınırı kontrol edilemedi. Lütfen tekrar deneyin.";
+
+  if (!isWithinLimit(limits.trendyolAylikUrun, count ?? 0)) {
+    return planLimitMessage(
+      "ürünü Trendyol'a gönderebilirsiniz",
+      limits.trendyolAylikUrun,
+      "aylik"
+    );
+  }
+  return null;
+}
+
 export async function trendyolUrunGonder(input: unknown): Promise<TrendyolGonderSonucu> {
   const action = "trendyolUrunGonder";
   const girdi = parseGonderGirdisi(input);
@@ -391,6 +436,9 @@ export async function trendyolUrunGonder(input: unknown): Promise<TrendyolGonder
       return { error: bulunan.error };
     }
     const { urun } = bulunan;
+
+    const limitHatasi = await getTrendyolGonderimLimitHatasi(baglam, girdi.barkod);
+    if (limitHatasi) return { error: limitHatasi };
 
     const kayit = {
       dukkan_id: baglam.dukkanId,
@@ -545,6 +593,16 @@ export async function trendyolStokFiyatGonder(): Promise<
   try {
     const baglam = await getBaglam(action);
     if (isHata(baglam)) return baglam;
+
+    if (isPlanEnforcementEnabled()) {
+      const plan = await getShopPlan(baglam.supabase, baglam.dukkanId);
+      if (!getPlanLimits(plan).trendyolTopluSenkron) {
+        return {
+          error: "Toplu fiyat-stok senkronizasyonu Pro pakette kullanılabilir. Paketinizi yükseltin.",
+        };
+      }
+    }
+
     const kimlik = await getKimlik(action, baglam);
     if (isHata(kimlik)) return kimlik;
 
