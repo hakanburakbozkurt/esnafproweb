@@ -22,6 +22,7 @@ export function makeUrun(overrides: Partial<DukkanUrunu> = {}): DukkanUrunu {
     fiyat: null,
     stok_adedi: null,
     barkod: null,
+    product_id: null,
     gorsel_orani: "yatay",
     sira: sequence,
     created_at: "2026-10-26T00:00:00.000Z",

@@ -34,6 +34,8 @@ export type UrunFormItem = {
   fiyat: string;
   stok_adedi: string;
   barkod: string;
+  /** Mobil uygulama stok bağlantısı (products.id); bağlı değilse "". */
+  product_id: string;
   gorsel_orani: UrunGorselOrani;
 };
 
@@ -63,6 +65,7 @@ export function emptyUrunItem(): UrunFormItem {
     fiyat: "",
     stok_adedi: "",
     barkod: "",
+    product_id: "",
     gorsel_orani: "yatay",
   };
 }
@@ -96,6 +99,7 @@ export function normalizeUrunItems(
     fiyat: readOptionalText(item, "fiyat"),
     stok_adedi: readOptionalText(item, "stok_adedi"),
     barkod: readOptionalText(item, "barkod"),
+    product_id: readOptionalText(item, "product_id"),
     gorsel_orani: normalizeUrunGorselOrani(
       "gorsel_orani" in item ? item.gorsel_orani : "yatay"
     ),
@@ -158,6 +162,7 @@ export function UrunHiddenFields({
       <input type="hidden" name={`fiyat_${index}`} value={item.fiyat} />
       <input type="hidden" name={`stok_adedi_${index}`} value={item.stok_adedi} />
       <input type="hidden" name={`barkod_${index}`} value={item.barkod} />
+      <input type="hidden" name={`product_id_${index}`} value={item.product_id} />
     </>
   );
 }
@@ -336,6 +341,7 @@ function UrunRow({
       <input type="hidden" name={`fiyat_${index}`} value={item.fiyat} />
       <input type="hidden" name={`stok_adedi_${index}`} value={item.stok_adedi} />
       <input type="hidden" name={`barkod_${index}`} value={item.barkod} />
+      <input type="hidden" name={`product_id_${index}`} value={item.product_id} />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">

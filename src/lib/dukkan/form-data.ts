@@ -39,6 +39,14 @@ export const MAX_URUN_BARKOD_LENGTH = 40;
 /** Pazaryeri barkod kuralı: harf, rakam, nokta, tire, alt çizgi; boşluk yok. */
 export const URUN_BARKOD_PATTERN = /^[A-Za-z0-9._-]{1,40}$/;
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Uygulama stok bağlantısı: geçerli UUID değilse null. */
+export function normalizeUrunProductId(raw: string): string | null {
+  const value = raw.trim().toLowerCase();
+  return UUID_PATTERN.test(value) ? value : null;
+}
+
 /** Boşlukları atar, izin verilmeyen karakterleri temizler. Geçersizse null. */
 export function normalizeUrunBarkod(raw: string): string | null {
   const cleaned = raw.replace(/\s+/g, "").replace(/[^A-Za-z0-9._-]/g, "");
@@ -63,6 +71,8 @@ export type ParsedUrun = {
   fiyat: string | null;
   stok_adedi: number | null;
   barkod: string | null;
+  /** Mobil uygulama stok ürünü (products.id); bağlı değilse null. */
+  product_id: string | null;
   gorsel_orani: "yatay" | "dikey";
 };
 
@@ -137,6 +147,9 @@ export function parseGalleryFromFormData(formData: FormData): string[] {
 
 export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
   const items: ParsedUrun[] = [];
+  // Bir stok ürünü yalnızca bir vitrin ürününe bağlanabilir (DB'de UNIQUE).
+  // Kopyalanan ürünlerde bağlantı ilkinde kalır; aksi halde kayıt tümden düşerdi.
+  const seenProductIds = new Set<string>();
 
   for (let i = 0; i < MAX_PRODUCT_PHOTOS; i++) {
     const foto1 = String(formData.get(`fotograf_url_${i}`) ?? "").trim();
@@ -162,6 +175,9 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
       String(formData.get(`stok_adedi_${i}`) ?? "").trim()
     );
     const barkod = normalizeUrunBarkod(String(formData.get(`barkod_${i}`) ?? ""));
+    let productId = normalizeUrunProductId(String(formData.get(`product_id_${i}`) ?? ""));
+    if (productId && seenProductIds.has(productId)) productId = null;
+    if (productId) seenProductIds.add(productId);
 
     items.push({
       id: id || undefined,
@@ -179,6 +195,7 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
       fiyat: fiyat || null,
       stok_adedi: stokAdedi,
       barkod,
+      product_id: productId,
       gorsel_orani,
     });
   }
