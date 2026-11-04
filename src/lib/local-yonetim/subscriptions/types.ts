@@ -1,15 +1,19 @@
-export type ShopSubscriptionTier = "free" | "pro" | "ultra";
+export type ShopSubscriptionTier = "free" | "buyume" | "pro" | "ultra";
 
 export const SHOP_SUBSCRIPTION_TIER_LABELS: Record<ShopSubscriptionTier, string> = {
   free: "Free",
+  buyume: "Büyüme",
   pro: "Pro",
   ultra: "Ultra",
 };
 
+/** Yönetici panelinden atanabilen ücretli katmanlar */
+export const SHOP_PAID_TIERS = ["buyume", "pro", "ultra"] as const;
+
 export function normalizeShopSubscriptionTier(
   value: string | null | undefined
 ): ShopSubscriptionTier {
-  return value === "pro" || value === "ultra" ? value : "free";
+  return value === "buyume" || value === "pro" || value === "ultra" ? value : "free";
 }
 
 export const DEFAULT_FREE_ACTION_LIMIT = 10;

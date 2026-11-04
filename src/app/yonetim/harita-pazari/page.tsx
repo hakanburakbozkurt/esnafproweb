@@ -11,6 +11,7 @@ import {
 } from "@/components/harita-pazari/harita-pazari-durum-kartlari";
 import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { getShopPlan } from "@/lib/abonelik/get-shop-plan";
+import { getPlanLimits } from "@/lib/abonelik/plan-limits";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
 import { hasGoogleBusinessUrl } from "@/lib/dukkan/google-business-url";
 import { logDukkanAction } from "@/lib/dukkan/logger";
@@ -88,8 +89,8 @@ export default async function HaritaPazariPage() {
   const plan = await getShopPlan(supabase, dukkan.id);
 
   let content: ReactNode;
-  if (!plan.ucretliAktif) {
-    content = <ProUpgradeCard suresiDoldu={plan.tier !== "free"} />;
+  if (!getPlanLimits(plan).haritaPazari) {
+    content = <ProUpgradeCard suresiDoldu={plan.tier !== "free" && !plan.ucretliAktif} />;
   } else if (!hasGoogleBusinessUrl(dukkan.google_business_url)) {
     content = <GoogleBusinessWarning />;
   } else if (dukkan.enlem === null || dukkan.boylam === null) {

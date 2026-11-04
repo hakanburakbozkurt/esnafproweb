@@ -18,6 +18,7 @@ import {
   upgradeShopToProForm,
 } from "@/lib/local-yonetim/subscriptions/subscription-actions";
 import {
+  SHOP_PAID_TIERS,
   SHOP_SUBSCRIPTION_TIER_LABELS,
   type ShopSubscriptionAdminRow,
   type SubscriptionAdminState,
@@ -48,7 +49,9 @@ function TierBadge({ tier }: { tier: ShopSubscriptionAdminRow["tier"] }) {
           ? "bg-violet-100 text-violet-800"
           : tier === "pro"
             ? "bg-emerald-100 text-emerald-800"
-            : "bg-neutral-100 text-neutral-700"
+            : tier === "buyume"
+              ? "bg-sky-100 text-sky-800"
+              : "bg-neutral-100 text-neutral-700"
       )}
     >
       {SHOP_SUBSCRIPTION_TIER_LABELS[tier]}
@@ -89,8 +92,7 @@ function SubscriptionRowActions({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        {(["pro", "ultra"] as const)
-          .filter((tier) => tier !== row.tier)
+        {SHOP_PAID_TIERS.filter((tier) => tier !== row.tier)
           .map((tier) => (
             <form key={tier} action={upgradeAction}>
               <input type="hidden" name="dukkan_id" value={row.dukkan_id} />

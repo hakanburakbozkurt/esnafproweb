@@ -68,7 +68,8 @@ export async function upgradeShopToProForm(
 
   const months = Number(formData.get("pro_months") ?? PRO_DEFAULT_MONTHS);
   const safeMonths = Number.isFinite(months) && months > 0 ? months : PRO_DEFAULT_MONTHS;
-  const tier = formData.get("tier") === "ultra" ? "ultra" : "pro";
+  const rawTier = formData.get("tier");
+  const tier = rawTier === "ultra" ? "ultra" : rawTier === "buyume" ? "buyume" : "pro";
   const tierLabel = SHOP_SUBSCRIPTION_TIER_LABELS[tier];
 
   try {

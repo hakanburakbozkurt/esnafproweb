@@ -2,6 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getShopPlan } from "@/lib/abonelik/get-shop-plan";
+import {
+  getIstanbulMonthStartIso,
+  getPlanLimits,
+  isPlanEnforcementEnabled,
+  isWithinLimit,
+  planLimitMessage,
+} from "@/lib/abonelik/plan-limits";
 import { sanitizeBlogHtml } from "@/lib/blog/blog-html";
 import { validateBlogPublishRequirements } from "@/lib/blog/blog-publish-rules";
 import { createClient } from "@/lib/supabase/server";
@@ -33,6 +41,41 @@ async function getOwnerDukkan(userId: string) {
     .maybeSingle();
 
   return { supabase, dukkan };
+}
+
+/** Paket sınırı aşılıyorsa kullanıcıya gösterilecek mesajı döndürür (PLAN_ENFORCEMENT=on iken). */
+async function getBlogPlanLimitError(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  dukkanId: string
+): Promise<string | null> {
+  if (!isPlanEnforcementEnabled()) return null;
+
+  const limits = getPlanLimits(await getShopPlan(supabase, dukkanId));
+
+  if (limits.blogToplam !== null) {
+    const { count, error } = await supabase
+      .from("dukkan_blog_yazilari")
+      .select("id", { count: "exact", head: true })
+      .eq("dukkan_id", dukkanId);
+    if (error) return "Blog sınırı kontrol edilemedi. Lütfen tekrar deneyin.";
+    if (!isWithinLimit(limits.blogToplam, count ?? 0)) {
+      return planLimitMessage("blog yazısı ekleyebilirsiniz", limits.blogToplam, "toplam");
+    }
+  }
+
+  if (limits.blogAylik !== null) {
+    const { count, error } = await supabase
+      .from("dukkan_blog_yazilari")
+      .select("id", { count: "exact", head: true })
+      .eq("dukkan_id", dukkanId)
+      .gte("created_at", getIstanbulMonthStartIso());
+    if (error) return "Blog sınırı kontrol edilemedi. Lütfen tekrar deneyin.";
+    if (!isWithinLimit(limits.blogAylik, count ?? 0)) {
+      return planLimitMessage("blog yazısı ekleyebilirsiniz", limits.blogAylik, "aylik");
+    }
+  }
+
+  return null;
 }
 
 function revalidateBlogPaths(shopSlug: string, postSlug: string, oldSlug?: string) {
@@ -134,6 +177,11 @@ export async function createBlogPost(
     if (!publishCheck.ok) {
       return { error: publishCheck.error };
     }
+  }
+
+  const planLimitError = await getBlogPlanLimitError(supabase, dukkan.id);
+  if (planLimitError) {
+    return { error: planLimitError };
   }
 
   const { error } = await supabase.from("dukkan_blog_yazilari").insert({
