@@ -19,13 +19,20 @@ export type KatalogSelection = {
   modelName: string;
 };
 
+/** Marka/model anahtarı: büyük-küçük harf ve fazla boşluk farkını yok sayar ("samsung" = "Samsung"). */
+function katalogKey(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("tr");
+}
+
 export function buildKatalogTree(items: KatalogWebItem[]): KatalogTreeBrand[] {
+  // Anahtar: normalize edilmiş ad. Görünen ad: ilk görülen yazım.
   const brandMap = new Map<
     string,
     {
+      brand: string;
       totalCount: number;
       availableCount: number;
-      models: Map<string, { totalCount: number; availableCount: number }>;
+      models: Map<string, { modelName: string; totalCount: number; availableCount: number }>;
     }
   >();
 
@@ -34,35 +41,38 @@ export function buildKatalogTree(items: KatalogWebItem[]): KatalogTreeBrand[] {
     const modelName = item.model_name?.trim();
     if (!brand || !modelName) continue;
 
-    if (!brandMap.has(brand)) {
-      brandMap.set(brand, {
+    const brandKey = katalogKey(brand);
+    if (!brandMap.has(brandKey)) {
+      brandMap.set(brandKey, {
+        brand,
         totalCount: 0,
         availableCount: 0,
         models: new Map(),
       });
     }
 
-    const brandEntry = brandMap.get(brand)!;
+    const brandEntry = brandMap.get(brandKey)!;
     brandEntry.totalCount += 1;
     if (!item.is_sold) brandEntry.availableCount += 1;
 
-    if (!brandEntry.models.has(modelName)) {
-      brandEntry.models.set(modelName, { totalCount: 0, availableCount: 0 });
+    const modelKey = katalogKey(modelName);
+    if (!brandEntry.models.has(modelKey)) {
+      brandEntry.models.set(modelKey, { modelName, totalCount: 0, availableCount: 0 });
     }
 
-    const modelEntry = brandEntry.models.get(modelName)!;
+    const modelEntry = brandEntry.models.get(modelKey)!;
     modelEntry.totalCount += 1;
     if (!item.is_sold) modelEntry.availableCount += 1;
   }
 
-  return [...brandMap.entries()]
-    .map(([brand, entry]) => ({
-      brand,
+  return [...brandMap.values()]
+    .map((entry) => ({
+      brand: entry.brand,
       totalCount: entry.totalCount,
       availableCount: entry.availableCount,
-      models: [...entry.models.entries()]
-        .map(([modelName, modelEntry]) => ({
-          modelName,
+      models: [...entry.models.values()]
+        .map((modelEntry) => ({
+          modelName: modelEntry.modelName,
           totalCount: modelEntry.totalCount,
           availableCount: modelEntry.availableCount,
         }))
