@@ -141,13 +141,24 @@ function PlanEditorForm({
           />
         </LocalField>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-4">
           <LocalField label="Aylık fiyat">
             <input
               name="price_monthly"
               type="number"
               step="0.01"
               defaultValue={plan.price_monthly}
+              disabled={!canEdit}
+              className={localInputClass}
+            />
+          </LocalField>
+          <LocalField label="3 aylık fiyat (boşsa aylık x 3)">
+            <input
+              name="price_quarterly"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={plan.price_quarterly ?? ""}
               disabled={!canEdit}
               className={localInputClass}
             />

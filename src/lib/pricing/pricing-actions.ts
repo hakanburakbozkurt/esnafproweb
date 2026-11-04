@@ -45,12 +45,23 @@ export async function upsertPricingPlan(
     return { error: "Segment, plan anahtarı ve ad zorunludur." };
   }
 
+  // Alanı göndermeyen formlar mevcut 3 aylık fiyatı silmesin
+  const quarterlyRaw = formData.has("price_quarterly")
+    ? String(formData.get("price_quarterly") ?? "").trim()
+    : undefined;
+  const priceQuarterly =
+    quarterlyRaw === undefined ? undefined : quarterlyRaw === "" ? null : Number(quarterlyRaw);
+  if (priceQuarterly !== undefined && priceQuarterly !== null && !(priceQuarterly >= 0)) {
+    return { error: "3 aylık fiyat geçerli bir sayı olmalıdır." };
+  }
+
   const payload = {
     segment,
     plan_key: planKey,
     name,
     description: String(formData.get("description") ?? "").trim() || null,
     price_monthly: Number(formData.get("price_monthly") ?? 0),
+    ...(priceQuarterly !== undefined ? { price_quarterly: priceQuarterly } : {}),
     price_yearly: Number(formData.get("price_yearly") ?? 0),
     currency: String(formData.get("currency") ?? "TRY").trim() || "TRY",
     features: parseFeaturesInput(String(formData.get("features") ?? "")),

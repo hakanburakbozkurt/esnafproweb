@@ -111,13 +111,23 @@ function PlanEditorForm({ plan }: { plan: PricingPlan }) {
           />
         </DarkField>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-4">
           <DarkField label="Aylık fiyat">
             <input
               name="price_monthly"
               type="number"
               step="0.01"
               defaultValue={plan.price_monthly}
+              className={adminInputClass}
+            />
+          </DarkField>
+          <DarkField label="3 aylık fiyat (boşsa aylık x 3)">
+            <input
+              name="price_quarterly"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={plan.price_quarterly ?? ""}
               className={adminInputClass}
             />
           </DarkField>

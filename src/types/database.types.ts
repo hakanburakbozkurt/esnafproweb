@@ -17,6 +17,9 @@ export type ShopApprovalStatus = "active" | "pending" | "rejected";
 
 export type PazaryeriPlatform = "trendyol" | "hepsiburada";
 
+export type AbonelikOdemeDurumu = "beklemede" | "odendi" | "basarisiz";
+export type AbonelikFaturaDurumu = "bekliyor" | "kesildi";
+
 export type PazaryeriUrunDurumu =
   | "taslak"
   | "gonderildi"
@@ -838,6 +841,7 @@ export interface Database {
           name: string;
           description: string | null;
           price_monthly: number;
+          price_quarterly: number | null;
           price_yearly: number;
           currency: string;
           features: Json;
@@ -856,6 +860,7 @@ export interface Database {
           name: string;
           description?: string | null;
           price_monthly?: number;
+          price_quarterly?: number | null;
           price_yearly?: number;
           currency?: string;
           features?: Json;
@@ -874,6 +879,7 @@ export interface Database {
           name?: string;
           description?: string | null;
           price_monthly?: number;
+          price_quarterly?: number | null;
           price_yearly?: number;
           currency?: string;
           features?: Json;
@@ -883,6 +889,80 @@ export interface Database {
           cta_label?: string | null;
           cta_href?: string | null;
           created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      abonelik_odemeleri: {
+        Row: {
+          id: string;
+          dukkan_id: string | null;
+          user_id: string | null;
+          plan_key: string;
+          sure_ay: number;
+          tutar: number;
+          para_birimi: string;
+          durum: AbonelikOdemeDurumu;
+          conversation_id: string;
+          iyzico_token: string | null;
+          iyzico_payment_id: string | null;
+          hata_mesaji: string | null;
+          fatura_tipi: string;
+          fatura_ad_unvan: string;
+          fatura_kimlik_no: string;
+          fatura_vergi_dairesi: string | null;
+          fatura_adres: string;
+          fatura_il: string;
+          fatura_ilce: string;
+          fatura_eposta: string;
+          fatura_telefon: string;
+          fatura_durumu: AbonelikFaturaDurumu;
+          fatura_no: string | null;
+          sozlesme_onay_at: string;
+          odeme_at: string | null;
+          abonelik_bitis_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          dukkan_id?: string | null;
+          user_id?: string | null;
+          plan_key: string;
+          sure_ay: number;
+          tutar: number;
+          para_birimi?: string;
+          durum?: AbonelikOdemeDurumu;
+          conversation_id: string;
+          iyzico_token?: string | null;
+          iyzico_payment_id?: string | null;
+          hata_mesaji?: string | null;
+          fatura_tipi: string;
+          fatura_ad_unvan: string;
+          fatura_kimlik_no: string;
+          fatura_vergi_dairesi?: string | null;
+          fatura_adres: string;
+          fatura_il: string;
+          fatura_ilce: string;
+          fatura_eposta: string;
+          fatura_telefon: string;
+          fatura_durumu?: AbonelikFaturaDurumu;
+          fatura_no?: string | null;
+          sozlesme_onay_at: string;
+          odeme_at?: string | null;
+          abonelik_bitis_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          durum?: AbonelikOdemeDurumu;
+          iyzico_token?: string | null;
+          iyzico_payment_id?: string | null;
+          hata_mesaji?: string | null;
+          fatura_durumu?: AbonelikFaturaDurumu;
+          fatura_no?: string | null;
+          odeme_at?: string | null;
+          abonelik_bitis_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -1364,6 +1444,13 @@ export interface Database {
       };
     };
     Functions: {
+      abonelik_odeme_tamamla: {
+        Args: {
+          p_odeme_id: string;
+          p_iyzico_payment_id: string;
+        };
+        Returns: string | null;
+      };
       pazaryeri_baglanti_kaydet: {
         Args: {
           p_dukkan_id: string;
@@ -1461,6 +1548,7 @@ export interface Database {
 }
 
 export type Dukkan = Database["public"]["Tables"]["dukkanlar"]["Row"];
+export type AbonelikOdemesi = Database["public"]["Tables"]["abonelik_odemeleri"]["Row"];
 export type Toptanci = Database["public"]["Tables"]["toptancilar"]["Row"];
 export type DukkanInsert = Database["public"]["Tables"]["dukkanlar"]["Insert"];
 export type DukkanUpdate = Database["public"]["Tables"]["dukkanlar"]["Update"];

@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  CreditCard,
   LayoutDashboard,
   LayoutGrid,
   MapPinned,
@@ -89,6 +90,14 @@ export function getYonetimNavItems(): YonetimNavItem[] {
       href: "/yonetim/harita-pazari",
       match: (pathname) => pathname.startsWith("/yonetim/harita-pazari"),
       icon: MapPinned,
+    },
+    {
+      id: "abonelik",
+      label: "Paket ve Abonelik",
+      shortLabel: "Paket",
+      href: "/yonetim/abonelik",
+      match: (pathname) => pathname.startsWith("/yonetim/abonelik"),
+      icon: CreditCard,
     },
     {
       id: "settings",

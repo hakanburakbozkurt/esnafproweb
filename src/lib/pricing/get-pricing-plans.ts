@@ -18,6 +18,7 @@ function rowToPlan(row: PricingPlanRow): PricingPlan {
     name: row.name,
     description: row.description,
     price_monthly: Number(row.price_monthly),
+    price_quarterly: row.price_quarterly === null ? null : Number(row.price_quarterly),
     price_yearly: Number(row.price_yearly),
     currency: row.currency,
     features: parseFeatures(row.features),
