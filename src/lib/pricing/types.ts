@@ -7,6 +7,8 @@ export type PricingPlan = {
   name: string;
   description: string | null;
   price_monthly: number;
+  /** 3 aylık KDV dahil fiyat; boşsa aylık x 3 */
+  price_quarterly: number | null;
   price_yearly: number;
   currency: string;
   features: string[];

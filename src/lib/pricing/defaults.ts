@@ -10,6 +10,7 @@ export const DEFAULT_PRICING_PLANS: PricingPlan[] = [
     name: "Başlangıç",
     description: "Dijital vitrininizi açın, müşterileriniz sizi bulsun.",
     price_monthly: 299,
+    price_quarterly: null,
     price_yearly: 2990,
     currency: "TRY",
     features: [
@@ -31,6 +32,7 @@ export const DEFAULT_PRICING_PLANS: PricingPlan[] = [
     name: "Pro",
     description: "Yerel SEO ve blog ile bölgenizde öne çıkın.",
     price_monthly: 599,
+    price_quarterly: null,
     price_yearly: 5990,
     currency: "TRY",
     features: [
@@ -54,6 +56,7 @@ export const DEFAULT_PRICING_PLANS: PricingPlan[] = [
     name: "İşletme",
     description: "Çok şubeli ve yoğun işletmeler için tam paket.",
     price_monthly: 999,
+    price_quarterly: null,
     price_yearly: 9990,
     currency: "TRY",
     features: [
@@ -76,6 +79,7 @@ export const DEFAULT_PRICING_PLANS: PricingPlan[] = [
     name: "Başlangıç",
     description: "XML stok besleme ile esnafa anında ulaşın.",
     price_monthly: 499,
+    price_quarterly: null,
     price_yearly: 4990,
     currency: "TRY",
     features: [
@@ -97,6 +101,7 @@ export const DEFAULT_PRICING_PLANS: PricingPlan[] = [
     name: "Pro",
     description: "Geniş esnaf ağına hızlı ve güvenilir tedarik.",
     price_monthly: 999,
+    price_quarterly: null,
     price_yearly: 9990,
     currency: "TRY",
     features: [
@@ -120,6 +125,7 @@ export const DEFAULT_PRICING_PLANS: PricingPlan[] = [
     name: "Kurumsal",
     description: "Bölgesel ve ulusal dağıtım ağları için.",
     price_monthly: 1999,
+    price_quarterly: null,
     price_yearly: 19990,
     currency: "TRY",
     features: [
