@@ -90,6 +90,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   const [
     { data: dukkanlar, error: dukkanError },
     { data: blogPosts },
+    { data: platformBlogPosts },
     { data: devices },
     { data: urunler },
   ] = await Promise.all([
@@ -103,6 +104,10 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       supabase
         .from("dukkan_blog_yazilari")
         .select("slug, updated_at, created_at, dukkan_id, icerik, kapak_url, yayinda")
+        .eq("yayinda", true),
+      supabase
+        .from("platform_blog_yazilari")
+        .select("slug, updated_at, yayin_tarihi, created_at")
         .eq("yayinda", true),
       supabase
         .from("second_hand_devices_public")
@@ -119,6 +124,14 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] dukkanlar fetch error:", dukkanError.message);
     return staticPages;
   }
+
+  const platformBlogEntries: SitemapEntry[] = (platformBlogPosts ?? []).map(
+    (post) =>
+      sitemapEntry(`/blog/${post.slug}`, safeDate(post.updated_at, now), {
+        changeFrequency: "monthly",
+        priority: 0.8,
+      })
+  );
 
   const stores = dukkanlar ?? [];
   const slugByDukkanId = new Map(stores.map((dukkan) => [dukkan.id, dukkan.slug]));
@@ -304,5 +317,5 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  return [...staticPages, ...dynamicPages];
+  return [...staticPages, ...platformBlogEntries, ...dynamicPages];
 }

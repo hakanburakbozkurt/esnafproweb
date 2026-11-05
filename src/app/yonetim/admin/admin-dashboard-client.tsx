@@ -33,6 +33,12 @@ const adminModules = [
     description: "Bekleyen vitrin başvurularını onaylayın veya reddedin.",
     badge: "pending" as const,
   },
+  {
+    href: "/yonetim/admin/blog",
+    title: "Platform Blog",
+    description: "EsnafPRO blog yazılarını yazın, yayınlayın, taslakta tutun.",
+    badge: null,
+  },
 ];
 
 export function AdminDashboardClient({
