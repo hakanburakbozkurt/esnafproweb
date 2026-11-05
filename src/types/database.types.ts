@@ -392,6 +392,63 @@ export interface Database {
         };
         Relationships: [];
       };
+      platform_blog_yazilari: {
+        Row: {
+          id: string;
+          baslik: string;
+          slug: string;
+          ozet: string | null;
+          icerik: string | null;
+          kapak_url: string | null;
+          kategori: string;
+          meta_title: string | null;
+          meta_description: string | null;
+          anahtar_kelime: string | null;
+          yazar_adi: string;
+          yayinda: boolean;
+          yayin_tarihi: string | null;
+          olusturan_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          baslik: string;
+          slug: string;
+          ozet?: string | null;
+          icerik?: string | null;
+          kapak_url?: string | null;
+          kategori?: string;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          anahtar_kelime?: string | null;
+          yazar_adi?: string;
+          yayinda?: boolean;
+          yayin_tarihi?: string | null;
+          olusturan_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          baslik?: string;
+          slug?: string;
+          ozet?: string | null;
+          icerik?: string | null;
+          kapak_url?: string | null;
+          kategori?: string;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          anahtar_kelime?: string | null;
+          yazar_adi?: string;
+          yayinda?: boolean;
+          yayin_tarihi?: string | null;
+          olusturan_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       faqs: {
         Row: {
           id: string;
@@ -1561,6 +1618,10 @@ export type HaritaPazariRaporAyarlari =
   Database["public"]["Tables"]["harita_pazari_rapor_ayarlari"]["Row"];
 export type DukkanBlogYazisi =
   Database["public"]["Tables"]["dukkan_blog_yazilari"]["Row"];
+export type PlatformBlogYazisi =
+  Database["public"]["Tables"]["platform_blog_yazilari"]["Row"];
+export type PlatformBlogYazisiInsert =
+  Database["public"]["Tables"]["platform_blog_yazilari"]["Insert"];
 export type ServiceDevice = Database["public"]["Tables"]["service_devices"]["Row"];
 export type PublicServiceDevice =
   Database["public"]["Functions"]["get_service_device_public"]["Returns"][number];
