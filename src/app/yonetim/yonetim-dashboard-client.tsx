@@ -3,11 +3,13 @@
 import { AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { EsnafKocuCoach } from "@/components/yonetim/esnaf-kocu-coach";
+import { HaritaPazariOzetKarti } from "@/components/yonetim/harita-pazari-ozet-karti";
 import { ProfileHealthSheet } from "@/components/yonetim/profile-health-sheet";
 import { YonetimHubGrid } from "@/components/yonetim/yonetim-hub-grid";
 import { YonetimQuickActions } from "@/components/yonetim/yonetim-quick-actions";
 import { ProfileHealthScore } from "@/components/dukkan/profile-health-score";
 import type { ProfileHealthInput } from "@/lib/dukkan/profile-health-score";
+import { getPanelKisayollari } from "@/lib/yonetim/nav";
 import { VitrinDotGrid } from "@/components/dukkan/vitrin/vitrin-open-section";
 
 export function YonetimDashboardClient({
@@ -35,7 +37,9 @@ export function YonetimDashboardClient({
         <EsnafKocuCoach healthInput={healthInput} />
       </div>
 
-      <YonetimHubGrid />
+      <HaritaPazariOzetKarti />
+
+      <YonetimHubGrid items={getPanelKisayollari(shopSlug)} />
 
       <AnimatePresence>
         {scoreSheetOpen && (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { logDukkanAction } from "@/lib/dukkan/logger";
+import { URUNLER_PATH } from "@/lib/yonetim/nav";
 import { cn } from "@/lib/utils/cn";
 
 const cardClass =
@@ -89,7 +90,7 @@ export function YonetimQuickActions({
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         <li className="col-span-2 sm:col-span-1">
           <Link
-            href="/dukkan-ayarlari/urunler"
+            href={URUNLER_PATH}
             className={cn(
               cardClass,
               "border-emerald-600 bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-700"

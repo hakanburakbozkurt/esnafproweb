@@ -142,7 +142,7 @@ export function DukkanForm({
   onCancel,
   saved = false,
   productsMode = "editor",
-  productsHref = "/dukkan-ayarlari/urunler",
+  productsHref = "/yonetim/urunler",
   stickyOffset = "page",
 }: DukkanFormProps) {
   const formId = useId();
