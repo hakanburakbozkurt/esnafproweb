@@ -25,14 +25,15 @@ async function login(page: Page, next: string) {
 const tabBar = (page: Page) => page.getByRole("navigation", { name: "Yönetim — hızlı menü" });
 
 test.describe("Yönetim paneli", () => {
-  test("ana sayfa: hızlı işlemler, skor dökümü ve tüm modüller", async ({ page }) => {
+  test("ana sayfa: hızlı işlemler, skor dökümü ve diğer bölümler", async ({ page }) => {
     await login(page, "/yonetim");
 
     await expect(page.getByRole("link", { name: /Ürün ekle/ }).first()).toHaveAttribute(
       "href",
-      "/dukkan-ayarlari/urunler"
+      "/yonetim/urunler"
     );
-    await expect(page.getByRole("heading", { name: "Tüm modüller" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Harita Pazarı" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Diğer bölümler" })).toBeVisible();
 
     await page.getByRole("button", { name: /Dökümü göster$/ }).click();
     const sheet = page.getByRole("dialog");
@@ -65,7 +66,7 @@ test.describe("Yönetim paneli", () => {
     isMobile,
   }) => {
     test.skip(!isMobile, "Yalnızca mobil davranış");
-    await login(page, "/dukkan-ayarlari/urunler");
+    await login(page, "/yonetim/urunler");
 
     const saveButton = page.getByRole("button", { name: "Ürünleri kaydet" });
     await expect(tabBar(page)).toBeVisible();

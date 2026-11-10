@@ -2,23 +2,35 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import {
   getYonetimHubAccentClass,
-  getYonetimHubItems,
+  type YonetimHubItem,
 } from "@/lib/yonetim/nav";
 import { cn } from "@/lib/utils/cn";
 
-export function YonetimHubGrid() {
-  const items = getYonetimHubItems();
+/**
+ * Bağlantı ızgarası. Üst menüyü tekrar etmemesi için içerik dışarıdan verilir —
+ * panelde yalnızca menüde bulunmayan bölümler listelenir.
+ */
+export function YonetimHubGrid({
+  items,
+  title = "Diğer bölümler",
+  headingId = "diger-bolumler-baslik",
+}: {
+  items: YonetimHubItem[];
+  title?: string;
+  headingId?: string;
+}) {
+  if (!items.length) return null;
 
   return (
-    <section aria-labelledby="tum-moduller-baslik">
+    <section aria-labelledby={headingId}>
       <h2
-        id="tum-moduller-baslik"
+        id={headingId}
         className="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-500"
       >
-        Tüm modüller
+        {title}
       </h2>
 
-      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-2 sm:grid-cols-2">
         {items.map((item) => {
           const Icon = item.icon;
 

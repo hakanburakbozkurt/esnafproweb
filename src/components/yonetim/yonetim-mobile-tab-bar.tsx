@@ -5,7 +5,7 @@ import { Ellipsis, LayoutDashboard, Package, Wrench, X, type LucideIcon } from "
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getYonetimNavItems } from "@/lib/yonetim/nav";
+import { getYonetimMoreItems, URUNLER_PATH } from "@/lib/yonetim/nav";
 import { cn } from "@/lib/utils/cn";
 
 type Tab = {
@@ -27,9 +27,9 @@ const PRIMARY_TABS: Tab[] = [
   {
     id: "urunler",
     label: "Ürünler",
-    href: "/dukkan-ayarlari/urunler",
+    href: URUNLER_PATH,
     icon: Package,
-    match: (pathname) => pathname.startsWith("/dukkan-ayarlari/urunler"),
+    match: (pathname) => pathname.startsWith(URUNLER_PATH),
   },
   {
     id: "servis",
@@ -47,9 +47,8 @@ function MoreSheet({ pathname, onClose }: { pathname: string; onClose: () => voi
   const reduceMotion = useReducedMotion();
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
-  const items = getYonetimNavItems().filter(
-    (item) => item.id !== "overview" && item.id !== "servis"
-  );
+  /** Üst sekmelerde yer almayan bölümler: Mağaza, Blog, Harita Pazarı. */
+  const items = getYonetimMoreItems();
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -107,7 +106,7 @@ function MoreSheet({ pathname, onClose }: { pathname: string; onClose: () => voi
         <ul className="mt-2 space-y-1">
           {items.map((item) => {
             const Icon = item.icon;
-            const active = item.match(pathname) && !pathname.startsWith("/dukkan-ayarlari/urunler");
+            const active = pathname.startsWith(item.href);
             return (
               <li key={item.id}>
                 <Link
@@ -122,7 +121,7 @@ function MoreSheet({ pathname, onClose }: { pathname: string; onClose: () => voi
                   <span className="flex size-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
                     <Icon className="size-4" aria-hidden />
                   </span>
-                  {item.label}
+                  {item.title}
                 </Link>
               </li>
             );
