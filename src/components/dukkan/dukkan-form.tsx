@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from "framer-motion";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   useEffect,
   useId,
@@ -756,6 +757,22 @@ export function DukkanForm({
 
         <input type="hidden" name="enlem" value={enlem ?? ""} />
         <input type="hidden" name="boylam" value={boylam ?? ""} />
+
+        {/* Google Place ID bağlantısı */}
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-900">Google Place ID</p>
+            <p className="text-xs text-slate-500">
+              Harita Pazarı&apos;nın sizi doğru işletme olarak tanıması için gereklidir.
+            </p>
+          </div>
+          <Link
+            href="/dukkan-ayarlari/google-place"
+            className="inline-flex shrink-0 min-h-9 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+          >
+            Bul &amp; Kaydet →
+          </Link>
+        </div>
       </div>
     </FormSection>
   );
