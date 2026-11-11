@@ -66,4 +66,41 @@ describe("parseUrunlerFromFormData", () => {
     const [urun] = parseUrunlerFromFormData(formOf({ fotograf_url_0: "a", urun_kategorisi_0: "  " }));
     expect(urun.urun_kategorisi).toBeNull();
   });
+
+  describe("uygulama stok bağlantısı (product_id)", () => {
+    const UUID = "3F2504E0-4F89-11D3-9A0C-0305E82C3301";
+
+    it("geçerli UUID'yi küçük harfe çevirerek korur", () => {
+      const [urun] = parseUrunlerFromFormData(formOf({ fotograf_url_0: "a", product_id_0: ` ${UUID} ` }));
+      expect(urun.product_id).toBe(UUID.toLowerCase());
+    });
+
+    it("boş veya geçersiz değeri NULL yapar", () => {
+      const result = parseUrunlerFromFormData(
+        formOf({
+          fotograf_url_0: "a",
+          fotograf_url_1: "b",
+          product_id_1: "urun-1; drop table",
+        })
+      );
+      expect(result.map((u) => u.product_id)).toEqual([null, null]);
+    });
+
+    it("kopyalanan üründe aynı bağlantıyı yalnızca ilkinde tutar", () => {
+      const result = parseUrunlerFromFormData(
+        formOf({
+          fotograf_url_0: "a",
+          product_id_0: UUID,
+          fotograf_url_1: "b",
+          product_id_1: UUID,
+        })
+      );
+      expect(result.map((u) => u.product_id)).toEqual([UUID.toLowerCase(), null]);
+    });
+
+    it("fotoğrafsız bağlı ürün de diğer ürünler gibi atlanır", () => {
+      const result = parseUrunlerFromFormData(formOf({ product_id_0: UUID }));
+      expect(result).toHaveLength(0);
+    });
+  });
 });
