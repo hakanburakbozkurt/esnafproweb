@@ -8,6 +8,7 @@ import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { FotoLightbox } from "@/components/dukkan/vitrin/foto-lightbox";
 import { buildWhatsAppUrl } from "@/lib/dukkan/contact";
 import { logDukkanAction } from "@/lib/dukkan/logger";
+import { formatUrunFiyatiGosterim } from "@/lib/dukkan/urun-fiyat";
 import { getUrunStokBadge, URUN_STOK_BADGE_CLASSES } from "@/lib/dukkan/urun-stok";
 import { cn } from "@/lib/utils/cn";
 
@@ -21,6 +22,8 @@ export type UrunSayfasiVerisi = {
   kategoriEtiketi: string | null;
   /** Ürün sayfasının mutlak adresi (paylaşım ve WhatsApp mesajı için) */
   sayfaUrl: string;
+  /** Görsel alt metni için ilçe/il ("Esenyurt, İstanbul") */
+  konumEtiketi?: string | null;
 };
 
 export function UrunSayfasiIcerigi({
@@ -45,7 +48,7 @@ export function UrunSayfasiIcerigi({
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
 
   const stokBadge = getUrunStokBadge(urun.stokAdedi);
-  const fiyat = urun.fiyat?.trim();
+  const fiyat = formatUrunFiyatiGosterim(urun.fiyat);
   const whatsappNo = whatsapp?.trim();
   const telefonNo = telefon?.trim();
 
@@ -91,7 +94,7 @@ export function UrunSayfasiIcerigi({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={src}
-                      alt={`${urun.urunAdi} — fotoğraf ${index + 1}`}
+                      alt={`${urun.urunAdi} — ${shopName}${urun.konumEtiketi ? `, ${urun.konumEtiketi}` : ""} (fotoğraf ${index + 1})`}
                       loading={index === 0 ? "eager" : "lazy"}
                       fetchPriority={index === 0 ? "high" : undefined}
                       className="h-full w-full object-cover"

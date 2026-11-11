@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("id, dukkan_adi, slug, adres, banner_url, logo_url, approval_status")
+    .select("*")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
@@ -87,6 +87,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             shopName: dukkan.dukkan_adi,
             shopSlug: dukkan.slug,
             shopAdres: dukkan.adres,
+            shopSemt: dukkan.semt,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
             { name: "Blog", segment: "blog" },

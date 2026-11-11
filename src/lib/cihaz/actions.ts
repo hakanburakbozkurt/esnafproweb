@@ -75,9 +75,20 @@ async function ensureUniqueWebSlug(
   userId: string,
   brand: string,
   model: string,
-  deviceId?: string
+  deviceId?: string,
+  extras: Array<string | null | undefined> = []
 ): Promise<string> {
-  const base = slugify(`${brand}-${model}`) || "cihaz";
+  // "apple-ipad-9-64-gb-ikinci-el": arama dilindeki kelimeler adreste de olsun.
+  // Model marka adını tekrar ediyorsa ("MacBook MacBook") tekrar eden parça atılır.
+  const parcalar: string[] = [];
+  for (const parca of [brand, model, ...extras]) {
+    const temiz = parca?.trim();
+    if (!temiz) continue;
+    const slugParca = slugify(temiz);
+    if (!slugParca || parcalar.some((onceki) => onceki.endsWith(slugParca))) continue;
+    parcalar.push(slugParca);
+  }
+  const base = slugify(parcalar.join("-")) || "cihaz";
   let candidate = base;
   let suffix = 1;
 
@@ -225,7 +236,7 @@ export async function updateSecondHandDeviceWebPublishing(
 
     const { data: existing, error: fetchError } = await auth.supabase
       .from("second_hand_devices")
-      .select("id, brand, model, web_slug, web_title, web_published_at")
+      .select("id, brand, model, capacity, listing_type, web_slug, web_title, web_published_at")
       .eq("id", id)
       .eq("user_id", auth.user.id)
       .maybeSingle();
@@ -256,7 +267,8 @@ export async function updateSecondHandDeviceWebPublishing(
           auth.user.id,
           existing.brand ?? "cihaz",
           existing.model ?? "",
-          id
+          id,
+          [existing.capacity, existing.listing_type === "new" ? "sifir" : "ikinci-el"]
         );
       }
       if (!existing.web_title?.trim() && !("web_title" in patch)) {

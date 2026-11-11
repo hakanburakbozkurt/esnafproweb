@@ -13,6 +13,7 @@ export type DukkanDbPayload = {
   tiktok_url: string | null;
   facebook_url: string | null;
   adres: string | null;
+  semt: string | null;
   enlem: number | null;
   boylam: number | null;
   google_business_url: string | null;
@@ -72,6 +73,8 @@ export const DUKKAN_OPTIONAL_PAYLOAD_KEYS = [
   "meta_description",
   "terms_accepted_at",
   "google_business_url",
+  // 20261111_dukkan_semt migration'ı uygulanmadıysa kayıt bu sütun atlanarak yapılır
+  "semt",
 ] as const satisfies readonly (keyof DukkanDbPayload)[];
 
 export const DUKKAN_URUN_OPTIONAL_KEYS = [
@@ -112,6 +115,7 @@ export function toDukkanDbPayload(
     tiktok_url: data.tiktok_url,
     facebook_url: data.facebook_url,
     adres: data.adres,
+    semt: data.semt,
     enlem: data.enlem,
     boylam: data.boylam,
     google_business_url: data.google_business_url,

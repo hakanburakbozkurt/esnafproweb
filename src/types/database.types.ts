@@ -38,6 +38,8 @@ export interface Database {
           slug: string;
           telefon: string | null;
           adres: string | null;
+          /** Bölge adı (Esenkent, Bahçeşehir…). Migration: 20261111_dukkan_semt */
+          semt?: string | null;
           aciklama: string | null;
           meta_title: string | null;
           meta_description: string | null;
@@ -81,6 +83,7 @@ export interface Database {
           slug: string;
           telefon?: string | null;
           adres?: string | null;
+          semt?: string | null;
           aciklama?: string | null;
           meta_title?: string | null;
           meta_description?: string | null;
@@ -124,6 +127,7 @@ export interface Database {
           slug?: string;
           telefon?: string | null;
           adres?: string | null;
+          semt?: string | null;
           aciklama?: string | null;
           meta_title?: string | null;
           meta_description?: string | null;

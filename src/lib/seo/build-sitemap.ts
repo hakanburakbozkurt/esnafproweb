@@ -8,6 +8,8 @@ import {
 } from "@/lib/dukkan/vitrin-klasorleri";
 import { isBlogPostScoreEligible } from "@/lib/blog/blog-publish-rules";
 import { buildSitemapUrl } from "@/lib/seo/sitemap-url";
+import { PAZARYERI_SAYFALARI, pazaryeriSayfasiPath, sayfaIlanlari } from "@/lib/marketplace/pazaryeri-sayfalari";
+import type { MarketplaceListing } from "@/lib/marketplace/public-listing.types";
 import { createPublicClient } from "@/lib/supabase/public";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
@@ -106,7 +108,7 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
         .eq("yayinda", true),
       supabase
         .from("second_hand_devices_public")
-        .select("id, user_id, web_slug, web_published_at, created_at, device_category, listing_type")
+        .select("id, user_id, web_slug, web_published_at, created_at, device_category, listing_type, brand, model, web_title")
         .eq("web_published", true),
       supabase
         .from("dukkan_urunleri")
@@ -300,6 +302,30 @@ export async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       sitemapEntry(`/${shopSlug}/blog/${postSlug}`, lastModified, {
         changeFrequency: "monthly",
         priority: 0.5,
+      })
+    );
+  }
+
+  // Arama diline göre pazaryeri sayfaları (/pazaryeri/ikinci-el-telefon …):
+  // yalnızca vitrini açık mağazalarda en az bir ilanı olanlar.
+  const vitrinAcikKullanicilar = new Set(
+    stores.filter((dukkan) => dukkan.pazaryeri_vitrin_aktif !== false).map((dukkan) => dukkan.user_id)
+  );
+  const vitrinIlanlari = (devices ?? [])
+    .filter((device) => device.user_id && vitrinAcikKullanicilar.has(device.user_id))
+    .map((device) => ({ device: device as unknown as MarketplaceListing["device"] }));
+
+  for (const sayfa of PAZARYERI_SAYFALARI) {
+    const ilanlar = sayfaIlanlari(vitrinIlanlari, sayfa);
+    if (!ilanlar.length) continue;
+    // Sayfa, içindeki en yeni ilan yayınlandığında değişmiş sayılır
+    const lastModified = latestDate(
+      ...ilanlar.map(({ device }) => safeDate(device.web_published_at ?? device.created_at, now))
+    );
+    dynamicPages.push(
+      sitemapEntry(pazaryeriSayfasiPath(sayfa), lastModified, {
+        changeFrequency: "daily",
+        priority: 0.7,
       })
     );
   }

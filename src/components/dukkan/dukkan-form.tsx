@@ -57,6 +57,7 @@ import {
 import { premiumPanelClassName } from "@/lib/utils/cn";
 import { cn } from "@/lib/utils/cn";
 import type { Dukkan, DukkanUrunu, FaqItem } from "@/types/database.types";
+import { MAX_SEMT_LENGTH } from "@/lib/dukkan/konum";
 
 const LocationMapPicker = dynamic(
   () =>
@@ -167,6 +168,7 @@ export function DukkanForm({
     defaultValues?.facebook_url ?? ""
   );
   const [adres, setAdres] = useState(defaultValues?.adres ?? "");
+  const [semt, setSemt] = useState(defaultValues?.semt ?? "");
   const [googleBusinessUrl, setGoogleBusinessUrl] = useState(
     defaultValues?.google_business_url ?? ""
   );
@@ -324,6 +326,7 @@ export function DukkanForm({
         tiktokUrl,
         facebookUrl,
         adres,
+        semt,
         googleBusinessUrl,
         enlem,
         boylam,
@@ -355,6 +358,7 @@ export function DukkanForm({
       tiktokUrl,
       facebookUrl,
       adres,
+      semt,
       googleBusinessUrl,
       enlem,
       boylam,
@@ -691,8 +695,23 @@ export function DukkanForm({
             name="adres"
             value={adres}
             onChange={(e) => setAdres(e.target.value)}
-            placeholder="Mahalle, ilçe, il"
+            placeholder="Mahalle, sokak, no — Esenyurt / İstanbul"
             rows={3}
+            className="w-full"
+          />
+        </Field>
+
+        <Field
+          label="Semt / bölge adı"
+          hint="Müşterilerin aradığı bölge adı (ör. Esenkent, Bahçeşehir). Ürün, blog ve cihaz sayfalarının Google başlığında ilçeyle birlikte kullanılır: “… — Esenkent, Esenyurt”. Boş bırakırsanız adresten bulunmaya çalışılır."
+        >
+          <Input
+            name="semt"
+            type="text"
+            value={semt}
+            maxLength={MAX_SEMT_LENGTH}
+            onChange={(e) => setSemt(e.target.value)}
+            placeholder="Örn: Esenkent"
             className="w-full"
           />
         </Field>

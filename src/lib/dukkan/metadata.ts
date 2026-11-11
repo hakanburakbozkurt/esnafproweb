@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { parseLocationFromAdres } from "@/lib/dukkan/faq-placeholders";
+import { kisaKonumEtiketi, konumEtiketi, metinKonumIceriyor, type KonumGirdisi } from "@/lib/dukkan/konum";
 import {
   isShopSeoIndexable,
   type ShopApprovalStatus,
@@ -22,6 +22,8 @@ export type DukkanMetadataSource = {
 export type DukkanSeoSource = DukkanMetadataSource & {
   slug: string;
   adres?: string | null;
+  /** Bölge adı (Esenkent, Bahçeşehir…); sütun yoksa undefined gelir */
+  semt?: string | null;
   banner_url?: string | null;
   logo_url?: string | null;
   approval_status?: ShopApprovalStatus | null;
@@ -48,33 +50,36 @@ export const NOT_FOUND_STORE_METADATA: Metadata = {
   title: "Mağaza Bulunamadı | EsnafPRO",
 };
 
-export function buildLocalAreaLabel(adres?: string | null): string | null {
-  const { il, ilce } = parseLocationFromAdres(adres);
-  if (ilce && il) return `${ilce}, ${il}`;
-  return il ?? ilce;
+/**
+ * "Esenkent, Esenyurt, İstanbul". Düz adres ya da { adres, semt } alır;
+ * semt (dükkan ayarlarından ya da adresten) varsa başa eklenir.
+ */
+export function buildLocalAreaLabel(konum?: KonumGirdisi): string | null {
+  return konumEtiketi(konum);
 }
 
-/** Yerel arama sinyali için açıklamaya il/ilçe ekler (zaten varsa tekrarlamaz) */
+/**
+ * Yerel arama sinyali için metne semt/ilçe/il ekler. Metin semti veya ilçeyi
+ * zaten içeriyorsa ("… Esenkent'te …") dokunmaz; esnafın yazdığı başlık bozulmaz.
+ */
 export function withLocalAreaSuffix(
   text: string,
-  adres?: string | null
+  konum?: KonumGirdisi,
+  options?: { kisa?: boolean }
 ): string {
-  const area = buildLocalAreaLabel(adres);
+  // Başlıklarda kısa etiket ("Esenkent, Esenyurt"), açıklamalarda tam etiket
+  const area = options?.kisa ? kisaKonumEtiketi(konum) : buildLocalAreaLabel(konum);
   if (!area) return text;
-
-  const normalized = text.toLocaleLowerCase("tr-TR");
-  const areaLower = area.toLocaleLowerCase("tr-TR");
-
-  if (normalized.includes(areaLower)) return text;
+  if (metinKonumIceriyor(text, konum)) return text;
   return `${text} — ${area}`;
 }
 
 /** meta_description ve aciklama boşsa yerel + sektör sinyalli varsayılan metin */
 export function buildDefaultStoreDescription(
-  dukkan: Pick<DukkanMetadataSource, "dukkan_adi"> & { adres?: string | null }
+  dukkan: Pick<DukkanMetadataSource, "dukkan_adi"> & { adres?: string | null; semt?: string | null }
 ): string {
   const name = dukkan.dukkan_adi.trim();
-  const area = buildLocalAreaLabel(dukkan.adres);
+  const area = buildLocalAreaLabel(dukkan);
 
   if (area) {
     return `${name}, ${area} bölgesinde telefon ve teknik servis sektöründe faaliyet gösteren işletmenin dijital vitrin sayfası. Ürünler, iletişim bilgileri ve hizmet detaylarına buradan ulaşabilirsiniz.`;
@@ -84,7 +89,7 @@ export function buildDefaultStoreDescription(
 }
 
 export function buildDukkanPageMetadata(
-  dukkan: DukkanMetadataSource & { adres?: string | null }
+  dukkan: DukkanMetadataSource & { adres?: string | null; semt?: string | null }
 ): {
   title: string;
   description: string;
@@ -106,7 +111,7 @@ export function buildStoreHomeSeoMetadata(dukkan: DukkanSeoSource): Metadata {
   return applyStoreSeoRobots(
     buildPageMetadata({
       title,
-      description: withLocalAreaSuffix(description, dukkan.adres),
+      description: withLocalAreaSuffix(description, dukkan),
       path: `/${dukkan.slug}`,
       image: dukkan.banner_url ?? dukkan.logo_url,
     }),
@@ -124,7 +129,7 @@ export function buildStoreSubpageSeoMetadata(
   return applyStoreSeoRobots(
     buildPageMetadata({
       title: `${pageLabel} | ${dukkan.dukkan_adi} | EsnafPRO`,
-      description: withLocalAreaSuffix(description, dukkan.adres),
+      description: withLocalAreaSuffix(description, dukkan),
       path: `/${dukkan.slug}/${segment}`,
       image: options?.image ?? dukkan.banner_url ?? dukkan.logo_url,
       ogType: options?.ogType,
@@ -143,7 +148,7 @@ export function buildBlogPostSeoMetadata(
   const title = resolveBlogSeoTitle(
     post.meta_title,
     // Özel meta başlık yoksa yazı başlığına il/ilçe eklenir (ürün sayfalarıyla aynı kural)
-    post.meta_title?.trim() ? post.baslik : withLocalAreaSuffix(post.baslik, dukkan.adres),
+    post.meta_title?.trim() ? post.baslik : withLocalAreaSuffix(post.baslik, dukkan, { kisa: true }),
     dukkan.dukkan_adi
   );
   const description = withLocalAreaSuffix(
@@ -152,7 +157,7 @@ export function buildBlogPostSeoMetadata(
       post.icerik,
       post.baslik
     ),
-    dukkan.adres
+    dukkan
   );
 
   return applyStoreSeoRobots(

@@ -16,6 +16,7 @@ import {
   NOT_FOUND_STORE_METADATA,
 } from "@/lib/dukkan/metadata";
 import { parseUrunFiyati } from "@/lib/dukkan/urun-fiyat";
+import { urunMetaAciklamasi, urunSeoBasligi } from "@/lib/dukkan/urun-seo";
 import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
 import { ayirKategori } from "@/lib/dukkan/vitrin-kategorileri";
 import { vitrinKlasorPath, vitrinUrunPath } from "@/lib/dukkan/vitrin-klasorleri";
@@ -27,7 +28,6 @@ type PageProps = {
 };
 
 const ILGILI_URUN_SAYISI = 8;
-const META_ACIKLAMA_UZUNLUGU = 155;
 
 function urunBul(veri: VitrinVerisi, urunSlug: string) {
   for (const [id, slug] of veri.urunSluglari) {
@@ -42,21 +42,6 @@ function urunBul(veri: VitrinVerisi, urunSlug: string) {
   return null;
 }
 
-function kisalt(metin: string, uzunluk: number): string {
-  const tek = metin.replace(/\s+/g, " ").trim();
-  if (tek.length <= uzunluk) return tek;
-  const kesik = tek.slice(0, uzunluk - 1);
-  const sonBosluk = kesik.lastIndexOf(" ");
-  return `${(sonBosluk > uzunluk * 0.6 ? kesik.slice(0, sonBosluk) : kesik).trim()}…`;
-}
-
-function urunMetaAciklamasi(veri: VitrinVerisi, urun: VitrinVerisi["urunler"][number]): string {
-  const aciklama = urun.urun_aciklama?.trim();
-  if (aciklama) return kisalt(aciklama, META_ACIKLAMA_UZUNLUGU);
-  const fiyat = urun.fiyat?.trim();
-  return `${urun.urun_adi}, ${veri.dukkan.dukkan_adi} mağazasında.${fiyat ? ` Fiyat: ${fiyat}.` : ""} WhatsApp ile hemen bilgi alın.`;
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, urun: urunSlug } = await params;
   const veri = await getVitrinVerisi(slug);
@@ -65,15 +50,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const bulunan = urunBul(veri, urunSlug);
   if (!bulunan) return NOT_FOUND_STORE_METADATA;
 
-  // Başlıkta ilçe: "Hayalet Cam — Esenkent, Esenyurt" (arama terimi ürün + konum birlikte)
-  const alan = buildLocalAreaLabel(veri.dukkan.adres);
-  const baslik = alan ? `${bulunan.urun.urun_adi} — ${alan}` : bulunan.urun.urun_adi;
-
   return buildStoreSubpageSeoMetadata(
     veri.dukkan,
     `urun/${urunSlug}`,
-    baslik,
-    urunMetaAciklamasi(veri, bulunan.urun),
+    urunSeoBasligi(bulunan.urun, veri.dukkan),
+    urunMetaAciklamasi(bulunan.urun, veri.dukkan),
     { image: getUrunPhotoUrls(bulunan.urun)[0] ?? null }
   );
 }
@@ -111,9 +92,11 @@ export default async function UrunPage({ params }: PageProps) {
             category: klasor ? (alt ? `${klasor.ad} > ${alt}` : klasor.ad) : null,
             price: parseUrunFiyati(urun.fiyat),
             stokAdedi: urun.stok_adedi,
+            barkod: urun.barkod,
             shopName: dukkan.dukkan_adi,
             shopSlug: dukkan.slug,
             shopAdres: dukkan.adres,
+            shopSemt: dukkan.semt,
             path,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [
@@ -152,6 +135,7 @@ export default async function UrunPage({ params }: PageProps) {
               fotograflar,
               kategoriEtiketi,
               sayfaUrl: `${getPublicSiteUrl()}${path}`,
+              konumEtiketi: buildLocalAreaLabel(dukkan),
             }}
             shopName={dukkan.dukkan_adi}
             whatsapp={dukkan.whatsapp ?? null}
