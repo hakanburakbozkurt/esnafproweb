@@ -10,6 +10,7 @@ import { getKatalogProductTitle } from "@/lib/katalog/katalog-display";
 import type { KatalogSelection } from "@/lib/katalog/katalog-tree";
 import type { KatalogWebItem } from "@/types/database.types";
 import { cn } from "@/lib/utils/cn";
+import { KartGorseli } from "@/components/ui/kart-gorseli";
 
 export function KatalogModelGallery({
   items,
@@ -136,15 +137,14 @@ function KatalogGalleryItem({
         )}
       >
         {item.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <KartGorseli
             src={item.image_url}
             alt={title}
+            sizes="(max-width: 640px) 50vw, 240px"
             className={cn(
-              "h-full w-full object-cover object-center transition duration-500",
+              "object-cover object-center transition duration-500",
               !isSold && "group-hover:scale-[1.03]"
             )}
-            loading="lazy"
           />
         ) : (
           <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400">
