@@ -13,6 +13,8 @@ type StickySaveBarProps = {
   saveDisabled: boolean;
   /** Kaydet pasifken kullanıcıya gösterilen neden */
   disabledReason?: string | null;
+  /** Pasif nedenin yanında gösterilen, eksik alana götüren bağlantı */
+  disabledReasonAction?: { label: string; onClick: () => void } | null;
   error?: string | null;
   saved?: boolean;
   submitLabel: string;
@@ -33,6 +35,7 @@ export function StickySaveBar({
   isPending,
   saveDisabled,
   disabledReason,
+  disabledReasonAction,
   error,
   saved = false,
   submitLabel,
@@ -107,7 +110,21 @@ export function StickySaveBar({
             </motion.p>
           </AnimatePresence>
           {saveDisabled && disabledReason && !isPending && (
-            <p className="mt-0.5 text-xs text-amber-700">{disabledReason}</p>
+            <p className="mt-0.5 text-xs text-amber-700">
+              {disabledReason}
+              {disabledReasonAction && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    onClick={disabledReasonAction.onClick}
+                    className="font-semibold underline underline-offset-2"
+                  >
+                    {disabledReasonAction.label}
+                  </button>
+                </>
+              )}
+            </p>
           )}
         </div>
 
