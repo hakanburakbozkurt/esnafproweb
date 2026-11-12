@@ -1,5 +1,5 @@
 import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { SecondHandDeviceDetailContent } from "@/components/dukkan/vitrin/second-hand-device-detail-content";
 import { VitrinChrome } from "@/components/dukkan/vitrin/vitrin-chrome";
 import {
@@ -101,6 +101,12 @@ export default async function PazaryeriDevicePage({ params }: PageProps) {
 
   if (!device) {
     notFound();
+  }
+
+  // Eski adres (/pazaryeri/<id>) kalıcı olarak okunabilir adrese yönlenir; Google tek adresi tutar.
+  const asilSlug = device.web_slug?.trim();
+  if (asilSlug && deviceSlug !== asilSlug) {
+    permanentRedirect(getSecondHandDeviceHref(dukkan.slug, device));
   }
 
   const showPazaryeriNav = await hasPublishedSecondHandDevices(
