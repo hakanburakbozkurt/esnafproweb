@@ -69,6 +69,8 @@ export const APPLE_IPHONE_MODELS = [
   "iPhone 17 Air",
   "iPhone 17 Pro",
   "iPhone 17 Pro Max",
+  "iPhone 18 Pro",
+  "iPhone 18 Pro Max",
 ] as const;
 
 export const TABLET_BRANDS = [
@@ -320,6 +322,7 @@ export const PC_COLOR_OPTIONS = [
   "Yıldız Işığı",
   "Siyah",
   "Beyaz",
+  "Lacivert",
   "Gri",
   "Metalik",
   "Diğer",
@@ -332,6 +335,7 @@ export const PHONE_COLOR_OPTIONS = [
   "Gümüş",
   "Altın",
   "Mavi",
+  "Lacivert",
   "Yeşil",
   "Kırmızı",
   "Mor",
