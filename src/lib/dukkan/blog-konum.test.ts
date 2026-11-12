@@ -26,7 +26,7 @@ describe("blog konum", () => {
   it("özel meta başlık yoksa yazı başlığına il/ilçe ekler", () => {
     const meta = buildBlogPostSeoMetadata(dukkan, post);
     expect(meta.title).toBe(
-      "iPhone ekran değişimi nasıl yapılır — Esenyurt, İstanbul | Beep Mobile Store | EsnafPRO"
+      "iPhone ekran değişimi nasıl yapılır — Esenkent, Esenyurt | Beep Mobile Store | EsnafPRO"
     );
   });
 
@@ -43,8 +43,8 @@ describe("blog konum", () => {
       shopAdres: dukkan.adres,
     }) as Record<string, unknown>;
     expect(schema.contentLocation).toEqual({
-      "@type": "AdministrativeArea",
-      name: "Esenyurt, İstanbul",
+      "@type": "Place",
+      name: "Esenkent, Esenyurt, İstanbul",
     });
   });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { MarketplaceDeviceCard } from "@/components/marketplace/marketplace-device-card";
 import { MarketplaceListingToolbar } from "@/components/marketplace/marketplace-listing-toolbar";
 import {
@@ -15,16 +15,35 @@ import type {
   MarketplaceSortId,
 } from "@/lib/marketplace/public-listing.types";
 
+export type MarketplaceBaslik = {
+  etiket: string;
+  baslik: string;
+  aciklama: string;
+};
+
 export function MarketplacePageContent({
   listings,
+  baslangicTuru = "all",
+  baslangicKategori = "all",
+  baslik,
+  ustLinkler,
+  altIcerik,
 }: {
   listings: MarketplaceListing[];
+  /** /pazaryeri/ikinci-el-telefon gibi sayfalar filtre seçili açılır */
+  baslangicTuru?: MarketplaceListingTypeId;
+  baslangicKategori?: MarketplaceCategoryId;
+  baslik?: MarketplaceBaslik;
+  /** Başlığın altındaki hızlı geçiş linkleri */
+  ustLinkler?: ReactNode;
+  /** Listenin altındaki bilgi metni */
+  altIcerik?: ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<MarketplaceSortId>("newest");
-  const [category, setCategory] = useState<MarketplaceCategoryId>("all");
+  const [category, setCategory] = useState<MarketplaceCategoryId>(baslangicKategori);
   const [listingType, setListingType] =
-    useState<MarketplaceListingTypeId>("all");
+    useState<MarketplaceListingTypeId>(baslangicTuru);
   const [location, setLocation] = useState("");
   const { coords: userCoords } = useUserGeolocation();
 
@@ -49,16 +68,18 @@ export function MarketplacePageContent({
     <div className="mx-auto w-full min-w-0 max-w-6xl">
       <header className="max-w-3xl">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
-          İkinci El Pazaryeri
+          {baslik?.etiket ?? "İkinci El Pazaryeri"}
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          Esnaf Pro Pazaryeri
+          {baslik?.baslik ?? "Esnaf Pro Pazaryeri"}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-          Esnaf Pro üyesi mağazaların yayınladığı sıfır ve ikinci el cihaz
-          ilanlarını tek yerden keşfedin.
+          {baslik?.aciklama ??
+            "Esnaf Pro üyesi mağazaların yayınladığı sıfır ve ikinci el cihaz ilanlarını tek yerden keşfedin."}
         </p>
       </header>
+
+      {ustLinkler}
 
       <div className="mt-8">
         <MarketplaceListingToolbar
@@ -98,6 +119,8 @@ export function MarketplacePageContent({
           </p>
         </div>
       )}
+
+      {altIcerik}
     </div>
   );
 }

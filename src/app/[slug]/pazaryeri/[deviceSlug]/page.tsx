@@ -11,8 +11,11 @@ import {
   buildStoreSubpageSeoMetadata,
   NOT_FOUND_STORE_METADATA,
 } from "@/lib/dukkan/metadata";
+import { kisaKonumEtiketi } from "@/lib/dukkan/konum";
 import {
   fetchPublishedSecondHandDeviceBySlug,
+  formatListingTypeLabel,
+  formatSecondHandPrice,
   getSecondHandDeviceHref,
   getSecondHandDeviceTitle,
   hasPublishedSecondHandDevices,
@@ -30,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: dukkan } = await supabase
     .from("dukkanlar")
-    .select("dukkan_adi, slug, adres, banner_url, logo_url, user_id, approval_status")
+    .select("*")
     .eq("slug", slug)
     .eq("aktif", true)
     .maybeSingle();
@@ -51,15 +54,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = getSecondHandDeviceTitle(device);
   const deviceSegment = `pazaryeri/${device.web_slug?.trim() || device.id}`;
-  // Başlıkta ilçe: "iPad 9 — Esenkent, Esenyurt"
-  const alan = buildLocalAreaLabel(dukkan.adres);
+  // Başlık arama diline göre: "iPad 9 64 GB İkinci El — Esenyurt"
+  const durum = formatListingTypeLabel(device.listing_type);
+  const kapasite = device.capacity?.trim();
+  const baslikGovdesi = [
+    title,
+    kapasite && !title.toLocaleLowerCase("tr-TR").includes(kapasite.toLocaleLowerCase("tr-TR")) ? kapasite : null,
+    title.toLocaleLowerCase("tr-TR").includes(durum.toLocaleLowerCase("tr-TR")) ? null : durum,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const kisaAlan = kisaKonumEtiketi(dukkan);
+  const alan = buildLocalAreaLabel(dukkan);
+  const fiyat = device.sale_price != null ? formatSecondHandPrice(device.sale_price) : null;
 
   return buildStoreSubpageSeoMetadata(
     dukkan,
     deviceSegment,
-    alan ? `${title} — ${alan}` : title,
-    device.web_description?.trim() ??
-      `${dukkan.dukkan_adi} ikinci el cihaz ilanı: ${title}`,
+    kisaAlan ? `${baslikGovdesi} — ${kisaAlan}` : baslikGovdesi,
+    device.web_description?.trim() ||
+      `${baslikGovdesi}${fiyat ? ` ${fiyat}` : ""} — ${dukkan.dukkan_adi}${alan ? `, ${alan}` : ""}. ${durum} cihaz ilanı; ekspertiz bilgileri ve fotoğraflar sayfada, WhatsApp'tan hemen sorun.`,
     { image: device.image_urls?.[0] ?? null }
   );
 }
@@ -115,6 +129,7 @@ export default async function PazaryeriDevicePage({ params }: PageProps) {
             shopName: dukkan.dukkan_adi,
             shopSlug: dukkan.slug,
             shopAdres: dukkan.adres,
+            shopSemt: dukkan.semt,
             devicePath,
           }),
           buildStoreBreadcrumbJsonLd(dukkan.slug, dukkan.dukkan_adi, [

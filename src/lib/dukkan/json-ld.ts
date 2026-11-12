@@ -8,10 +8,28 @@ import {
   getVisibleFaqItems,
   resolveFaqItemsForSource,
 } from "@/lib/dukkan/faq";
-import { parseLocationFromAdres } from "@/lib/dukkan/faq-placeholders";
+import { cozKonum, type DukkanKonumu } from "@/lib/dukkan/konum";
 import type { FaqPlaceholderSource } from "@/lib/dukkan/faq-placeholders";
 import type { Dukkan, DukkanBlogYazisi, FaqItem } from "@/types/database.types";
 import type { SecondHandDevicePublic } from "@/types/database.types";
+
+/**
+ * Hizmet bölgesi: semt varsa ayrı bir Place olarak da yazılır, böylece
+ * "Bahçeşehir telefoncu" ve "Başakşehir telefoncu" aramalarının ikisine de sinyal gider.
+ */
+function buildAreaServed({ il, ilce, semt }: DukkanKonumu) {
+  const ilceIl = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
+  const alanlar: Array<Record<string, string>> = [];
+  if (semt) alanlar.push({ "@type": "Place", name: ilceIl ? `${semt}, ${ilceIl}` : semt });
+  if (ilceIl) alanlar.push({ "@type": "AdministrativeArea", name: ilceIl });
+  if (!alanlar.length) return null;
+  return alanlar.length === 1 ? alanlar[0] : alanlar;
+}
+
+function konumAdi({ il, ilce, semt }: DukkanKonumu): string | null {
+  const parcalar = [semt, ilce, il].filter(Boolean);
+  return parcalar.length ? parcalar.join(", ") : null;
+}
 
 function absoluteStorePath(slug: string, path = ""): string {
   const normalizedPath = path.startsWith("/") ? path : path ? `/${path}` : "";
@@ -20,7 +38,8 @@ function absoluteStorePath(slug: string, path = ""): string {
 
 export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
   const pageUrl = absoluteStorePath(dukkan.slug);
-  const { il, ilce } = parseLocationFromAdres(dukkan.adres);
+  const konum = cozKonum(dukkan);
+  const { il, ilce } = konum;
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -78,12 +97,8 @@ export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
     };
   }
 
-  if (il || ilce) {
-    schema.areaServed = {
-      "@type": "AdministrativeArea",
-      name: ilce && il ? `${ilce}, ${il}` : il ?? ilce,
-    };
-  }
+  const areaServed = buildAreaServed(konum);
+  if (areaServed) schema.areaServed = areaServed;
 
   return schema;
 }
@@ -173,10 +188,12 @@ export function buildBlogPostingJsonLd(input: {
   shopName: string;
   shopSlug: string;
   shopAdres?: string | null;
+  /** Dükkan ayarlarındaki semt (Esenkent, Bahçeşehir…) */
+  shopSemt?: string | null;
 }) {
   const url = absoluteStorePath(input.shopSlug, `/blog/${input.post.slug}`);
-  const { il, ilce } = parseLocationFromAdres(input.shopAdres);
-  const areaName = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
+  const konum = cozKonum({ adres: input.shopAdres, semt: input.shopSemt });
+  const areaName = konumAdi(konum);
 
   return {
     "@context": "https://schema.org",
@@ -199,7 +216,7 @@ export function buildBlogPostingJsonLd(input: {
       ? { articleBody: stripBlogHtml(input.post.icerik) }
       : {}),
     ...(areaName
-      ? { contentLocation: { "@type": "AdministrativeArea", name: areaName } }
+      ? { contentLocation: { "@type": "Place", name: areaName } }
       : {}),
   };
 }
@@ -215,27 +232,38 @@ export function buildProductJsonLd(input: {
     | "image_urls"
     | "web_slug"
     | "condition"
-  >;
+  > &
+    Partial<Pick<SecondHandDevicePublic, "listing_type" | "capacity" | "color" | "device_category">>;
   shopName: string;
   shopSlug: string;
   shopAdres?: string | null;
+  /** Dükkan ayarlarındaki semt (Esenkent, Bahçeşehir…) */
+  shopSemt?: string | null;
   devicePath: string;
 }) {
   const name =
     input.device.web_title?.trim() ||
     `${input.device.brand} ${input.device.model}`.trim();
+  const sifir = input.device.listing_type?.trim() === "new";
+  const durumEtiketi = sifir ? "sıfır" : "ikinci el";
   const url = `${getPublicSiteUrl()}${input.devicePath.startsWith("/") ? input.devicePath : `/${input.devicePath}`}`;
-  const { il, ilce } = parseLocationFromAdres(input.shopAdres);
-  const areaName = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
+  const konum = cozKonum({ adres: input.shopAdres, semt: input.shopSemt });
+  const { il, ilce } = konum;
+  const areaName = konumAdi(konum);
+  const areaServed = buildAreaServed(konum);
 
   return {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${url}#product`,
     name,
     description:
-      input.device.web_description?.trim() ??
-      `${input.shopName} ikinci el cihaz ilanı: ${name}`,
+      input.device.web_description?.trim() ||
+      `${input.shopName}${areaName ? ` (${areaName})` : ""} ${durumEtiketi} cihaz ilanı: ${name}`,
     url,
+    ...(input.device.brand?.trim() ? { brand: { "@type": "Brand", name: input.device.brand.trim() } } : {}),
+    ...(input.device.model?.trim() ? { model: input.device.model.trim() } : {}),
+    ...(input.device.color?.trim() ? { color: input.device.color.trim() } : {}),
     ...(input.device.image_urls?.[0]
       ? { image: input.device.image_urls[0] }
       : {}),
@@ -244,9 +272,11 @@ export function buildProductJsonLd(input: {
       priceCurrency: "TRY",
       price: input.device.sale_price,
       availability: "https://schema.org/InStock",
-      ...(areaName ? { areaServed: { "@type": "AdministrativeArea", name: areaName } } : {}),
+      itemCondition: sifir ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
+      ...(areaServed ? { areaServed } : {}),
       seller: {
         "@type": "LocalBusiness",
+        "@id": `${absoluteStorePath(input.shopSlug)}#localbusiness`,
         name: input.shopName,
         url: absoluteStorePath(input.shopSlug),
         ...(input.shopAdres
@@ -262,9 +292,6 @@ export function buildProductJsonLd(input: {
           : {}),
       },
     },
-    ...(input.device.condition
-      ? { itemCondition: "https://schema.org/UsedCondition" }
-      : {}),
   };
 }
 
@@ -321,16 +348,25 @@ export function buildUrunProductJsonLd(input: {
   category?: string | null;
   price: number | null;
   stokAdedi: number | null;
+  barkod?: string | null;
   shopName: string;
   shopSlug: string;
   shopAdres?: string | null;
+  /** Dükkan ayarlarındaki semt (Esenkent, Bahçeşehir…) */
+  shopSemt?: string | null;
   path: string;
 }) {
   const url = `${getPublicSiteUrl()}${input.path.startsWith("/") ? input.path : `/${input.path}`}`;
-  const { il, ilce } = parseLocationFromAdres(input.shopAdres);
-  const areaName = ilce && il ? `${ilce}, ${il}` : il ?? ilce ?? null;
+  const barkod = input.barkod?.replace(/\s+/g, "") || null;
+  // GTIN yalnızca 8/12/13/14 haneli sayısal barkodlarda; diğerleri SKU olarak gider.
+  const gtin = barkod && /^(\d{8}|\d{12,14})$/.test(barkod) ? barkod : null;
+  const konum = cozKonum({ adres: input.shopAdres, semt: input.shopSemt });
+  const { il, ilce } = konum;
+  const areaName = konumAdi(konum);
+  const areaServed = buildAreaServed(konum);
   const description =
-    input.description?.trim() || `${input.shopName} mağazasında ${input.name}. Fiyat ve stok bilgisi için iletişime geçin.`;
+    input.description?.trim() ||
+    `${input.shopName}${areaName ? ` (${areaName})` : ""} mağazasında ${input.name}. Fiyat ve stok bilgisi için iletişime geçin.`;
 
   const availability =
     input.stokAdedi === 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock";
@@ -338,11 +374,14 @@ export function buildUrunProductJsonLd(input: {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${url}#product`,
     name: input.name,
     description,
     url,
     ...(input.images.length ? { image: input.images } : {}),
     ...(input.category ? { category: input.category } : {}),
+    ...(barkod ? { sku: barkod } : {}),
+    ...(gtin ? { gtin } : {}),
     ...(input.price != null
       ? {
           offers: {
@@ -351,9 +390,12 @@ export function buildUrunProductJsonLd(input: {
             priceCurrency: "TRY",
             price: input.price,
             availability,
-            ...(areaName ? { areaServed: { "@type": "AdministrativeArea", name: areaName } } : {}),
+            itemCondition: "https://schema.org/NewCondition",
+            ...(areaServed ? { areaServed } : {}),
             seller: {
               "@type": "LocalBusiness",
+              // Mağaza sayfasındaki LocalBusiness ile aynı varlık (konum, saat, harita)
+              "@id": `${absoluteStorePath(input.shopSlug)}#localbusiness`,
               name: input.shopName,
               url: absoluteStorePath(input.shopSlug),
               ...(input.shopAdres

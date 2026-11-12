@@ -29,6 +29,8 @@ import {
   MAX_GALLERY_PHOTOS,
   MAX_PRODUCT_PHOTOS,
 } from "@/lib/supabase/storage.constants";
+import { normalizeSemt } from "@/lib/dukkan/konum";
+import { formatFiyatGirisi } from "@/lib/dukkan/urun-fiyat";
 
 export const MAX_FAQ_ITEMS = 10;
 
@@ -83,6 +85,7 @@ export type ParsedDukkanForm = {
   tiktok_url: string | null;
   facebook_url: string | null;
   adres: string | null;
+  semt: string | null;
   enlem: number | null;
   boylam: number | null;
   google_business_url: string | null;
@@ -155,8 +158,8 @@ export function parseUrunlerFromFormData(formData: FormData): ParsedUrun[] {
     const kategori = String(formData.get(`urun_kategorisi_${i}`) ?? "")
       .trim()
       .slice(0, MAX_URUN_KATEGORISI_LENGTH);
-    const fiyat = String(formData.get(`fiyat_${i}`) ?? "")
-      .trim()
+    // Sunucuda da binlik nokta: başka yoldan "1350" gelse de "1.350" kaydedilir
+    const fiyat = formatFiyatGirisi(String(formData.get(`fiyat_${i}`) ?? "").trim())
       .slice(0, MAX_URUN_FIYAT_LENGTH);
     const stokAdedi = parseStokAdedi(
       String(formData.get(`stok_adedi_${i}`) ?? "").trim()
@@ -198,6 +201,7 @@ export function parseDukkanFormData(formData: FormData):
   const tiktokInput = String(formData.get("tiktok_url") ?? "").trim();
   const facebookInput = String(formData.get("facebook_url") ?? "").trim();
   const adres = String(formData.get("adres") ?? "").trim();
+  const semt = normalizeSemt(String(formData.get("semt") ?? ""));
   const enlem = parseCoordinateInput(formData.get("enlem"));
   const boylam = parseCoordinateInput(formData.get("boylam"));
   const googleBusinessUrlInput = String(
@@ -303,6 +307,7 @@ export function parseDukkanFormData(formData: FormData):
       tiktok_url: normalizeSocialUrl(tiktokInput, "tiktok"),
       facebook_url: normalizeSocialUrl(facebookInput, "facebook"),
       adres: adres || null,
+      semt,
       enlem,
       boylam,
       google_business_url: googleBusinessUrl,

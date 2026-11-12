@@ -17,6 +17,7 @@ import {
   MAX_URUN_KATEGORISI_LENGTH,
 } from "@/lib/dukkan/form-data";
 import { MAX_URUN_PHOTO_SLOTS } from "@/lib/dukkan/urun-photo-slots";
+import { formatFiyatGirisi } from "@/lib/dukkan/urun-fiyat";
 import {
   ayirKategori,
   birlestirKategori,
@@ -245,10 +246,32 @@ export function UrunEditPanel({
                 id={fieldId("fiyat")}
                 value={item.fiyat}
                 maxLength={MAX_URUN_FIYAT_LENGTH}
-                onChange={(event) => patch({ fiyat: event.target.value })}
-                placeholder="Örn: 1.250 TL"
+                inputMode="decimal"
+                onChange={(event) => {
+                  // Yazarken binlik nokta: "1350" → "1.350". İmleç, rakam sırasına göre korunur.
+                  const input = event.target;
+                  const ham = input.value;
+                  const imlec = input.selectionStart ?? ham.length;
+                  const solRakam = ham.slice(0, imlec).replace(/[^\d,]/g, "").length;
+                  const yeni = formatFiyatGirisi(ham);
+                  patch({ fiyat: yeni });
+                  if (yeni === ham) return;
+                  requestAnimationFrame(() => {
+                    let konum = 0;
+                    let sayac = 0;
+                    while (konum < yeni.length && sayac < solRakam) {
+                      if (/[\d,]/.test(yeni[konum])) sayac += 1;
+                      konum += 1;
+                    }
+                    input.setSelectionRange(konum, konum);
+                  });
+                }}
+                placeholder="Örn: 1.250"
                 className="w-full"
               />
+              <p className="mt-1.5 text-xs text-slate-400">
+                Binlik nokta otomatik eklenir, TL yazmanıza gerek yok. Kuruş için virgül kullanın.
+              </p>
             </div>
             <div>
               <Label htmlFor={fieldId("stok")}>Stok adedi</Label>

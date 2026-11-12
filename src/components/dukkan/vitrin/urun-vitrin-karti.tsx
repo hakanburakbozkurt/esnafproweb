@@ -5,6 +5,7 @@ import { getUrunPhotoUrls } from "@/lib/dukkan/urun-photos";
 import { getUrunStokBadge, URUN_STOK_BADGE_CLASSES } from "@/lib/dukkan/urun-stok";
 import { cn } from "@/lib/utils/cn";
 import type { DukkanUrunu } from "@/types/database.types";
+import { formatUrunFiyatiGosterim } from "@/lib/dukkan/urun-fiyat";
 
 /** Mobilde 2, tablette 3, masaüstünde 4 sütun */
 export const URUN_KART_SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px";
@@ -22,7 +23,7 @@ export function UrunVitrinKarti({ urun, href, altEtiket }: UrunVitrinKartiProps)
   const [cover, hoverPhoto] = photos;
   const stokBadge = getUrunStokBadge(urun.stok_adedi);
   const soldOut = urun.stok_adedi === 0;
-  const fiyat = urun.fiyat?.trim();
+  const fiyat = formatUrunFiyatiGosterim(urun.fiyat);
 
   return (
     <Link

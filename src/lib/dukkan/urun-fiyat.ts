@@ -26,3 +26,37 @@ export function parseUrunFiyati(fiyat: string | null | undefined): number | null
   if (!Number.isFinite(sayi) || sayi <= 0) return null;
   return Math.round(sayi * 100) / 100;
 }
+
+/**
+ * Vitrinde gösterilecek fiyat metni. Esnaf sadece rakam yazdıysa ("2250")
+ * "2.250 TL" olarak gösterilir; zaten para birimi ya da metin varsa
+ * ("1.350 ₺", "Sorunuz") yazıldığı gibi bırakılır.
+ */
+export function formatUrunFiyatiGosterim(fiyat: string | null | undefined): string | null {
+  const ham = fiyat?.trim();
+  if (!ham) return null;
+  if (/[^\d.,\s]/.test(ham)) return ham;
+  const sayi = parseUrunFiyati(ham);
+  if (sayi == null) return ham;
+  const ondalikli = !Number.isInteger(sayi);
+  return `${sayi.toLocaleString("tr-TR", {
+    minimumFractionDigits: ondalikli ? 2 : 0,
+    maximumFractionDigits: 2,
+  })} TL`;
+}
+
+/**
+ * Fiyat kutusuna yazılırken binlik noktası koyar: "1350" → "1.350",
+ * "1350,5" → "1.350,5". Kuruş için virgül kullanılır (en fazla 2 hane).
+ * Kutuya harf/para birimi yazıldıysa ("450 TL", "Sorunuz") dokunmaz.
+ */
+export function formatFiyatGirisi(deger: string): string {
+  if (/[^\d.,\s]/.test(deger)) return deger;
+  const temiz = deger.replace(/[\s.]/g, "");
+  if (!temiz) return "";
+  const [tam, ...kalan] = temiz.split(",");
+  const tamSade = tam.replace(/^0+(?=\d)/, "");
+  const gruplu = tamSade.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const ondalik = kalan.length ? `,${kalan.join("").slice(0, 2)}` : "";
+  return `${gruplu}${ondalik}`;
+}

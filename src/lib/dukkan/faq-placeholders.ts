@@ -6,6 +6,7 @@ import {
   isLegacyCalismaSaatleri,
   parseCalismaSaatleri,
 } from "@/lib/dukkan/calisma-saatleri";
+import { ilceBulAdresten, ilceIlIcinGecerliMi } from "@/lib/dukkan/ilce-verisi";
 
 export type FaqPlaceholderContext = {
   dukkan_adi: string;
@@ -144,7 +145,7 @@ export function parseLocationFromAdres(
     const il = findIl(ilCandidate);
 
     if (il) {
-      return { il, ilce: ilceCandidate || null };
+      return { il, ilce: dogrulaIlce(trimmed, il, ilceCandidate || null) };
     }
   }
 
@@ -158,10 +159,30 @@ export function parseLocationFromAdres(
     if (!il) continue;
 
     const ilce = index > 0 ? parts[index - 1] : null;
-    return { il, ilce };
+    return { il, ilce: dogrulaIlce(trimmed, il, ilce) };
   }
 
+  // İl yazılmamış adresler ("… mahallesı esenyurt", "Bahçeşehir 2. Kısım"):
+  // ilçe ya da bilinen semt adından il/ilçe çıkar.
+  const bulunan = ilceBulAdresten(trimmed);
+  if (bulunan) return bulunan;
+
   return { il: null, ilce: null };
+}
+
+/**
+ * İl bulunduğunda "ilçe" diye alınan parça bazen sokak/cadde olur
+ * ("Atatürk Cad. No:5, İstanbul"). İlin ilçe listesi elimizdeyse adayı
+ * doğrular; değilse adreste geçen gerçek ilçeyi arar, bulamazsa null döner.
+ */
+function dogrulaIlce(adres: string, il: string, aday: string | null): string | null {
+  if (aday) {
+    const gecerli = ilceIlIcinGecerliMi(il, aday);
+    if (gecerli !== false) return aday;
+  }
+  const bulunan = ilceBulAdresten(adres, il);
+  if (bulunan) return bulunan.ilce;
+  return ilceIlIcinGecerliMi(il, aday ?? "") === null ? aday : null;
 }
 
 export function formatCalismaSaatleriForFaq(
