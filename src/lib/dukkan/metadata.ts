@@ -94,8 +94,12 @@ export function buildDukkanPageMetadata(
   title: string;
   description: string;
 } {
+  // Esnaf kendi başlığını yazdıysa ona dokunulmaz; yazmadıysa konum + meslek eklenir:
+  // "Redikom Mobile Store — Bahçeşehir, Başakşehir Telefoncu | EsnafPRO"
+  const alan = kisaKonumEtiketi(dukkan);
   const title =
-    dukkan.meta_title?.trim() || `${dukkan.dukkan_adi} | EsnafPRO`;
+    dukkan.meta_title?.trim() ||
+    (alan ? `${dukkan.dukkan_adi} — ${alan} Telefoncu | EsnafPRO` : `${dukkan.dukkan_adi} | EsnafPRO`);
 
   const description =
     dukkan.meta_description?.trim() ||

@@ -36,6 +36,21 @@ function absoluteStorePath(slug: string, path = ""): string {
   return `${getPublicSiteUrl()}/${slug}${normalizedPath}`;
 }
 
+/**
+ * Telefon numarasını uluslararası biçime çevirir: "05539559111" / "905539559111" → "+905539559111".
+ * Tanınmayan biçimler olduğu gibi döner.
+ */
+export function formatSchemaTelefon(value: string | null | undefined): string | null {
+  const ham = value?.trim();
+  if (!ham) return null;
+  const rakam = ham.replace(/\D/g, "");
+  if (ham.startsWith("+") && rakam.length >= 10) return `+${rakam}`;
+  if (rakam.length === 12 && rakam.startsWith("90")) return `+${rakam}`;
+  if (rakam.length === 11 && rakam.startsWith("0")) return `+9${rakam}`;
+  if (rakam.length === 10 && rakam.startsWith("5")) return `+90${rakam}`;
+  return ham;
+}
+
 export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
   const pageUrl = absoluteStorePath(dukkan.slug);
   const konum = cozKonum(dukkan);
@@ -43,19 +58,21 @@ export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    // MobilePhoneStore, LocalBusiness'ın alt türü: Google mağazanın "telefoncu" olduğunu anlar
+    "@type": "MobilePhoneStore",
     "@id": `${pageUrl}#localbusiness`,
     name: dukkan.dukkan_adi,
     url: pageUrl,
   };
 
   if (dukkan.aciklama) schema.description = dukkan.aciklama;
-  if (dukkan.whatsapp || dukkan.telefon) {
-    schema.telephone = dukkan.whatsapp ?? dukkan.telefon;
-  }
+  const telefon = formatSchemaTelefon(dukkan.telefon ?? dukkan.whatsapp);
+  if (telefon) schema.telephone = telefon;
   if (dukkan.logo_url) schema.logo = dukkan.logo_url;
 
+  // Google İşletme profili linki aynı işletme olduğunu gösterir (harita sıralaması için önemli)
   const sameAs = [
+    dukkan.google_business_url,
     dukkan.instagram_url,
     dukkan.tiktok_url,
     dukkan.facebook_url,
@@ -95,6 +112,9 @@ export function buildLocalBusinessJsonLd(dukkan: Dukkan) {
       latitude: dukkan.enlem,
       longitude: dukkan.boylam,
     };
+    schema.hasMap =
+      dukkan.google_business_url?.trim() ||
+      `https://www.google.com/maps/search/?api=1&query=${dukkan.enlem},${dukkan.boylam}`;
   }
 
   const areaServed = buildAreaServed(konum);
