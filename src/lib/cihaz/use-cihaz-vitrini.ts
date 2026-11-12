@@ -56,6 +56,7 @@ export function useCihazVitrini(initialDevices: IkinciElCihaz[] = []) {
     setDeviceCategory,
     setListingType,
     resetAll,
+    resetForSimilar,
     hydrateFromDevice,
   } = forms;
 
@@ -69,7 +70,9 @@ export function useCihazVitrini(initialDevices: IkinciElCihaz[] = []) {
     return result;
   }, []);
 
-  const saveDevice = useCallback(async (): Promise<{
+  const saveDevice = useCallback(async (
+    options?: { keepForSimilar?: boolean }
+  ): Promise<{
     success: boolean;
     error?: string;
   }> => {
@@ -134,7 +137,11 @@ export function useCihazVitrini(initialDevices: IkinciElCihaz[] = []) {
       }
 
       setEditingDeviceId(null);
-      resetAll();
+      if (options?.keepForSimilar && !editingDeviceId) {
+        resetForSimilar();
+      } else {
+        resetAll();
+      }
       await fetchDevices();
       return { success: true };
     } finally {
@@ -149,6 +156,7 @@ export function useCihazVitrini(initialDevices: IkinciElCihaz[] = []) {
     consoleForm,
     editingDeviceId,
     resetAll,
+    resetForSimilar,
     fetchDevices,
   ]);
 
