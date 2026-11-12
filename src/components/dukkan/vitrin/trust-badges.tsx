@@ -1,4 +1,4 @@
-import { Check, Handshake, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export type TrustBadgeItem = {
@@ -10,81 +10,47 @@ export type TrustBadgeItem = {
 };
 
 type TrustBadgesProps = {
-  isVerifiedShop: boolean;
+  /** İlanın kendi garanti beyanı (satıcının girdiği değer). Mağaza onayı garanti anlamına gelmez. */
   hasWarranty?: boolean | null;
+  /** Satıcının beyan ettiği ilan durumu. Yalnızca "new" sıfır ürün anlamına gelir. */
   listingType?: string | null;
-  hasInvoice?: boolean | null;
   className?: string;
 };
 
+/**
+ * Rozetler yalnızca ilanın kendi verisinden çıkar. Mağaza onayı ya da fatura
+ * yüklenmesi tek başına rozet üretmez (yanıltıcı olmasın diye).
+ * "Elden test imkanı" için ilan bazlı bir alan olmadığından gösterilmez.
+ */
 function resolveTrustBadges({
-  isVerifiedShop,
   hasWarranty,
   listingType,
-  hasInvoice,
 }: Omit<TrustBadgesProps, "className">): TrustBadgeItem[] {
   const badges: TrustBadgeItem[] = [];
 
-  if (isVerifiedShop || hasWarranty) {
+  if (hasWarranty === true) {
     badges.push({
       key: "store-warranty",
-      label: "Mağaza Garantili",
+      label: "Garantili",
       shortLabel: "Garantili",
       icon: ShieldCheck,
     });
   }
 
-  if (isVerifiedShop) {
-    badges.push({
-      key: "in-store-test",
-      label: "Elden Test İmkanı",
-      shortLabel: "Elden test",
-      icon: Handshake,
-    });
-  }
-
-  if (listingType === "new" || hasInvoice) {
+  if (listingType === "new") {
     badges.push({
       key: "original",
-      label: "Orijinal Ürün",
-      shortLabel: "Orijinal ürün",
+      label: "Sıfır ürün",
+      shortLabel: "Sıfır ürün",
       icon: Sparkles,
     });
-  }
-
-  if (!badges.length && isVerifiedShop) {
-    badges.push(
-      {
-        key: "store-warranty",
-        label: "Mağaza Garantili",
-      shortLabel: "Garantili",
-        icon: ShieldCheck,
-      },
-      {
-        key: "in-store-test",
-        label: "Elden Test İmkanı",
-      shortLabel: "Elden test",
-        icon: Handshake,
-      }
-    );
   }
 
   return badges;
 }
 
-export function TrustBadges({
-  isVerifiedShop,
-  hasWarranty,
-  listingType,
-  hasInvoice,
-  className,
-}: TrustBadgesProps) {
-  const badges = resolveTrustBadges({
-    isVerifiedShop,
-    hasWarranty,
-    listingType,
-    hasInvoice,
-  });
+export function TrustBadges({ hasWarranty, listingType, className }: TrustBadgesProps) {
+  const badges = resolveTrustBadges({ hasWarranty, listingType });
 
   if (!badges.length) return null;
 
