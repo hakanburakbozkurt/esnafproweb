@@ -286,9 +286,9 @@ export function useCihazAlCategoryForms() {
   }, []);
 
   /**
-   * Seri girişte "benzerini ekle": kategori ve cihaz modeli bilgilerini korur,
-   * IMEI, seri no, fotoğraf, fiyat ve kişisel alanları temizler.
-   * Şimdilik telefon alanları korunur; diğer kategoriler tam sıfırlanır.
+   * Seri girişte "benzerini ekle": model bilgilerini korur, cihaza özgü alanları
+   * (IMEI, seri no, fotoğraf, pil, değiştirilen parça, arıza notu) ve fiyat/kişisel
+   * alanları temizler. Her kategori kendi model alanlarını korur.
    */
   const resetForSimilar = useCallback(() => {
     setShared((prev) => ({
@@ -309,10 +309,55 @@ export function useCihazAlCategoryForms() {
       condition: prev.condition,
       screen_size: prev.screen_size,
     }));
-    setTablet(DEFAULT_TABLET_FORM);
-    setComputer(DEFAULT_COMPUTER_FORM);
-    setWatch(DEFAULT_WATCH_FORM);
-    setConsoleForm(DEFAULT_CONSOLE_FORM);
+    setTablet((prev) => ({
+      ...DEFAULT_TABLET_FORM,
+      brand: prev.brand,
+      model: prev.model,
+      capacity: prev.capacity,
+      color: prev.color,
+      screen_size: prev.screen_size,
+      operating_system: prev.operating_system,
+      sim_support: prev.sim_support,
+      warranty_type: prev.warranty_type,
+      condition: prev.condition,
+    }));
+    setComputer((prev) => ({
+      ...DEFAULT_COMPUTER_FORM,
+      brand: prev.brand,
+      model: prev.model,
+      processor: prev.processor,
+      ram: prev.ram,
+      hdd: prev.hdd,
+      ssd: prev.ssd,
+      gpu: prev.gpu,
+      screen_size: prev.screen_size,
+      resolution: prev.resolution,
+      color: prev.color,
+      warranty_type: prev.warranty_type,
+      condition: prev.condition,
+    }));
+    setWatch((prev) => ({
+      ...DEFAULT_WATCH_FORM,
+      brand: prev.brand,
+      model: prev.model,
+      case_diameter: prev.case_diameter,
+      color: prev.color,
+      case_material: prev.case_material,
+      has_sapphire_glass: prev.has_sapphire_glass,
+      sim_support: prev.sim_support,
+      warranty_type: prev.warranty_type,
+      condition: prev.condition,
+    }));
+    setConsoleForm((prev) => ({
+      ...DEFAULT_CONSOLE_FORM,
+      brand: prev.brand,
+      model: prev.model,
+      casing_type: prev.casing_type,
+      drive_type: prev.drive_type,
+      capacity: prev.capacity,
+      warranty_type: prev.warranty_type,
+      condition: prev.condition,
+    }));
   }, []);
 
   const hydrateFromDevice = useCallback((device: DeviceRowForHydrate) => {
