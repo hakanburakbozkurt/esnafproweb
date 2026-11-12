@@ -108,14 +108,14 @@ export function useCihazVitrini(initialDevices: IkinciElCihaz[] = []) {
           : await uploadSecondHandDevicePhotos(user.id, photoUris);
 
         if (!up.ok) {
-          imageUrls = editingDeviceId
-            ? photoUris.filter(
-                (u) => u.startsWith("http://") || u.startsWith("https://")
-              )
-            : [];
-        } else {
-          imageUrls = up.imageUrls;
+          // Fotoğraf yüklenemediyse kaydı durdur: sessizce fotoğrafsız
+          // kaydetmek esnafın fotoğraflarını fark etmeden kaybetmesine yol açar.
+          return {
+            success: false,
+            error: `Fotoğraflar yüklenemedi (${up.error}). Lütfen tekrar deneyin; cihaz kaydedilmedi.`,
+          };
         }
+        imageUrls = up.imageUrls;
       }
 
       const result = await saveSecondHandDevice({
