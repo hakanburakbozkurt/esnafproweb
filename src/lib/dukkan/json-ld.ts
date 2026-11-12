@@ -1,3 +1,4 @@
+import { gorselAdresi } from "@/lib/gorsel/odak";
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { stripBlogHtml } from "@/lib/blog/blog-html";
 import {
@@ -285,7 +286,7 @@ export function buildProductJsonLd(input: {
     ...(input.device.model?.trim() ? { model: input.device.model.trim() } : {}),
     ...(input.device.color?.trim() ? { color: input.device.color.trim() } : {}),
     ...(input.device.image_urls?.[0]
-      ? { image: input.device.image_urls[0] }
+      ? { image: gorselAdresi(input.device.image_urls[0]) }
       : {}),
     offers: {
       "@type": "Offer",

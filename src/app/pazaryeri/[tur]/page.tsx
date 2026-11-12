@@ -8,7 +8,7 @@ import { PazaryeriHizliLinkler } from "@/components/marketplace/pazaryeri-hizli-
 import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { buildBreadcrumbListJsonLd } from "@/lib/dukkan/json-ld";
-import { getSecondHandDeviceHref, getSecondHandDeviceTitle } from "@/lib/dukkan/second-hand-devices";
+import { getSecondHandDeviceHref, getSecondHandDeviceImage, getSecondHandDeviceTitle } from "@/lib/dukkan/second-hand-devices";
 import { getMarketplaceListings } from "@/lib/marketplace/get-public-listings";
 import {
   enCokIlceler,
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${pazaryeriSayfaBasligi(sayfa, ilceler)} | EsnafPRO`,
     description: pazaryeriSayfaAciklamasi(sayfa, ilanlar.length, ilceler),
     path: pazaryeriSayfasiPath(sayfa),
-    image: ilanlar[0]?.device.image_urls?.[0] ?? null,
+    image: ilanlar[0] ? getSecondHandDeviceImage(ilanlar[0].device) : null,
   });
 
   // İlan yokken boş sayfa Google'a girmesin (ince içerik); linkler takip edilsin.

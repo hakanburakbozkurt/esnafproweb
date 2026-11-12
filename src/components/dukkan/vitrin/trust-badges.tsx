@@ -1,9 +1,11 @@
-import { Handshake, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, Handshake, ShieldCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export type TrustBadgeItem = {
   key: string;
   label: string;
+  /** Tek satıra sığan kısa yazı */
+  shortLabel: string;
   icon: typeof ShieldCheck;
 };
 
@@ -27,6 +29,7 @@ function resolveTrustBadges({
     badges.push({
       key: "store-warranty",
       label: "Mağaza Garantili",
+      shortLabel: "Garantili",
       icon: ShieldCheck,
     });
   }
@@ -35,6 +38,7 @@ function resolveTrustBadges({
     badges.push({
       key: "in-store-test",
       label: "Elden Test İmkanı",
+      shortLabel: "Elden test",
       icon: Handshake,
     });
   }
@@ -43,6 +47,7 @@ function resolveTrustBadges({
     badges.push({
       key: "original",
       label: "Orijinal Ürün",
+      shortLabel: "Orijinal ürün",
       icon: Sparkles,
     });
   }
@@ -52,11 +57,13 @@ function resolveTrustBadges({
       {
         key: "store-warranty",
         label: "Mağaza Garantili",
+      shortLabel: "Garantili",
         icon: ShieldCheck,
       },
       {
         key: "in-store-test",
         label: "Elden Test İmkanı",
+      shortLabel: "Elden test",
         icon: Handshake,
       }
     );
@@ -84,22 +91,17 @@ export function TrustBadges({
   return (
     <ul
       className={cn(
-        "flex flex-wrap gap-2",
+        "flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-neutral-600 sm:text-sm",
         className
       )}
       aria-label="Güven rozetleri"
     >
-      {badges.map((badge) => {
-        const Icon = badge.icon;
-        return (
-          <li key={badge.key}>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50/80 px-3 py-1.5 text-xs font-semibold text-emerald-800">
-              <Icon className="size-3.5 shrink-0 text-emerald-600" aria-hidden />
-              {badge.label}
-            </span>
-          </li>
-        );
-      })}
+      {badges.map((badge) => (
+        <li key={badge.key} className="inline-flex items-center gap-1 whitespace-nowrap">
+          <Check className="size-3.5 shrink-0 text-emerald-600" strokeWidth={3} aria-hidden />
+          <span title={badge.label}>{badge.shortLabel}</span>
+        </li>
+      ))}
     </ul>
   );
 }

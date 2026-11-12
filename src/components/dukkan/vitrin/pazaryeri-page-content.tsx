@@ -103,14 +103,14 @@ export function PazaryeriPageContent({
           </div>
         </ScrollReveal>
       ) : (
-        <ul className="mt-6 space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
+        <ul className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
           {filteredDevices.map((device, index) => (
             <ScrollReveal
               key={device.id ?? index}
               delay={index * 0.03}
               className="min-w-0"
             >
-              <li>
+              <li className="h-full">
                 <SecondHandDeviceCard
                   device={device}
                   shopSlug={dukkan.slug}

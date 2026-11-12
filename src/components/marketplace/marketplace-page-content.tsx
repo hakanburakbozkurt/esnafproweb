@@ -99,12 +99,13 @@ export function MarketplacePageContent({
       </div>
 
       {filteredListings.length > 0 ? (
-        <ul className="mt-6 space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0 lg:grid-cols-3 lg:gap-6">
-          {filteredListings.map((listing) => (
-            <li key={listing.device.id}>
+        <ul className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 lg:gap-6">
+          {filteredListings.map((listing, index) => (
+            <li key={listing.device.id} className="min-w-0">
               <MarketplaceDeviceCard
                 listing={listing}
                 userCoords={userCoords}
+                oncelikli={index < 4}
               />
             </li>
           ))}

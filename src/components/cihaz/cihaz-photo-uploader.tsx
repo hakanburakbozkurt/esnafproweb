@@ -3,6 +3,7 @@
 import {
   Camera,
   CheckSquare,
+  Crosshair,
   Images,
   Loader2,
   Square,
@@ -11,7 +12,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { GorselOdakDuzenleyici } from "@/components/cihaz/gorsel-odak-duzenleyici";
 import { compressCihazImage } from "@/lib/cihaz/compress-cihaz-image";
+import { gorselAdresi, odakKonumu, odakliGorselAdresi } from "@/lib/gorsel/odak";
 import {
   ACCEPTED_PHOTO_TYPES,
   appendFilesToPhotoQueue,
@@ -74,6 +77,7 @@ export function CihazPhotoUploader({
   const [processing, setProcessing] = useState<ProcessingState | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  const [odakIndex, setOdakIndex] = useState<number | null>(null);
   const cameraSessionBootstrappedRef = useRef(false);
 
   const queue = useMemo(() => normalizePhotoQueue(photoUris), [photoUris]);
@@ -260,7 +264,9 @@ export function CihazPhotoUploader({
       <p className="text-xs leading-relaxed text-slate-500">
         En az bir fotoğraf yeterlidir. İlk sıradaki görsel{" "}
         <span className="font-medium text-slate-700">kapak fotoğrafı</span>{" "}
-        olarak vitrinde gösterilir. Toplu seçimle 20–30 fotoğraf ekleyebilirsiniz
+        olarak vitrinde gösterilir. Kartlarda fotoğraf kutuyu doldurur;{" "}
+        <span className="font-medium text-slate-700">Ortala</span> ile öne çıkacak
+        yeri seçebilirsiniz. Toplu seçimle 20–30 fotoğraf ekleyebilirsiniz
         (en fazla {MAX_PHOTO_QUEUE}). Görseller yüklemeden önce otomatik
         sıkıştırılır.
       </p>
@@ -420,13 +426,14 @@ export function CihazPhotoUploader({
                     )}
                   >
                     <Image
-                      src={uri}
+                      src={gorselAdresi(uri)}
                       alt={
                         index === 0 ? "Kapak fotoğrafı" : `Fotoğraf ${index + 1}`
                       }
                       fill
                       unoptimized
-                      className="object-contain p-1.5"
+                      className="object-cover"
+                      style={{ objectPosition: odakKonumu(uri) }}
                       sizes="(max-width: 640px) 33vw, 128px"
                     />
 
@@ -467,12 +474,23 @@ export function CihazPhotoUploader({
                     )}
                   </div>
 
-                  <div className="mt-1.5 flex h-7 items-center justify-center">
+                  <div className="mt-1.5 flex h-7 items-center justify-center gap-1">
+                    {!disabled && !selectionMode && (
+                      <button
+                        type="button"
+                        onClick={() => setOdakIndex(index)}
+                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg py-1 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-emerald-700"
+                        aria-label={`Fotoğraf ${index + 1} ortala`}
+                      >
+                        <Crosshair className="size-3" aria-hidden />
+                        Ortala
+                      </button>
+                    )}
                     {!disabled && !selectionMode && index !== 0 && (
                       <button
                         type="button"
                         onClick={() => handleSetCover(index)}
-                        className="w-full rounded-lg py-1 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-emerald-700"
+                        className="flex-1 rounded-lg py-1 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-emerald-700"
                       >
                         Kapak yap
                       </button>
@@ -496,6 +514,19 @@ export function CihazPhotoUploader({
           </div>
         )}
       </div>
+
+      {odakIndex !== null && queue[odakIndex] && (
+        <GorselOdakDuzenleyici
+          uri={queue[odakIndex]}
+          onKapat={() => setOdakIndex(null)}
+          onKaydet={(odak) => {
+            const next = [...queue];
+            next[odakIndex] = odakliGorselAdresi(queue[odakIndex], odak);
+            emitQueue(next);
+            setOdakIndex(null);
+          }}
+        />
+      )}
 
       {cameraSessionOpen && (
         <div

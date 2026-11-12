@@ -1,5 +1,6 @@
 "use client";
 
+import { gorselAdresi } from "@/lib/gorsel/odak";
 import {
   ExternalLink,
   Loader2,
@@ -28,7 +29,8 @@ function formatPrice(value: number) {
 }
 
 function DeviceThumbnail({ device }: { device: IkinciElCihaz }) {
-  const src = device.image_urls?.[0];
+  const ilk = device.image_urls?.[0];
+  const src = ilk ? gorselAdresi(ilk) : undefined;
   if (!src) {
     return (
       <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs text-slate-400">

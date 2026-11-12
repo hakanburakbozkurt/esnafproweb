@@ -1,5 +1,6 @@
 /** Cihaz fotoğraf kuyruğu — sıralı dizi, ilk öğe kapak görseli. */
 
+import { gorselAdresi } from "@/lib/gorsel/odak";
 export const MAX_PHOTO_QUEUE = 30;
 
 /** @deprecated Eski slot tabanlı upload limiti; kuyruk ile aynı. */
@@ -50,7 +51,7 @@ export function removePhotoAtIndex(
   const current = normalizePhotoQueue(photoUris);
   const uri = current[index];
   if (uri?.startsWith("blob:")) {
-    URL.revokeObjectURL(uri);
+    URL.revokeObjectURL(gorselAdresi(uri));
   }
   return current.filter((_, i) => i !== index);
 }
@@ -88,7 +89,7 @@ export function setCoverPhotoIndex(
 export function revokeBlobPhotoUrls(photoUris: readonly string[]) {
   for (const uri of photoUris) {
     if (uri?.startsWith("blob:")) {
-      URL.revokeObjectURL(uri);
+      URL.revokeObjectURL(gorselAdresi(uri));
     }
   }
 }
@@ -103,7 +104,7 @@ export function removePhotosAtIndices(
   for (let i = 0; i < current.length; i++) {
     const uri = current[i];
     if (indexSet.has(i) && uri?.startsWith("blob:")) {
-      URL.revokeObjectURL(uri);
+      URL.revokeObjectURL(gorselAdresi(uri));
     }
   }
 

@@ -10,6 +10,8 @@ type KartGorseliProps = {
   className?: string;
   /** İlk ekranda görünen görseller için true */
   oncelikli?: boolean;
+  /** Görselin kutu içindeki konumu (object-position), ör. "50% 30%" */
+  konum?: string;
   "aria-hidden"?: boolean;
 };
 
@@ -18,8 +20,9 @@ type KartGorseliProps = {
  * küçültülmüş (webp) olarak gelir; diğer adresler olduğu gibi gösterilir.
  * Ebeveyn `relative` olmalı ve boyutu belli olmalı (görsel alanı doldurur).
  */
-export function KartGorseli({ src, alt, sizes, className, oncelikli = false, ...rest }: KartGorseliProps) {
+export function KartGorseli({ src, alt, sizes, className, oncelikli = false, konum, ...rest }: KartGorseliProps) {
   const ortak = cn("absolute inset-0 h-full w-full", className);
+  const stil = konum ? { objectPosition: konum } : undefined;
 
   if (optimizeEdilebilirGorsel(src)) {
     return (
@@ -31,6 +34,7 @@ export function KartGorseli({ src, alt, sizes, className, oncelikli = false, ...
         priority={oncelikli}
         loading={oncelikli ? undefined : "lazy"}
         className={ortak}
+        style={stil}
         aria-hidden={rest["aria-hidden"]}
       />
     );
@@ -43,6 +47,7 @@ export function KartGorseli({ src, alt, sizes, className, oncelikli = false, ...
       alt={alt}
       loading={oncelikli ? "eager" : "lazy"}
       className={ortak}
+      style={stil}
       aria-hidden={rest["aria-hidden"]}
     />
   );

@@ -1,4 +1,5 @@
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
+import { odakliGorsel, type OdakliGorsel } from "@/lib/gorsel/odak";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   Database,
@@ -259,10 +260,20 @@ export function getSecondHandDeviceTitle(
   return combined || "İkinci El Cihaz";
 }
 
+/** Temiz görsel adresleri (odak işareti atılmış; Google/paylaşım için güvenli). */
 export function getSecondHandDeviceImages(
   device: Pick<PublicDeviceListRow, "image_urls">
 ): string[] {
-  return device.image_urls?.filter((url) => url?.trim()) ?? [];
+  return getSecondHandDeviceGorselleri(device).map((g) => g.src);
+}
+
+/** Kart ve galeride kullanılacak görseller: adres + esnafın seçtiği odak noktası. */
+export function getSecondHandDeviceGorselleri(
+  device: Pick<PublicDeviceListRow, "image_urls">
+): OdakliGorsel[] {
+  return (device.image_urls ?? [])
+    .filter((url): url is string => typeof url === "string" && url.trim().length > 0)
+    .map((url) => odakliGorsel(url.trim()));
 }
 
 export function getSecondHandDeviceImage(
