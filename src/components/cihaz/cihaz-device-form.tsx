@@ -98,21 +98,29 @@ export function CihazDeviceForm({ vitrini, onSaved }: CihazDeviceFormProps) {
     else updatePhone({ photo_uris: uris });
   }
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function submitDevice(keepForSimilar: boolean) {
     setError(null);
     setSuccess(null);
 
-    const result = await saveDevice();
+    const result = await saveDevice({ keepForSimilar });
     if (!result.success) {
       setError(result.error ?? "Kayıt başarısız.");
       return;
     }
 
     setSuccess(
-      editingDeviceId ? "Cihaz güncellendi." : "Cihaz envantere eklendi."
+      editingDeviceId
+        ? "Cihaz güncellendi."
+        : keepForSimilar
+          ? "Cihaz envantere eklendi. Benzer cihaz için model bilgileri korundu."
+          : "Cihaz envantere eklendi."
     );
     onSaved?.();
+  }
+
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    void submitDevice(false);
   }
 
   return (
@@ -342,6 +350,16 @@ export function CihazDeviceForm({ vitrini, onSaved }: CihazDeviceFormProps) {
           )}
           {saving ? "Kaydediliyor…" : editingDeviceId ? "Güncelle" : "Kaydet"}
         </button>
+        {!editingDeviceId && (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void submitDevice(true)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-600 px-6 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-60"
+          >
+            Kaydet ve benzerini ekle
+          </button>
+        )}
       </div>
     </form>
   );

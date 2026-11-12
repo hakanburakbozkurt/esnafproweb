@@ -285,6 +285,36 @@ export function useCihazAlCategoryForms() {
     setConsoleForm(DEFAULT_CONSOLE_FORM);
   }, []);
 
+  /**
+   * Seri girişte "benzerini ekle": kategori ve cihaz modeli bilgilerini korur,
+   * IMEI, seri no, fotoğraf, fiyat ve kişisel alanları temizler.
+   * Şimdilik telefon alanları korunur; diğer kategoriler tam sıfırlanır.
+   */
+  const resetForSimilar = useCallback(() => {
+    setShared((prev) => ({
+      ...DEFAULT_SHARED_FORM,
+      device_category: prev.device_category,
+      listing_type: prev.listing_type,
+      payment_method: prev.payment_method,
+      has_box: prev.has_box,
+      has_invoice: prev.has_invoice,
+    }));
+    setPhone((prev) => ({
+      ...DEFAULT_PHONE_FORM,
+      brand: prev.brand,
+      model: prev.model,
+      capacity: prev.capacity,
+      color: prev.color,
+      warranty_type: prev.warranty_type,
+      condition: prev.condition,
+      screen_size: prev.screen_size,
+    }));
+    setTablet(DEFAULT_TABLET_FORM);
+    setComputer(DEFAULT_COMPUTER_FORM);
+    setWatch(DEFAULT_WATCH_FORM);
+    setConsoleForm(DEFAULT_CONSOLE_FORM);
+  }, []);
+
   const hydrateFromDevice = useCallback((device: DeviceRowForHydrate) => {
     const s = buildHydratedCategoryForms(device);
     setShared(s.shared);
@@ -311,6 +341,7 @@ export function useCihazAlCategoryForms() {
     setDeviceCategory,
     setListingType,
     resetAll,
+    resetForSimilar,
     hydrateFromDevice,
   };
 }
