@@ -51,7 +51,7 @@ export const URUNLER_PATH = "/yonetim/urunler";
 export const URUNLER_TABS = [
   { id: "urunler", label: "Ürünler", description: "Vitrin ürünleri" },
   { id: "katalog", label: "Toplu Katalog", description: "Modele göre toplu görsel" },
-  { id: "ikinci-el", label: "2. El", description: "İkinci el cihaz ilanları" },
+  { id: "ikinci-el", label: "Cihazlar", description: "İkinci el ve sıfır cihaz ilanları" },
 ] as const;
 
 export type UrunlerTabId = (typeof URUNLER_TABS)[number]["id"];
