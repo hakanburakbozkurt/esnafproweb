@@ -74,8 +74,17 @@ export function SecondHandDeviceGallery({
               {images.map((url, index) => (
                 <div
                   key={`${url}-${index}`}
-                  className="flex min-w-0 shrink-0 grow-0 basis-full items-center justify-center bg-neutral-50 p-3 sm:p-4"
+                  className="relative flex min-w-0 shrink-0 grow-0 basis-full items-center justify-center overflow-hidden bg-neutral-100 p-3 sm:p-4"
                 >
+                  {/* Arka planda aynı görselin bulanık büyütülmüş hali: kenarlardaki boşluk dolar */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt=""
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl"
+                    draggable={false}
+                  />
                   <button
                     type="button"
                     onClick={() => openLightbox(index)}
