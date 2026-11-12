@@ -19,6 +19,22 @@ const nextConfig: NextConfig = {
     // Dosya adları benzersiz (zaman damgası + rastgele ek), içerik değişmez: 31 gün önbellek.
     minimumCacheTTL: 2678400,
   },
+  // Güvenlik başlıkları. CSP bilinçli olarak eklenmedi: harita, ödeme ve görsel
+  // kaynaklarını kırabilir; ayrı ve test edilmiş bir adımda eklenecek.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(self)" },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
