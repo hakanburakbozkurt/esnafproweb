@@ -7,6 +7,7 @@ import {
   useEffect,
   useId,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -418,10 +419,18 @@ export function DukkanForm({
   };
 
   const saveDisabledReason = !markaTermsAccepted
-    ? "Kaydetmek için Modüller bölümündeki sözleşme onayını işaretleyin."
+    ? "Kaydetmek için sayfanın altındaki \"Marka ve Telif Hakları Onay Sözleşmesi\" kutusunu işaretleyin."
     : hasBlockingValidationError
       ? "Formda düzeltilmesi gereken alanlar var."
       : null;
+
+  const markaTermsInputRef = useRef<HTMLInputElement>(null);
+  const focusMarkaTerms = () => {
+    const input = markaTermsInputRef.current;
+    if (!input) return;
+    input.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    input.focus();
+  };
 
   const handleCancel = () => {
     if (!isDirty || !onCancel) return;
@@ -1017,6 +1026,7 @@ export function DukkanForm({
           name={MARKA_TERMS_FIELD_NAME}
           value="true"
           required
+          ref={markaTermsInputRef}
           checked={markaTermsAccepted}
           onChange={(event) => setMarkaTermsAccepted(event.target.checked)}
           className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
@@ -1158,6 +1168,9 @@ export function DukkanForm({
         isPending={isPending}
         saveDisabled={hasBlockingValidationError}
         disabledReason={saveDisabledReason}
+        disabledReasonAction={
+          markaTermsAccepted ? undefined : { label: "Sözleşmeye git", onClick: focusMarkaTerms }
+        }
         error={error}
         saved={saved}
         submitLabel={submitLabel}
