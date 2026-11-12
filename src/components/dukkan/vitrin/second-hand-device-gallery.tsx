@@ -4,19 +4,26 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Maximize2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import type { OdakliGorsel } from "@/lib/gorsel/odak";
 import { cn } from "@/lib/utils/cn";
 
 type SecondHandDeviceGalleryProps = {
-  images: string[];
+  gorseller: OdakliGorsel[];
   altPrefix: string;
   className?: string;
 };
 
+/**
+ * İlan galerisi. Telefonda kenardan kenara kare, geniş ekranda 4:3.
+ * Fotoğraf kutuyu doldurur (esnafın seçtiği odak ortada); dokununca tam ekranda
+ * fotoğrafın tamamı görünür.
+ */
 export function SecondHandDeviceGallery({
-  images,
+  gorseller,
   altPrefix,
   className,
 }: SecondHandDeviceGalleryProps) {
+  const images = gorseller.map((g) => g.src);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: images.length > 1,
     align: "start",
@@ -67,38 +74,31 @@ export function SecondHandDeviceGallery({
 
   return (
     <>
-      <div className={cn("space-y-3", className)}>
-        <div className="relative overflow-hidden rounded-3xl border border-neutral-100 bg-neutral-50 shadow-sm">
-          <div className="aspect-[4/3] overflow-hidden" ref={emblaRef}>
+      <div className={cn("space-y-2 sm:space-y-3", className)}>
+        <div className="relative -mx-4 overflow-hidden bg-neutral-100 sm:mx-0 sm:rounded-3xl sm:border sm:border-neutral-100 sm:shadow-sm">
+          <div className="aspect-square overflow-hidden sm:aspect-[4/3]" ref={emblaRef}>
             <div className="flex h-full">
-              {images.map((url, index) => (
+              {gorseller.map((gorsel, index) => (
                 <div
-                  key={`${url}-${index}`}
-                  className="relative flex min-w-0 shrink-0 grow-0 basis-full items-center justify-center overflow-hidden bg-neutral-100 p-3 sm:p-4"
+                  key={`${gorsel.src}-${index}`}
+                  className="relative min-w-0 shrink-0 grow-0 basis-full overflow-hidden"
                 >
-                  {/* Arka planda aynı görselin bulanık büyütülmüş hali: kenarlardaki boşluk dolar */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt=""
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl"
-                    draggable={false}
-                  />
                   <button
                     type="button"
                     onClick={() => openLightbox(index)}
-                    className="group relative flex h-full w-full cursor-zoom-in items-center justify-center"
+                    className="group relative block h-full w-full cursor-zoom-in"
                     aria-label={`${altPrefix} fotoğraf ${index + 1} — tam ekran aç`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={url}
+                      src={gorsel.src}
                       alt={`${altPrefix} ${index + 1}`}
-                      className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-[1.01]"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.01]"
+                      style={{ objectPosition: gorsel.konum }}
+                      loading={index === 0 ? "eager" : "lazy"}
                       draggable={false}
                     />
-                    <span className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 opacity-0 shadow-sm ring-1 ring-neutral-100 transition group-hover:opacity-100">
+                    <span className="pointer-events-none absolute right-3 top-3 hidden items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 opacity-0 shadow-sm ring-1 ring-neutral-100 transition group-hover:opacity-100 sm:inline-flex">
                       <Maximize2 className="size-3.5" aria-hidden />
                       Büyüt
                     </span>
@@ -109,12 +109,18 @@ export function SecondHandDeviceGallery({
           </div>
 
           {images.length > 1 && (
+            <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-neutral-900/70 px-2.5 py-1 text-xs font-semibold text-white">
+              {selectedIndex + 1} / {images.length}
+            </span>
+          )}
+
+          {images.length > 1 && (
             <>
               <button
                 type="button"
                 onClick={scrollPrev}
                 aria-label="Önceki fotoğraf"
-                className="absolute left-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-neutral-700 shadow-sm ring-1 ring-neutral-100 backdrop-blur-sm transition hover:bg-white"
+                className="absolute left-3 top-1/2 hidden size-10 -translate-y-1/2 sm:flex items-center justify-center rounded-full bg-white/95 text-neutral-700 shadow-sm ring-1 ring-neutral-100 backdrop-blur-sm transition hover:bg-white"
               >
                 ‹
               </button>
@@ -122,7 +128,7 @@ export function SecondHandDeviceGallery({
                 type="button"
                 onClick={scrollNext}
                 aria-label="Sonraki fotoğraf"
-                className="absolute right-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-neutral-700 shadow-sm ring-1 ring-neutral-100 backdrop-blur-sm transition hover:bg-white"
+                className="absolute right-3 top-1/2 hidden size-10 -translate-y-1/2 sm:flex items-center justify-center rounded-full bg-white/95 text-neutral-700 shadow-sm ring-1 ring-neutral-100 backdrop-blur-sm transition hover:bg-white"
               >
                 ›
               </button>
@@ -134,8 +140,8 @@ export function SecondHandDeviceGallery({
                     aria-label={`Fotoğraf ${index + 1}`}
                     onClick={() => scrollTo(index)}
                     className={cn(
-                      "size-2 rounded-full transition",
-                      selectedIndex === index ? "bg-emerald-600" : "bg-white/70"
+                      "h-1.5 rounded-full shadow-sm transition-all",
+                      selectedIndex === index ? "w-4 bg-white" : "w-1.5 bg-white/70"
                     )}
                   />
                 ))}
@@ -146,14 +152,14 @@ export function SecondHandDeviceGallery({
 
         {images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {images.map((url, index) => (
+            {gorseller.map((gorsel, index) => (
               <button
-                key={`thumb-${url}-${index}`}
+                key={`thumb-${gorsel.src}-${index}`}
                 type="button"
                 onClick={() => scrollTo(index)}
                 aria-label={`${altPrefix} küçük görsel ${index + 1}`}
                 className={cn(
-                  "relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-neutral-50 ring-2 transition sm:size-20",
+                  "relative size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-2 ring-offset-1 transition sm:size-20 sm:rounded-2xl",
                   selectedIndex === index
                     ? "ring-emerald-500"
                     : "ring-transparent hover:ring-neutral-200"
@@ -161,9 +167,11 @@ export function SecondHandDeviceGallery({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={url}
+                  src={gorsel.src}
                   alt=""
-                  className="max-h-full max-w-full object-contain p-1"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ objectPosition: gorsel.konum }}
+                  loading="lazy"
                   draggable={false}
                 />
               </button>

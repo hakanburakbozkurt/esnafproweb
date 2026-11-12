@@ -17,6 +17,7 @@ import {
   formatListingTypeLabel,
   formatSecondHandPrice,
   getSecondHandDeviceHref,
+  getSecondHandDeviceImage,
   getSecondHandDeviceTitle,
   hasPublishedSecondHandDevices,
 } from "@/lib/dukkan/second-hand-devices";
@@ -74,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     kisaAlan ? `${baslikGovdesi} — ${kisaAlan}` : baslikGovdesi,
     device.web_description?.trim() ||
       `${baslikGovdesi}${fiyat ? ` ${fiyat}` : ""} — ${dukkan.dukkan_adi}${alan ? `, ${alan}` : ""}. ${durum} cihaz ilanı; ekspertiz bilgileri ve fotoğraflar sayfada, WhatsApp'tan hemen sorun.`,
-    { image: device.image_urls?.[0] ?? null }
+    { image: getSecondHandDeviceImage(device) }
   );
 }
 

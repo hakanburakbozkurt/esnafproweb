@@ -6,6 +6,7 @@ import {
   MAX_IMAGE_SIZE_BYTES,
 } from "@/lib/supabase/storage.constants";
 import { MAX_PHOTO_SLOTS } from "@/lib/cihaz/cihaz-photo-slots";
+import { gorselAdresi, gorselOdagi, odakliGorselAdresi } from "@/lib/gorsel/odak";
 
 export const SECOND_HAND_DEVICES_BUCKET = "second-hand-devices";
 
@@ -109,13 +110,15 @@ export async function uploadSecondHandDevicePhotos(
     }
 
     try {
-      const blob = await uriToBlob(u);
+      // Odak işareti (#odak=…) yerel adrese eklenmiş olabilir: dosya temiz adresten
+      // okunur, yüklenen adrese odak geri eklenir.
+      const blob = await uriToBlob(gorselAdresi(u));
       const validationError = validateImageBlob(blob);
       if (validationError) {
         return { ok: false, error: validationError };
       }
       const url = await uploadBlob(userId, blob, i);
-      imageUrls.push(url);
+      imageUrls.push(odakliGorselAdresi(url, gorselOdagi(u)));
     } catch (err) {
       return {
         ok: false,

@@ -9,6 +9,8 @@ type DeviceDetailActionBarProps = {
   reservationHref: string | null;
   whatsappHref: string | null;
   tradeWhatsAppHref: string | null;
+  /** Başka bir kartın içinde: kendi kutu çerçevesi olmadan */
+  yalin?: boolean;
   className?: string;
 };
 
@@ -17,6 +19,7 @@ export function DeviceDetailActionBar({
   reservationHref,
   whatsappHref,
   tradeWhatsAppHref,
+  yalin = false,
   className,
 }: DeviceDetailActionBarProps) {
   const contactFallbackHref = `/${shopSlug}/iletisim`;
@@ -24,7 +27,9 @@ export function DeviceDetailActionBar({
   return (
     <div
       className={cn(
-        "mt-6 space-y-3 rounded-3xl border border-neutral-100 bg-white p-4 shadow-sm sm:p-5 lg:mt-auto lg:pt-6",
+        yalin
+          ? "space-y-3"
+          : "mt-6 space-y-3 rounded-3xl border border-neutral-100 bg-white p-4 shadow-sm sm:p-5 lg:mt-auto lg:pt-6",
         className
       )}
     >

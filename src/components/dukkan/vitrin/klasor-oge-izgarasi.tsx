@@ -38,8 +38,7 @@ export function KlasorOgeIzgarasi({
         }
         if (!oge.cihaz.id) return null;
         return (
-          // Cihaz kartı mobilde yatay düzen kullanır; iki sütuna sığmadığı için tam satır kaplar.
-          <li key={`cihaz-${oge.cihaz.id}`} className="col-span-2 sm:col-span-1">
+          <li key={`cihaz-${oge.cihaz.id}`}>
             <SecondHandDeviceCard
               device={oge.cihaz}
               shopSlug={shopSlug}
