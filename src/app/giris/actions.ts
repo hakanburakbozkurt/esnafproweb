@@ -1,4 +1,5 @@
 "use server";
+import { authHataMesaji } from "@/lib/auth/auth-hata-mesaji";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -59,7 +60,7 @@ export async function signInWithRedirect(
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: authHataMesaji(error.message) };
   }
 
   if (!data.user) {
@@ -102,7 +103,7 @@ export async function signUpWithRole(
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: authHataMesaji(error.message) };
   }
 
   revalidatePath("/giris");
