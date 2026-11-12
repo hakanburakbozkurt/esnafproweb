@@ -837,6 +837,33 @@ export interface Database {
         };
         Relationships: [];
       };
+      cihaz_secenekleri: {
+        Row: {
+          created_at: string
+          deger: string
+          id: string
+          kategori: string
+          sira: number
+          tur: string
+        }
+        Insert: {
+          created_at?: string
+          deger: string
+          id?: string
+          kategori: string
+          sira?: number
+          tur: string
+        }
+        Update: {
+          created_at?: string
+          deger?: string
+          id?: string
+          kategori?: string
+          sira?: number
+          tur?: string
+        }
+        Relationships: []
+      }
       pricing_plans: {
         Row: {
           id: string;
