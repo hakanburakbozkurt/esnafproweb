@@ -8,6 +8,8 @@ import { AuthRequiredCard } from "@/components/auth/auth-required-card";
 import { KatalogBulkUploadPanel } from "@/components/katalog/katalog-bulk-upload-panel";
 import { YonetimPageShell } from "@/components/yonetim/yonetim-page-shell";
 import { listOwnerSecondHandDevices } from "@/lib/cihaz/actions";
+import { getCihazSecenekRows } from "@/lib/cihaz/get-cihaz-secenekleri";
+import { CihazSecenekProvider } from "@/components/cihaz/cihaz-secenek-provider";
 import { isWholesalerAccount, resolveWholesalerPath } from "@/lib/auth/wholesaler";
 import { logDukkanAction } from "@/lib/dukkan/logger";
 import { createClient } from "@/lib/supabase/server";
@@ -121,9 +123,14 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
 
   let cihazlar: IkinciElCihaz[] = [];
   let cihazlarError: string | null = null;
+  let secenekRows: Awaited<ReturnType<typeof getCihazSecenekRows>> = [];
 
   if (activeTab === "ikinci-el") {
-    const result = await listOwnerSecondHandDevices();
+    const [result, secenekler] = await Promise.all([
+      listOwnerSecondHandDevices(),
+      getCihazSecenekRows(),
+    ]);
+    secenekRows = secenekler;
     if (result.ok) {
       cihazlar = result.devices;
     } else {
@@ -179,11 +186,13 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
               </p>
             )}
 
-            <CihazlarClient
-              initialDevices={cihazlar}
-              shopSlug={dukkan.slug}
-              pazaryeriVitrinAktif={dukkan.pazaryeri_vitrin_aktif ?? true}
-            />
+            <CihazSecenekProvider rows={secenekRows}>
+              <CihazlarClient
+                initialDevices={cihazlar}
+                shopSlug={dukkan.slug}
+                pazaryeriVitrinAktif={dukkan.pazaryeri_vitrin_aktif ?? true}
+              />
+            </CihazSecenekProvider>
           </div>
         )}
       </div>
