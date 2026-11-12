@@ -92,6 +92,13 @@ export async function signUpWithRole(
     return { error: "Şifreler birbiriyle uyuşmuyor." };
   }
 
+  if (formData.get("yasalOnay") !== "on") {
+    return {
+      error:
+        "Devam etmek için Gizlilik Politikası, KVKK Aydınlatma Metni ve Kullanım Koşulları'nı kabul etmelisiniz.",
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
