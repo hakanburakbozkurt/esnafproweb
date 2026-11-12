@@ -13,7 +13,7 @@ type PageProps = {
 };
 
 function getSafeRedirect(next?: string) {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) {
     return undefined;
   }
   return next;

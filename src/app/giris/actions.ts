@@ -23,7 +23,7 @@ export type SignInState = {
 };
 
 function getSafeRedirect(next?: string | null) {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) {
     return undefined;
   }
   return next;
