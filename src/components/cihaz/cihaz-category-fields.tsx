@@ -45,7 +45,6 @@ import {
   TABLET_COLOR_OPTIONS,
   TABLET_STORAGE_OPTIONS,
 } from "@/lib/cihaz/types";
-import { useCihazSecenekListesi } from "@/components/cihaz/cihaz-secenek-provider";
 import {
   CihazField,
   CihazInput,
@@ -82,7 +81,6 @@ export function PhoneCategoryFields({
   isUsed: boolean;
   onChange: (patch: Partial<PhoneCategoryForm>) => void;
 }) {
-  const secenek = useCihazSecenekListesi();
   const isApple = form.brand === "Apple";
 
   return (
@@ -104,7 +102,7 @@ export function PhoneCategoryFields({
             value={form.model}
             onChange={(e) => onChange({ model: e.target.value })}
           >
-            <OptionList options={secenek("telefon", "model", APPLE_IPHONE_MODELS)} placeholder="Seçin" />
+            <OptionList options={APPLE_IPHONE_MODELS} placeholder="Seçin" />
           </CihazSelect>
         ) : (
           <CihazInput
@@ -120,7 +118,7 @@ export function PhoneCategoryFields({
           value={form.capacity}
           onChange={(e) => onChange({ capacity: e.target.value })}
         >
-          <OptionList options={secenek("telefon", "kapasite", PHONE_STORAGE_OPTIONS)} placeholder="Seçin" />
+          <OptionList options={PHONE_STORAGE_OPTIONS} placeholder="Seçin" />
         </CihazSelect>
       </CihazField>
 
@@ -129,7 +127,7 @@ export function PhoneCategoryFields({
           value={form.color}
           onChange={(e) => onChange({ color: e.target.value })}
         >
-          <OptionList options={secenek("telefon", "renk", PHONE_COLOR_OPTIONS)} placeholder="Seçin" />
+          <OptionList options={PHONE_COLOR_OPTIONS} placeholder="Seçin" />
         </CihazSelect>
       </CihazField>
 
@@ -215,7 +213,6 @@ export function TabletCategoryFields({
   isUsed: boolean;
   onChange: (patch: Partial<TabletCategoryForm>) => void;
 }) {
-  const secenek = useCihazSecenekListesi();
   const isApple = form.brand === "Apple";
 
   return (
@@ -235,7 +232,7 @@ export function TabletCategoryFields({
             value={form.model}
             onChange={(e) => onChange({ model: e.target.value })}
           >
-            <OptionList options={secenek("tablet", "model", APPLE_IPAD_MODELS)} placeholder="Seçin" />
+            <OptionList options={APPLE_IPAD_MODELS} placeholder="Seçin" />
           </CihazSelect>
         ) : (
           <CihazInput
@@ -250,7 +247,7 @@ export function TabletCategoryFields({
           value={form.capacity}
           onChange={(e) => onChange({ capacity: e.target.value })}
         >
-          <OptionList options={secenek("tablet", "kapasite", TABLET_STORAGE_OPTIONS)} placeholder="Seçin" />
+          <OptionList options={TABLET_STORAGE_OPTIONS} placeholder="Seçin" />
         </CihazSelect>
       </CihazField>
 
@@ -259,7 +256,7 @@ export function TabletCategoryFields({
           value={form.color}
           onChange={(e) => onChange({ color: e.target.value })}
         >
-          <OptionList options={secenek("tablet", "renk", TABLET_COLOR_OPTIONS)} placeholder="Seçin" />
+          <OptionList options={TABLET_COLOR_OPTIONS} placeholder="Seçin" />
         </CihazSelect>
       </CihazField>
 
@@ -326,7 +323,6 @@ export function ComputerCategoryFields({
   isUsed: boolean;
   onChange: (patch: Partial<ComputerCategoryForm>) => void;
 }) {
-  const secenek = useCihazSecenekListesi();
   const isApple = form.brand === "Apple Macbook";
 
   return (
@@ -422,7 +418,7 @@ export function ComputerCategoryFields({
           value={form.color}
           onChange={(e) => onChange({ color: e.target.value })}
         >
-          <OptionList options={secenek("bilgisayar", "renk", PC_COLOR_OPTIONS)} placeholder="Seçin" />
+          <OptionList options={PC_COLOR_OPTIONS} placeholder="Seçin" />
         </CihazSelect>
       </CihazField>
 
