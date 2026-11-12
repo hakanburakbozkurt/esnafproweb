@@ -123,6 +123,7 @@ function DeviceRow({
   shopSlug?: string | null;
 }) {
   const [actionPending, startAction] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
   const categoryLabel =
     DEVICE_CATEGORY_META[device.device_category ?? "phone"]?.label ?? "Cihaz";
   const listingLabel = LISTING_TYPE_LABEL[device.listing_type ?? "used"];
@@ -185,8 +186,12 @@ function DeviceRow({
                     ) {
                       return;
                     }
+                    setActionError(null);
                     startAction(async () => {
-                      await vitrini.markSold(device.id);
+                      const result = await vitrini.markSold(device.id);
+                      if (!result.success) {
+                        setActionError(result.error ?? "Cihaz satıldı olarak işaretlenemedi.");
+                      }
                     });
                   }}
                   className="inline-flex min-h-9 items-center rounded-full border border-amber-200 bg-amber-50 px-3 text-xs font-medium text-amber-800 transition hover:bg-amber-100 disabled:opacity-50"
@@ -201,13 +206,17 @@ function DeviceRow({
                 onClick={() => {
                   if (
                     !window.confirm(
-                      "Bu cihaz kaydı kalıcı olarak silinecek. Emin misiniz?"
+                      "Bu cihaz kaydı ve fotoğrafları kalıcı olarak silinecek, geri alınamaz. Emin misiniz?"
                     )
                   ) {
                     return;
                   }
+                  setActionError(null);
                   startAction(async () => {
-                    await vitrini.removeDevice(device.id);
+                    const result = await vitrini.removeDevice(device.id);
+                    if (!result.success) {
+                      setActionError(result.error ?? "Cihaz silinemedi.");
+                    }
                   });
                 }}
                 className="inline-flex min-h-9 items-center gap-1 rounded-full border border-red-200 px-3 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
@@ -216,6 +225,11 @@ function DeviceRow({
                 Sil
               </button>
             </div>
+            {actionError && (
+              <p role="alert" className="mt-2 text-xs text-red-600">
+                {actionError}
+              </p>
+            )}
           </div>
         </div>
       </div>

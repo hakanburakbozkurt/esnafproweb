@@ -184,29 +184,36 @@ export function useCihazVitrini(initialDevices: IkinciElCihaz[] = []) {
   );
 
   const markSold = useCallback(
-    async (id: string): Promise<boolean> => {
+    async (id: string): Promise<{ success: boolean; error?: string }> => {
       const result = await markSecondHandDeviceSold(id);
-      if (!result.ok) return false;
+      if (!result.ok) {
+        return { success: false, error: result.error };
+      }
       setDevices((prev) =>
         prev.map((d) =>
           d.id === id ? { ...d, status: "sold", web_published: false } : d
         )
       );
-      return true;
+      return { success: true };
     },
     []
   );
 
-  const removeDevice = useCallback(async (id: string): Promise<boolean> => {
-    const result = await deleteSecondHandDevice(id);
-    if (!result.ok) return false;
-    setDevices((prev) => prev.filter((d) => d.id !== id));
-    if (editingDeviceId === id) {
-      setEditingDeviceId(null);
-      resetAll();
-    }
-    return true;
-  }, [editingDeviceId, resetAll]);
+  const removeDevice = useCallback(
+    async (id: string): Promise<{ success: boolean; error?: string }> => {
+      const result = await deleteSecondHandDevice(id);
+      if (!result.ok) {
+        return { success: false, error: result.error };
+      }
+      setDevices((prev) => prev.filter((d) => d.id !== id));
+      if (editingDeviceId === id) {
+        setEditingDeviceId(null);
+        resetAll();
+      }
+      return { success: true };
+    },
+    [editingDeviceId, resetAll]
+  );
 
   const startEditDevice = useCallback(
     (device: IkinciElCihaz) => {
