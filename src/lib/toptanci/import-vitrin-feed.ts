@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { FeedUrlError, fetchFeedTextSafely } from "@/lib/toptanci/feed-url-guard";
 import {
   importVitrinFromXmlContent,
   uploadVitrinProducts,
@@ -69,86 +70,13 @@ export async function markWholesalerXmlSynced(
     .eq("xml_url", xmlUrl);
 }
 
-function isPrivateOrBlockedIpv4(hostname: string): boolean {
-  const parts = hostname.split(".");
-  if (parts.length !== 4) {
-    return false;
-  }
-
-  const octets = parts.map((part) => Number(part));
-  if (octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) {
-    return false;
-  }
-
-  const [a, b] = octets;
-
-  if (a === 127 || a === 0 || a === 10) {
-    return true;
-  }
-  if (a === 192 && b === 168) {
-    return true;
-  }
-  if (a === 172 && b >= 16 && b <= 31) {
-    return true;
-  }
-
-  return false;
-}
-
-function isBlockedFeedHostname(hostname: string): boolean {
-  const host = hostname.toLowerCase().replace(/\.$/, "");
-
-  if (host === "localhost" || host === "0.0.0.0" || host === "::1") {
-    return true;
-  }
-
-  if (host.endsWith(".local") || host.endsWith(".localhost")) {
-    return true;
-  }
-
-  return isPrivateOrBlockedIpv4(host);
-}
-
-function assertSafeFeedFetchUrl(rawUrl: string): URL {
-  const trimmed = rawUrl.trim();
-
-  let parsed: URL;
-  try {
-    parsed = new URL(trimmed);
-  } catch {
-    throw new Error("Geçersiz feed URL adresi.");
-  }
-
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error("Feed URL yalnızca http:// veya https:// ile başlayabilir.");
-  }
-
-  if (parsed.username || parsed.password) {
-    throw new Error("Feed URL kullanıcı adı veya şifre içeremez.");
-  }
-
-  if (isBlockedFeedHostname(parsed.hostname)) {
-    throw new Error("Feed URL dahili veya yerel ağ adreslerine işaret edemez.");
-  }
-
-  return parsed;
-}
-
 export async function fetchFeedTextFromUrl(url: string): Promise<string> {
-  const safeUrl = assertSafeFeedFetchUrl(url);
-
-  const res = await fetch(safeUrl.toString(), {
-    headers: { Accept: "application/json, application/xml, text/xml, text/plain, */*" },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`Feed indirilemedi (HTTP ${res.status}).`);
+  try {
+    return await fetchFeedTextSafely(url);
+  } catch (error) {
+    if (error instanceof FeedUrlError) throw new Error(error.message);
+    throw error;
   }
-  const text = await res.text();
-  if (!text.trim()) {
-    throw new Error("Feed dosyası boş.");
-  }
-  return text;
 }
 
 export async function importVitrinFromJsonContent(
