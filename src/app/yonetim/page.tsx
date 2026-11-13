@@ -47,6 +47,11 @@ export default async function YonetimPage() {
 
   const dukkan = await loadDukkan(supabase, user.id);
 
+  // Admin'in esnaf adına kurduğu dükkan: koşullar onaylanmadan panel açılmaz.
+  if (dukkan && !dukkan.terms_accepted_at) {
+    redirect("/dukkan-onayla");
+  }
+
   if (!dukkan) {
     return (
       <YonetimPageShell

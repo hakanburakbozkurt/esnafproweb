@@ -16,10 +16,16 @@ type AdminDashboardClientProps = {
 
 const adminModules = [
   {
+    href: "/yonetim/admin/esnaf-kurulum",
+    title: "Esnaf Adına Dükkan Kur",
+    description: "WhatsApp'tan gelen bilgilerle telefoncunun sayfasını kurun, davet bağlantısı gönderin.",
+    badge: null as string | null,
+  },
+  {
     href: "/yonetim/admin/fiyatlar",
     title: "Fiyatlandırma",
     description: "Landing sayfası paketlerini yönetin.",
-    badge: null as string | null,
+    badge: null,
   },
   {
     href: "/yonetim/admin/sss",

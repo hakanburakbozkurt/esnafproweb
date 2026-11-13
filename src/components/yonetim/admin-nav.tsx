@@ -2,7 +2,7 @@ import Link from "next/link";
 import { adminBtnSecondaryClass } from "@/components/yonetim/admin-ui";
 
 type AdminNavProps = {
-  current?: "home" | "fiyatlar" | "odemeler" | "sss" | "dukkan-onay";
+  current?: "home" | "fiyatlar" | "odemeler" | "sss" | "dukkan-onay" | "esnaf-kurulum";
 };
 
 const links = [
@@ -11,6 +11,7 @@ const links = [
   { href: "/yonetim/admin/odemeler", key: "odemeler" as const, label: "Ödemeler" },
   { href: "/yonetim/admin/sss", key: "sss" as const, label: "SSS" },
   { href: "/yonetim/admin/dukkan-onay", key: "dukkan-onay" as const, label: "Dükkan Onay" },
+  { href: "/yonetim/admin/esnaf-kurulum", key: "esnaf-kurulum" as const, label: "Esnaf Adına Kur" },
 ];
 
 export function AdminNav({ current }: AdminNavProps) {

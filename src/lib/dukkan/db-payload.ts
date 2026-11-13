@@ -34,7 +34,8 @@ export type DukkanDbPayload = {
   teknik_servis_sss: ParsedDukkanForm["teknik_servis_sss"];
   hakkimizda_sss: ParsedDukkanForm["hakkimizda_sss"];
   anasayfa_sss: ParsedDukkanForm["anasayfa_sss"];
-  terms_accepted_at: string;
+  /** Admin esnaf adına kurduğunda null kalır; esnaf kendisi onaylayınca dolar. */
+  terms_accepted_at: string | null;
 };
 
 /** Temel vitrin alanları — migration uygulanmamış ortamlarda bile güncellenebilir olmalı */

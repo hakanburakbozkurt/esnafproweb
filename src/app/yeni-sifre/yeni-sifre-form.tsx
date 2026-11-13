@@ -14,7 +14,14 @@ import { Input } from "@/components/ui/input";
 
 const initialState: UpdatePasswordState = {};
 
-export function YeniSifreForm({ hasSession }: { hasSession: boolean }) {
+export function YeniSifreForm({
+  hasSession,
+  davet = false,
+}: {
+  hasSession: boolean;
+  /** Admin'in kurduğu dükkan için davet bağlantısıyla gelindi. */
+  davet?: boolean;
+}) {
   const [state, formAction, isPending] = useActionState(
     updatePasswordAndRedirect,
     initialState
@@ -27,7 +34,11 @@ export function YeniSifreForm({ hasSession }: { hasSession: boolean }) {
           Yeni <span className="text-emerald-600">şifrenizi</span> belirleyin
         </>
       }
-      description="Güçlü ve hatırlaması kolay bir şifre seçin; ardından panele yönlendirileceksiniz."
+      description={
+        davet
+          ? "Mağaza sayfanız hazır. Hesabınıza her zaman girebilmek için kendi şifrenizi belirleyin."
+          : "Güçlü ve hatırlaması kolay bir şifre seçin; ardından panele yönlendirileceksiniz."
+      }
       contentWidth="md"
       centerHeader
     >
