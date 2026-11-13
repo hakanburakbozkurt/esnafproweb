@@ -84,6 +84,8 @@ type DukkanFormProps = {
   defaultUrunler?: UrunFormItem[] | DukkanUrunu[];
   hiddenFields?: Record<string, string>;
   layout?: "default" | "wide";
+  /** "create": mağaza açılışında yalnızca temel alanlar; "edit": tüm ayarlar */
+  mode?: "create" | "edit";
   /** Yalnızca /dukkan-ayarlari — mağaza açılış formunda SEO alanları gösterilmez */
   showSeoFields?: boolean;
   /** Yalnızca /dukkan-ayarlari — vitrin logo bilgilendirme kutusu */
@@ -139,6 +141,7 @@ export function DukkanForm({
   hiddenFields,
   layout = "default",
   showSeoFields = false,
+  mode = "edit",
   showVitrinLogoHint = false,
   scoreBlogPostCount = 0,
   onCancel,
@@ -603,6 +606,36 @@ export function DukkanForm({
     </div>
   );
 
+  const telefonAlani = (
+    <Field label="Telefon" hint="Görüntülenecek sabit hat veya cep">
+      <Input
+        name="telefon"
+        type="tel"
+        value={telefon}
+        onChange={(e) => setTelefon(e.target.value)}
+        placeholder="05XX XXX XX XX"
+        className="w-full"
+      />
+    </Field>
+  );
+
+  const semtAlani = (
+    <Field
+      label="Semt / bölge adı"
+      hint="Müşterilerin aradığı bölge adı (ör. Esenkent, Bahçeşehir). Ürün, blog ve cihaz sayfalarının Google başlığında ilçeyle birlikte kullanılır: “… — Esenkent, Esenyurt”. Boş bırakırsanız adresten bulunmaya çalışılır."
+    >
+      <Input
+        name="semt"
+        type="text"
+        value={semt}
+        maxLength={MAX_SEMT_LENGTH}
+        onChange={(e) => setSemt(e.target.value)}
+        placeholder="Örn: Esenkent"
+        className="w-full"
+      />
+    </Field>
+  );
+
   const iletisimSosyal = (
     <FormSection
       variant={sectionVariant}
@@ -610,16 +643,7 @@ export function DukkanForm({
       description="Müşteriler bu bilgilerle size tek tıkla ulaşır."
     >
       <div className={fieldStackClass}>
-        <Field label="Telefon" hint="Görüntülenecek sabit hat veya cep">
-          <Input
-            name="telefon"
-            type="tel"
-            value={telefon}
-            onChange={(e) => setTelefon(e.target.value)}
-            placeholder="05XX XXX XX XX"
-            className="w-full"
-          />
-        </Field>
+        {telefonAlani}
 
         <Field
           label="WhatsApp Numarası"
@@ -710,20 +734,7 @@ export function DukkanForm({
           />
         </Field>
 
-        <Field
-          label="Semt / bölge adı"
-          hint="Müşterilerin aradığı bölge adı (ör. Esenkent, Bahçeşehir). Ürün, blog ve cihaz sayfalarının Google başlığında ilçeyle birlikte kullanılır: “… — Esenkent, Esenyurt”. Boş bırakırsanız adresten bulunmaya çalışılır."
-        >
-          <Input
-            name="semt"
-            type="text"
-            value={semt}
-            maxLength={MAX_SEMT_LENGTH}
-            onChange={(e) => setSemt(e.target.value)}
-            placeholder="Örn: Esenkent"
-            className="w-full"
-          />
-        </Field>
+        {semtAlani}
 
         <Field
           label="Harita Konumu"
@@ -1064,6 +1075,22 @@ export function DukkanForm({
     </>
   );
 
+  const createSections = (
+    <>
+      {temelBilgiler}
+      <FormSection
+        variant={sectionVariant}
+        title="İletişim ve bölge"
+        description="Logo, kapak, çalışma saatleri ve diğer bilgileri mağaza açtıktan sonra Dükkan Ayarları'ndan ekleyebilirsiniz."
+      >
+        <div className={fieldStackClass}>
+          {telefonAlani}
+          {semtAlani}
+        </div>
+      </FormSection>
+    </>
+  );
+
   const defaultSections = (
     <>
       {temelBilgiler}
@@ -1103,11 +1130,13 @@ export function DukkanForm({
       <input key={key} type="hidden" name={key} value={value} />
     ));
 
-  if (!isStacked) {
+  const isCreate = mode === "create";
+
+  if (!isStacked || isCreate) {
     return (
       <form action={action} onSubmit={handleFormSubmit} className="space-y-8">
         {hiddenFieldInputs}
-        {defaultSections}
+        {isCreate ? createSections : defaultSections}
         {formMessages}
         {markaTermsSection}
         <Button
