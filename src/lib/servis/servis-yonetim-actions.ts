@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { resolveStrictDateRangeBounds } from "@/lib/servis/servis-yonetim-utils";
+import { servisAramaOrFiltresi } from "@/lib/servis/arama-filtre";
 import type {
   TechnicalServiceDetailResult,
   TechnicalServiceListItem,
@@ -146,11 +147,10 @@ export async function searchTechnicalServices(
     }
 
     if (search) {
-      const escaped = search.replace(/[%_,]/g, "");
-      const term = `%${escaped}%`;
-      query = query.or(
-        `customer_name.ilike.${term},customer_phone.ilike.${term},device_info.ilike.${term}`
-      );
+      const filtre = servisAramaOrFiltresi(search);
+      if (filtre) {
+        query = query.or(filtre);
+      }
     }
 
     const { data, error } = await query;
