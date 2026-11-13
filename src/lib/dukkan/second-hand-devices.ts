@@ -166,12 +166,18 @@ export async function isShopPazaryeriVitrinActive(
   return data?.pazaryeri_vitrin_aktif !== false;
 }
 
-export async function fetchPublishedSecondHandDevices(
+export type PublishedSecondHandDevicesResult = {
+  devices: PublicDeviceListRow[];
+  /** Gerçek sorgu hatası; boş liste "ilan yok" anlamına gelmez. */
+  yuklenemedi: boolean;
+};
+
+export async function fetchPublishedSecondHandDevicesResult(
   supabase: SupabaseClient<Database>,
   userId: string
-): Promise<PublicDeviceListRow[]> {
+): Promise<PublishedSecondHandDevicesResult> {
   const vitrinActive = await isShopPazaryeriVitrinActive(supabase, userId);
-  if (!vitrinActive) return [];
+  if (!vitrinActive) return { devices: [], yuklenemedi: false };
 
   const { data, error } = await supabase
     .from("second_hand_devices_public")
@@ -183,10 +189,17 @@ export async function fetchPublishedSecondHandDevices(
 
   if (error) {
     console.error("[second-hand-devices] fetch error:", error.message);
-    return [];
+    return { devices: [], yuklenemedi: true };
   }
 
-  return (data ?? []) as PublicDeviceListRow[];
+  return { devices: (data ?? []) as PublicDeviceListRow[], yuklenemedi: false };
+}
+
+export async function fetchPublishedSecondHandDevices(
+  supabase: SupabaseClient<Database>,
+  userId: string
+): Promise<PublicDeviceListRow[]> {
+  return (await fetchPublishedSecondHandDevicesResult(supabase, userId)).devices;
 }
 
 export async function fetchPublishedSecondHandDeviceBySlug(

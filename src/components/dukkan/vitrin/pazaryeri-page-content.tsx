@@ -18,9 +18,12 @@ import type { Dukkan } from "@/types/database.types";
 export function PazaryeriPageContent({
   dukkan,
   devices,
+  yuklenemedi = false,
 }: {
   dukkan: Dukkan;
   devices: PublicSecondHandDevice[];
+  /** Veri çekilemediğinde "ilan yok" yerine hata mesajı gösterilir */
+  yuklenemedi?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<MarketplaceSortId>("newest");
@@ -93,9 +96,11 @@ export function PazaryeriPageContent({
         <ScrollReveal delay={0.06}>
           <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white/70 px-6 py-16 text-center">
             <p className="text-base font-medium text-slate-600">
-              {devices.length === 0
-                ? "Henüz yayınlanmış cihaz ilanı bulunmuyor."
-                : "Aramanıza uygun ilan bulunamadı."}
+              {yuklenemedi
+                ? "Cihaz ilanları şu an yüklenemiyor. Lütfen birkaç dakika sonra tekrar deneyin."
+                : devices.length === 0
+                  ? "Henüz yayınlanmış cihaz ilanı bulunmuyor."
+                  : "Aramanıza uygun ilan bulunamadı."}
             </p>
             <p className="mt-2 text-sm text-slate-400">
               Filtreleri temizleyerek tüm ilanları görebilirsiniz.

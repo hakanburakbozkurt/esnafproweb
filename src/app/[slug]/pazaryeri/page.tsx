@@ -10,7 +10,7 @@ import {
   buildStoreSubpageSeoMetadata,
   NOT_FOUND_STORE_METADATA,
 } from "@/lib/dukkan/metadata";
-import { fetchPublishedSecondHandDevices } from "@/lib/dukkan/second-hand-devices";
+import { fetchPublishedSecondHandDevicesResult } from "@/lib/dukkan/second-hand-devices";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
@@ -55,8 +55,12 @@ export default async function PazaryeriPage({ params }: PageProps) {
     notFound();
   }
 
-  const devices = await fetchPublishedSecondHandDevices(supabase, dukkan.user_id);
-  const showPazaryeriNav = devices.length > 0;
+  const { devices, yuklenemedi } = await fetchPublishedSecondHandDevicesResult(
+    supabase,
+    dukkan.user_id
+  );
+  // Geçici hatada iç linkler kaybolmasın (arama motorları ve kullanıcı için).
+  const showPazaryeriNav = devices.length > 0 || yuklenemedi;
 
   const {
     data: { user },
@@ -91,7 +95,7 @@ export default async function PazaryeriPage({ params }: PageProps) {
         showKatalogNav={showKatalogNav}
         dukkan={dukkan}
       >
-        <PazaryeriPageContent dukkan={dukkan} devices={devices} />
+        <PazaryeriPageContent dukkan={dukkan} devices={devices} yuklenemedi={yuklenemedi} />
       </VitrinChrome>
     </>
   );
