@@ -18,10 +18,7 @@ const navLinks = [
   { href: "/local-yonetim/seo", label: "SEO Yönetimi", icon: Search },
   { href: "/local-yonetim/abonelikler", label: "Abonelikler", icon: CreditCard },
   { href: "/local-yonetim/fiyat-sihirbazi", label: "Fiyat Sihirbazı", icon: Wand2 },
-  { href: "/local-yonetim/urunler-gorseller", label: "Ürünler & Görseller" },
-  { href: "/local-yonetim/stok", label: "Stok Yönetimi" },
   { href: "/local-yonetim/katalog", label: "Cihaz Kataloğu", icon: Smartphone },
-  { href: "/local-yonetim/ayarlar", label: "Ayarlar" },
 ] as const;
 
 function isLinkActive(pathname: string, href: string, exact?: boolean) {
