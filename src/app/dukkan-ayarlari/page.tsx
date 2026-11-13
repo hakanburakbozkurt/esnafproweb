@@ -28,6 +28,11 @@ export default async function Page() {
 
     dukkan = data;
 
+    // Admin'in esnaf adına kurduğu dükkan: önce koşulların onaylanması gerekir.
+    if (dukkan && !dukkan.terms_accepted_at) {
+      redirect("/dukkan-onayla");
+    }
+
     if (dukkan) {
       const { data: urunData } = await supabase
         .from("dukkan_urunleri")
