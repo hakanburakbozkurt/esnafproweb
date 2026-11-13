@@ -33,6 +33,7 @@ function DukkanAcForm() {
     <div className="w-full">
       <DukkanForm
         action={formAction}
+        mode="create"
         submitLabel="Mağazayı Aç"
         error={state.error}
         warning={state.warning}
