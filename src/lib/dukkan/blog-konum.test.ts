@@ -26,13 +26,13 @@ describe("blog konum", () => {
   it("özel meta başlık yoksa yazı başlığına il/ilçe ekler", () => {
     const meta = buildBlogPostSeoMetadata(dukkan, post);
     expect(meta.title).toBe(
-      "iPhone ekran değişimi nasıl yapılır — Esenkent, Esenyurt | Beep Mobile Store | EsnafPRO"
+      "iPhone ekran değişimi nasıl yapılır — Esenkent, Esenyurt | Beep Mobile Store"
     );
   });
 
   it("özel meta başlık varsa olduğu gibi kullanır", () => {
     const meta = buildBlogPostSeoMetadata(dukkan, { ...post, meta_title: "Özel başlık" });
-    expect(meta.title).toBe("Özel başlık | Beep Mobile Store | EsnafPRO");
+    expect(meta.title).toBe("Özel başlık | Beep Mobile Store");
   });
 
   it("BlogPosting şemasına içerik konumu ekler", () => {

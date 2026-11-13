@@ -5,11 +5,11 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
   {
     page_path: "/",
     label: "Ana Sayfa",
-    meta_title: "EsnafPRO | Dijital Vitrin ve İşletme Yönetimi",
+    meta_title: "EsnafPRO | Telefoncular İçin Ücretsiz Dijital Mağaza",
     meta_description:
-      "Telefon ve teknik servis esnafı için dijital vitrin, servis takibi, 2. el pazaryeri ve işletme yönetimi platformu. Kod bilmeden dakikalar içinde profesyonel mağaza sayfanızı açın.",
+      "Cep telefoncusu ve teknik servisler için ücretsiz dijital mağaza. Ürün, 2. el cihaz ve servis takibi tek panelde; müşterin seni Google'da bulsun.",
     meta_keywords:
-      "esnafpro, dijital vitrin, telefon esnafı, teknik servis, yerel seo, ikinci el telefon",
+      "esnafpro, telefoncu web sitesi, ücretsiz dijital mağaza, telefon dükkanı, teknik servis takibi, ikinci el telefon",
     robots_index: true,
     robots_follow: true,
     sort_order: 0,
@@ -17,9 +17,9 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
   {
     page_path: "/fiyatlandirma",
     label: "Fiyatlandırma",
-    meta_title: "Fiyatlandırma | EsnafPRO",
+    meta_title: "Fiyatlandırma: Mağaza Sayfası Ücretsiz | EsnafPRO",
     meta_description:
-      "Esnaf ve toptancı için şeffaf paket fiyatları. Aylık veya yıllık planlarla EsnafPRO'ya başlayın.",
+      "EsnafPRO paket fiyatları: mağaza sayfası ücretsiz. Stok, kasa, servis takibi ve yapay zeka asistanı için Büyüme ve Pro paketlerini karşılaştırın.",
     meta_keywords: "esnafpro fiyat, paket, abonelik, toptancı planı",
     robots_index: true,
     robots_follow: true,
@@ -28,9 +28,9 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
   {
     page_path: "/pazaryeri",
     label: "Pazaryeri",
-    meta_title: "İkinci El Pazaryeri | EsnafPRO",
+    meta_title: "İkinci El ve Sıfır Telefon İlanları | EsnafPRO",
     meta_description:
-      "Esnaf Pro üyesi mağazaların yayınladığı ikinci el telefon, tablet ve cihaz ilanlarını keşfedin.",
+      "Telefoncu mağazalarının ikinci el ve sıfır telefon, tablet ve cihaz ilanları. Fiyatı ve mağaza adresini görün, satıcıya WhatsApp'tan sorun.",
     meta_keywords: "ikinci el telefon, pazaryeri, esnaf ilanları, tablet",
     robots_index: true,
     robots_follow: true,
@@ -39,9 +39,9 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
   {
     page_path: "/blog",
     label: "Blog",
-    meta_title: "Esnaf Rehberi | EsnafPRO Blog",
+    meta_title: "Telefoncu ve Esnaf Rehberi | EsnafPRO Blog",
     meta_description:
-      "EsnafPRO mağazalarından yerel SEO yazıları, sektör rehberleri ve duyurular.",
+      "Telefon tamiri, ikinci el cihaz ve yerel SEO üzerine rehberler. Telefoncuların dükkanını internete taşıması ve Google'da öne çıkması için ipuçları.",
     meta_keywords: "esnaf blog, yerel seo, telefon tamiri rehberi",
     robots_index: true,
     robots_follow: true,
@@ -52,7 +52,7 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
     label: "Hakkımızda",
     meta_title: "Hakkımızda | EsnafPRO",
     meta_description:
-      "EsnafPRO; esnaf ve küçük işletmeler için dijital vitrin ve işletme yönetim platformudur.",
+      "EsnafPRO, cep telefoncuları ve teknik servisler için dijital mağaza, servis takibi ve işletme yönetimi platformudur. Amacımızı ve iletişim bilgilerimizi görün.",
     meta_keywords: "esnafpro hakkında, dijital dönüşüm, esnaf platformu",
     robots_index: true,
     robots_follow: true,
@@ -63,7 +63,7 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
     label: "İletişim",
     meta_title: "İletişim | EsnafPRO",
     meta_description:
-      "EsnafPRO hakkında sorularınız, iş birliği teklifleriniz ve destek talepleriniz için bizimle iletişime geçin.",
+      "EsnafPRO'ya telefon, WhatsApp veya e-postayla ulaşın. Mağaza kurulumu, paketler, destek ve iş birliği sorularınızı yanıtlıyoruz.",
     meta_keywords: "esnafpro iletişim, destek, iş birliği",
     robots_index: true,
     robots_follow: true,
@@ -72,13 +72,24 @@ export const PLATFORM_PAGE_SEO_DEFAULTS: PlatformPageSeo[] = [
   {
     page_path: "/esnaflar",
     label: "Esnaflar",
-    meta_title: "Dijital Dükkanını Açan Esnaflar | EsnafPRO",
+    meta_title: "Telefoncu ve Teknik Servis Mağazaları | EsnafPRO",
     meta_description:
-      "EsnafPRO ile dijital vitrinini açan esnaf ve işletmelerin listesi.",
+      "EsnafPRO'da dijital mağazasını açan telefoncu ve teknik servisler. Mağazaları inceleyin, ürünlere bakın, doğrudan WhatsApp'tan ulaşın.",
     meta_keywords: "esnaf listesi, dijital dükkan, yerel esnaf",
     robots_index: true,
     robots_follow: true,
     sort_order: 6,
+  },
+  {
+    page_path: "/tamir-fiyati",
+    label: "Tamir Fiyatı Al",
+    meta_title: "Telefon Tamir Fiyatları: Ekran ve Pil | EsnafPRO",
+    meta_description:
+      "Telefonunun marka ve modelini seç, ekran ve pil değişimi fiyatlarını anında gör. EsnafPRO referans listesiyle güncel teknik servis ücretleri.",
+    meta_keywords: "telefon tamir fiyatı, ekran değişimi fiyatı, pil değişimi fiyatı, iphone ekran fiyatı",
+    robots_index: true,
+    robots_follow: true,
+    sort_order: 7,
   },
 ];
 

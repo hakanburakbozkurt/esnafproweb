@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 import { STORAGE_PUBLIC_PATH, supabaseGorselHostu } from "./src/lib/utils/gorsel-optimizasyon";
 
 const nextConfig: NextConfig = {
+  // "X-Powered-By: Next.js" başlığı gereksiz; yanıtlardan çıkarılır.
+  poweredByHeader: false,
+  // Paylaşım görselinin fontları ve ekran görüntüsü sunucu paketine dahil edilsin.
+  outputFileTracingIncludes: {
+    "/api/og": ["./src/assets/og/**"],
+  },
   images: {
     // Yalnızca kendi Supabase depolamamızdaki herkese açık görseller optimize edilir.
     remotePatterns: [

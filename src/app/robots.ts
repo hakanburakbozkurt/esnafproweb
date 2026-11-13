@@ -14,6 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         "/toptanci-ac",
         "/toptanci-ayarlari",
         "/toptanci/xml-yukle",
+        "/local-yonetim",
         "/auth/",
         "/yeni-sifre",
         "/sifre-sifirla",

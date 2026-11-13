@@ -18,6 +18,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `Servis Takip ${device_code} | EsnafPRO`,
     description: "Cihazınızın teknik servis durumunu anlık takip edin.",
+    // Müşteriye özel takip sayfası: arama sonuçlarına girmemeli.
+    robots: { index: false, follow: false },
   };
 }
 

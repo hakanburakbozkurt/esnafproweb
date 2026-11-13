@@ -17,7 +17,7 @@ export function HomePage({
 }) {
   return (
     <main className="min-w-0 overflow-x-hidden">
-      <PlatformJsonLd />
+      <PlatformJsonLd faqItems={faqItems} />
       <HomePageClient
         faqItems={faqItems}
         featuredStores={featuredStores}
