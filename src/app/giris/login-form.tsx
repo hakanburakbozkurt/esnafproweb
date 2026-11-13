@@ -174,6 +174,20 @@ export function LoginForm({
               </p>
             )}
 
+            <label className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600">
+              <input
+                type="checkbox"
+                name="yasalOnay"
+                required
+                className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>
+                <Link href="/gizlilik-politikasi" className="font-medium text-emerald-700 underline underline-offset-2">Gizlilik Politikası</Link>,{" "}
+                <Link href="/kvkk-aydinlatma-metni" className="font-medium text-emerald-700 underline underline-offset-2">KVKK Aydınlatma Metni</Link> ve{" "}
+                <Link href="/kullanim-kosullari" className="font-medium text-emerald-700 underline underline-offset-2">Kullanım Koşulları</Link>&apos;nı okudum, kabul ediyorum.
+              </span>
+            </label>
+
             <Button type="submit" disabled={isSigningUp} className="w-full">
               {isSigningUp
                 ? "Hesap oluşturuluyor…"
