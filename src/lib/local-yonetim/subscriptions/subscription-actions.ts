@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import {
   DEFAULT_FREE_ACTION_LIMIT,
   PRO_DEFAULT_MONTHS,
+  PRO_MAX_MONTHS,
   SHOP_SUBSCRIPTION_TIER_LABELS,
   type SubscriptionAdminState,
 } from "@/lib/local-yonetim/subscriptions/types";
@@ -66,8 +67,12 @@ export async function upgradeShopToProForm(
   const dukkanId = String(formData.get("dukkan_id") ?? "").trim();
   if (!dukkanId) return { error: "Dükkan kimliği bulunamadı." };
 
-  const months = Number(formData.get("pro_months") ?? PRO_DEFAULT_MONTHS);
-  const safeMonths = Number.isFinite(months) && months > 0 ? months : PRO_DEFAULT_MONTHS;
+  const rawMonths = formData.get("pro_months");
+  const months = rawMonths === null || rawMonths === "" ? PRO_DEFAULT_MONTHS : Number(rawMonths);
+  if (!Number.isInteger(months) || months < 1 || months > PRO_MAX_MONTHS) {
+    return { error: `Ay sayısı 1 ile ${PRO_MAX_MONTHS} arasında tam sayı olmalıdır.` };
+  }
+  const safeMonths = months;
   const rawTier = formData.get("tier");
   const tier = rawTier === "ultra" ? "ultra" : rawTier === "buyume" ? "buyume" : "pro";
   const tierLabel = SHOP_SUBSCRIPTION_TIER_LABELS[tier];
@@ -75,12 +80,25 @@ export async function upgradeShopToProForm(
   try {
     await ensureSubscriptionRow(auth.supabase, dukkanId);
 
+    // Kalan süre korunur: mevcut bitiş tarihi gelecekteyse yeni süre oradan eklenir.
+    const { data: mevcut, error: okumaHatasi } = await auth.supabase
+      .from("dukkan_subscriptions")
+      .select("expires_at")
+      .eq("dukkan_id", dukkanId)
+      .maybeSingle();
+
+    if (okumaHatasi) return { error: okumaHatasi.message };
+
+    const simdi = new Date();
+    const mevcutBitis = mevcut?.expires_at ? new Date(mevcut.expires_at) : null;
+    const baslangic = mevcutBitis && mevcutBitis.getTime() > simdi.getTime() ? mevcutBitis : simdi;
+
     const { error } = await auth.supabase
       .from("dukkan_subscriptions")
       .update({
         tier,
-        expires_at: addMonths(new Date(), safeMonths),
-        updated_at: new Date().toISOString(),
+        expires_at: addMonths(baslangic, safeMonths),
+        updated_at: simdi.toISOString(),
       })
       .eq("dukkan_id", dukkanId);
 

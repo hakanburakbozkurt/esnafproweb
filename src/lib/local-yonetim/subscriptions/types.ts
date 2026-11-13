@@ -18,6 +18,8 @@ export function normalizeShopSubscriptionTier(
 
 export const DEFAULT_FREE_ACTION_LIMIT = 10;
 export const PRO_DEFAULT_MONTHS = 12;
+/** Elle paket atamada tek seferde eklenebilecek en fazla ay sayısı. */
+export const PRO_MAX_MONTHS = 24;
 
 export type ShopSubscriptionAdminRow = {
   dukkan_id: string;
