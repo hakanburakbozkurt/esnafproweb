@@ -202,14 +202,23 @@ export function blogExcerptFromHtml(
   return `${plain.slice(0, max).trim()}…`;
 }
 
+/**
+ * Dükkan blog yazısının <title> değeri.
+ * - Dükkan adı başlıkta zaten geçiyorsa tekrar eklenmez.
+ * - Dükkan sayfasında "EsnafPRO" marka eki eklenmez (dükkanın kendi sayfası).
+ */
 export function resolveBlogSeoTitle(
   metaTitle: string | null | undefined,
   baslik: string,
   shopName: string
 ): string {
-  const custom = metaTitle?.trim();
-  if (custom) return `${custom} | ${shopName} | EsnafPRO`;
-  return `${baslik} | ${shopName} | EsnafPRO`;
+  const base = metaTitle?.trim() || baslik;
+  const name = shopName.trim();
+  if (!name) return base;
+  if (base.toLocaleLowerCase("tr-TR").includes(name.toLocaleLowerCase("tr-TR"))) {
+    return base;
+  }
+  return `${base} | ${name}`;
 }
 
 export function resolveBlogSeoDescription(
