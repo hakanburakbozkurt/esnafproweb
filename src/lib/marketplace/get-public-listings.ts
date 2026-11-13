@@ -14,7 +14,14 @@ function buildLocationLabel(il: string | null, ilce: string | null): string | nu
   return il ?? ilce;
 }
 
-export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
+export type MarketplaceListingsResult = {
+  listings: MarketplaceListing[];
+  /** Veri katmanında gerçek bir sorgu hatası oluştu; boş liste "ilan yok" anlamına gelmez. */
+  yuklenemedi: boolean;
+};
+
+/** Sayfalar için: hata ile boş liste birbirinden ayrılır. */
+export async function getMarketplaceListingsResult(): Promise<MarketplaceListingsResult> {
   try {
     const supabase = createPublicClient();
 
@@ -25,8 +32,12 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       .order("web_published_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false });
 
-    if (devicesError || !devices?.length) {
-      return [];
+    if (devicesError) {
+      console.error("[marketplace] devices query failed:", devicesError.message);
+      return { listings: [], yuklenemedi: true };
+    }
+    if (!devices?.length) {
+      return { listings: [], yuklenemedi: false };
     }
 
     const userIds = [
@@ -37,7 +48,7 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       ),
     ];
 
-    if (!userIds.length) return [];
+    if (!userIds.length) return { listings: [], yuklenemedi: false };
 
     const { data: shops, error: shopsError } = await supabase
       .from("dukkanlar")
@@ -46,8 +57,12 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       .eq("approval_status", "active")
       .in("user_id", userIds);
 
-    if (shopsError || !shops?.length) {
-      return [];
+    if (shopsError) {
+      console.error("[marketplace] shops query failed:", shopsError.message);
+      return { listings: [], yuklenemedi: true };
+    }
+    if (!shops?.length) {
+      return { listings: [], yuklenemedi: false };
     }
 
     const shopByUserId = new Map(shops.map((shop) => [shop.user_id, shop] as const));
@@ -80,8 +95,13 @@ export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
       });
     }
 
-    return listings;
-  } catch {
-    return [];
+    return { listings, yuklenemedi: false };
+  } catch (error) {
+    console.error("[marketplace] listings failed:", error);
+    return { listings: [], yuklenemedi: true };
   }
+}
+
+export async function getMarketplaceListings(): Promise<MarketplaceListing[]> {
+  return (await getMarketplaceListingsResult()).listings;
 }
