@@ -9,7 +9,7 @@ import { JsonLdScripts } from "@/components/seo/json-ld-scripts";
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
 import { buildBreadcrumbListJsonLd } from "@/lib/dukkan/json-ld";
 import { getSecondHandDeviceHref, getSecondHandDeviceImage, getSecondHandDeviceTitle } from "@/lib/dukkan/second-hand-devices";
-import { getMarketplaceListings } from "@/lib/marketplace/get-public-listings";
+import { getMarketplaceListingsResult } from "@/lib/marketplace/get-public-listings";
 import {
   enCokIlceler,
   ilceListesiMetni,
@@ -34,7 +34,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const sayfa = pazaryeriSayfasiBul(tur);
   if (!sayfa) return { title: "Sayfa bulunamadı | EsnafPRO" };
 
-  const ilanlar = sayfaIlanlari(await getMarketplaceListings(), sayfa);
+  const { listings, yuklenemedi } = await getMarketplaceListingsResult();
+  const ilanlar = sayfaIlanlari(listings, sayfa);
   const ilceler = enCokIlceler(ilanlar);
   const metadata = buildPageMetadata({
     title: `${pazaryeriSayfaBasligi(sayfa, ilceler)} | EsnafPRO`,
@@ -43,6 +44,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     image: ilanlar[0] ? getSecondHandDeviceImage(ilanlar[0].device) : null,
   });
 
+  // Veri çekilemediyse geçici bir hata; sayfa yanlışlıkla noindex olmasın.
+  if (yuklenemedi) return metadata;
   // İlan yokken boş sayfa Google'a girmesin (ince içerik); linkler takip edilsin.
   return ilanlar.length ? metadata : { ...metadata, robots: { index: false, follow: true } };
 }
@@ -52,7 +55,7 @@ export default async function PazaryeriTurPage({ params }: PageProps) {
   const sayfa = pazaryeriSayfasiBul(tur);
   if (!sayfa) notFound();
 
-  const tumIlanlar = await getMarketplaceListings();
+  const { listings: tumIlanlar, yuklenemedi } = await getMarketplaceListingsResult();
   const ilanlar = sayfaIlanlari(tumIlanlar, sayfa);
   const ilceler = enCokIlceler(ilanlar, 5);
   const doluSluglar = new Set(
@@ -105,6 +108,7 @@ export default async function PazaryeriTurPage({ params }: PageProps) {
         <MarketplacePageContent
           key={sayfa.slug}
           listings={tumIlanlar}
+          yuklenemedi={yuklenemedi}
           baslangicTuru={sayfa.tur}
           baslangicKategori={sayfa.kategori}
           baslik={{
