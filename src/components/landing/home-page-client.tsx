@@ -9,6 +9,7 @@ import { LandingFaqSection } from "@/components/landing/landing-faq-section";
 import { LandingBlogSection } from "@/components/landing/landing-blog-section";
 import { FeaturedStoresSection } from "@/components/landing/featured-stores-section";
 import { ScrollShowcaseSection } from "@/components/landing/scroll-showcase-section";
+import { BizKuralimButton, BizKuralimSection } from "@/components/landing/biz-kuralim";
 import type { PublicBlogPost } from "@/lib/blog/public-blog-post.types";
 import type { PublicStoreCard } from "@/lib/dukkan/public-store.types";
 import type { FaqItem } from "@/types/database.types";
@@ -116,15 +117,18 @@ function HeroSection() {
             >
               Ücretsiz Mağazanı Aç
             </a>
+            <BizKuralimButton kaynak="ana sayfa" className="w-full sm:w-auto" />
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link
               href="/fiyatlandirma"
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-slate-600 transition hover:text-emerald-700"
             >
-              Fiyatlandırmayı İncele
+              Fiyatlandırma
             </Link>
             <a
               href="#magaza-tanitim"
-              className="inline-flex min-h-12 items-center justify-center px-2 py-3 text-sm font-semibold text-emerald-600 transition hover:text-emerald-700"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-emerald-600 transition hover:text-emerald-700"
             >
               Mağaza nasıl görünür? →
             </a>
@@ -159,6 +163,7 @@ export function HomePageClient({
         hasMore={featuredStoresHasMore}
       />
       <LandingBlogSection posts={blogPosts} />
+      <BizKuralimSection />
       <LandingFaqSection items={faqItems} />
     </div>
   );

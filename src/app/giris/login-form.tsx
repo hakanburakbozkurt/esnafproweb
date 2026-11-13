@@ -9,6 +9,7 @@ import {
   type SignUpState,
 } from "@/app/giris/actions";
 import { RoleSelector } from "@/components/auth/role-selector";
+import { BizKuralimKutusu } from "@/components/landing/biz-kuralim";
 import { SubPageShell } from "@/components/layout/sub-page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -115,6 +116,12 @@ export function LoginForm({
             Kayıt Ol
           </button>
         </div>
+
+        {isRegister && selectedRole === ESNAF_ROLE && (
+          <div className="mb-6">
+            <BizKuralimKutusu kaynak="kayıt" />
+          </div>
+        )}
 
         {isRegister ? (
           <form action={signUpAction} className="space-y-5">
