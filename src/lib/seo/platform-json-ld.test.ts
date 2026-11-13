@@ -20,3 +20,15 @@ describe("buildPlatformJsonLd", () => {
     expect(app.publisher).toEqual({ "@id": "https://www.esnafpro.app/#organization" });
   });
 });
+
+describe("buildPlatformJsonLd kuruluş bilgileri", () => {
+  const org = buildPlatformJsonLd("https://www.esnafpro.app").find(
+    (s) => s["@type"] === "Organization"
+  ) as Record<string, unknown>;
+
+  it("logo, iletişim ve adres içerir (Google bilgi paneli için)", () => {
+    expect(org.logo).toMatchObject({ url: "https://www.esnafpro.app/favicon.png" });
+    expect(org.telephone).toMatch(/^\+90/);
+    expect(org.address).toMatchObject({ addressLocality: "Esenyurt", addressCountry: "TR" });
+  });
+});

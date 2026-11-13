@@ -2,13 +2,12 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { TamirFiyatiWizard } from "@/components/tamir-fiyati/tamir-fiyati-wizard";
 import { getTamirMarkalari } from "@/lib/tamir-fiyati/tamir-fiyati-queries";
+import { resolvePlatformPageMetadata } from "@/lib/seo/get-platform-page-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Tamir Fiyatı Al | EsnafPRO",
-  description:
-    "Marka ve modelinizi seçin; EsnafPRO referans tamir fiyat listesinden güncel servis fiyatlarını anında görün.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePlatformPageMetadata("/tamir-fiyati");
+}
 
 export default async function TamirFiyatiPage() {
   const brands = await getTamirMarkalari();

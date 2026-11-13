@@ -9,6 +9,12 @@ export type PageMetadataInput = {
   ogType?: "website" | "article";
 };
 
+/** Kendi görseli olmayan sayfaların paylaşım görseli (src/app/api/og/route.tsx) */
+export const DEFAULT_OG_IMAGE_PATH = "/api/og";
+export const DEFAULT_OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+export const DEFAULT_OG_IMAGE_ALT =
+  "EsnafPRO: telefoncular ve teknik servisler için ücretsiz dijital mağaza";
+
 export function buildAbsoluteUrl(path: string): string {
   const base = getPublicSiteUrl();
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -18,7 +24,11 @@ export function buildAbsoluteUrl(path: string): string {
 /** Next.js Metadata: title, description, canonical, Open Graph ve Twitter kartları */
 export function buildPageMetadata(input: PageMetadataInput): Metadata {
   const url = buildAbsoluteUrl(input.path);
-  const image = input.image?.trim() || undefined;
+  const ownImage = input.image?.trim() || undefined;
+  // Görseli olmayan sayfa da WhatsApp/Instagram/X'te büyük önizlemeyle paylaşılır.
+  const ogImage = ownImage
+    ? { url: ownImage, alt: input.title }
+    : { url: buildAbsoluteUrl(DEFAULT_OG_IMAGE_PATH), alt: DEFAULT_OG_IMAGE_ALT, ...DEFAULT_OG_IMAGE_SIZE };
 
   return {
     title: input.title,
@@ -36,13 +46,13 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
       siteName: "EsnafPRO",
       locale: "tr_TR",
       type: input.ogType ?? "website",
-      ...(image ? { images: [{ url: image, alt: input.title }] } : {}),
+      images: [ogImage],
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: input.title,
       description: input.description,
-      ...(image ? { images: [image] } : {}),
+      images: [ogImage.url],
     },
     other: {
       "content-language": "tr",

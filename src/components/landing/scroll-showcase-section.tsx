@@ -310,7 +310,8 @@ export function ScrollShowcaseSection() {
                 <Image
                   key={step.id}
                   src={step.image}
-                  alt={index === activeIndex ? step.alt : ""}
+                  // Gizli ekranlar da açıklamasını taşır; ekran okuyucudan aria-hidden ile saklanır.
+                  alt={step.alt}
                   aria-hidden={index !== activeIndex}
                   fill
                   sizes="290px"

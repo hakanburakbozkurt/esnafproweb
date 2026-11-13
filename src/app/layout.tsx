@@ -1,4 +1,9 @@
 import { getPublicSiteUrl } from "@/lib/auth/site-url";
+import {
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_OG_IMAGE_PATH,
+  DEFAULT_OG_IMAGE_SIZE,
+} from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
@@ -6,12 +11,13 @@ import "./globals.css";
 const roboto = Roboto({
   variable: "--font-roboto",
   subsets: ["latin", "latin-ext"],
-  weight: ["300", "400", "500", "700"],
+  // 300 (font-light) hiçbir yerde kullanılmıyor; indirilmesin.
+  weight: ["400", "500", "700"],
 });
 
 const siteTitle = "EsnafPRO";
 const siteDescription =
-  "Telefon ve teknik servis esnafı için dijital vitrin, servis takibi, 2. el pazaryeri ve işletme yönetimi platformu. Kod bilmeden dakikalar içinde profesyonel mağaza sayfanızı açın.";
+  "Cep telefoncusu ve teknik servisler için ücretsiz dijital mağaza. Ürün, 2. el cihaz ve servis takibi tek panelde; müşterin seni Google'da bulsun.";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const siteUrl = getPublicSiteUrl();
@@ -45,11 +51,13 @@ export const metadata: Metadata = {
     siteName: siteTitle,
     locale: "tr_TR",
     type: "website",
+    images: [{ url: DEFAULT_OG_IMAGE_PATH, alt: DEFAULT_OG_IMAGE_ALT, ...DEFAULT_OG_IMAGE_SIZE }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
+    images: [DEFAULT_OG_IMAGE_PATH],
   },
   alternates: {
     canonical: siteUrl,
