@@ -28,8 +28,11 @@ export function MarketplacePageContent({
   baslik,
   ustLinkler,
   altIcerik,
+  yuklenemedi = false,
 }: {
   listings: MarketplaceListing[];
+  /** Veri çekilemediğinde "ilan yok" yerine hata mesajı gösterilir */
+  yuklenemedi?: boolean;
   /** /pazaryeri/ikinci-el-telefon gibi sayfalar filtre seçili açılır */
   baslangicTuru?: MarketplaceListingTypeId;
   baslangicKategori?: MarketplaceCategoryId;
@@ -110,6 +113,15 @@ export function MarketplacePageContent({
             </li>
           ))}
         </ul>
+      ) : yuklenemedi ? (
+        <div className="mt-10 rounded-3xl border border-dashed border-red-200 bg-red-50/40 px-6 py-12 text-center" role="alert">
+          <p className="text-base font-semibold text-slate-900">
+            İlanlar şu an yüklenemiyor
+          </p>
+          <p className="mt-2 text-sm text-slate-500">
+            Lütfen sayfayı yenileyip birkaç dakika sonra tekrar deneyin.
+          </p>
+        </div>
       ) : (
         <div className="mt-10 rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
           <p className="text-base font-semibold text-slate-900">
