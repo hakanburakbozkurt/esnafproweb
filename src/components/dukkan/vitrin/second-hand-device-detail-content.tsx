@@ -184,10 +184,8 @@ export function SecondHandDeviceDetailContent({
 
             <TrustBadges
               className="mt-3"
-              isVerifiedShop={isVerifiedShop}
               hasWarranty={device.has_warranty}
               listingType={device.listing_type}
-              hasInvoice={device.has_invoice}
             />
 
             {mapsNavigationUrl && (
