@@ -1,5 +1,6 @@
 "use client";
 
+import { BizKuralimKutusu } from "@/components/landing/biz-kuralim";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { createDukkan, type DukkanFormState } from "@/lib/dukkan/actions";
@@ -64,7 +65,10 @@ export default function DukkanAcPage({
           loginHref="/giris?next=/dukkan-ac"
         />
       ) : (
-        <DukkanAcForm />
+        <div className="space-y-6">
+          <BizKuralimKutusu kaynak="mağaza aç" />
+          <DukkanAcForm />
+        </div>
       )}
     </SubPageShell>
   );
